@@ -10,6 +10,12 @@
 	"images": {
 		"binding": "IMAGES"
 	},
+	"hyperdrive": [
+		{
+			"binding": "HYPERDRIVE",
+			"id": "dcff4312d5784ca0a0d0f1c92aad668b"
+		}
+	],
 	"observability": {
 		"enabled": true
 	}

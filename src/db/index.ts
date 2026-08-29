@@ -1,39 +1,42 @@
 import { Pool as NeonPool, neonConfig } from "@neondatabase/serverless";
 import { CamelCasePlugin, Kysely, PostgresDialect } from "kysely";
 import { Pool as PgPool } from "pg";
+import { getDatabaseRequestContext } from "./request-context";
 import type { DB } from "./types";
 
 type PoolType = NeonPool | PgPool;
-type KyselyDbWithPool = Kysely<DB> & { pool: PoolType };
+export type KyselyDbWithPool = Kysely<DB> & { pool: PoolType };
 
 declare global {
 	var __kyselyDb: KyselyDbWithPool | null;
 }
 
-function createDb(): KyselyDbWithPool {
-	const connectionString =
+function createDb(connectionString?: string): KyselyDbWithPool {
+	const resolvedConnectionString =
+		connectionString ||
 		process.env.DATABASE_URL ||
 		(process.env.NODE_ENV === "test"
 			? "postgres://postgres:postgres@db.localtest.me:5435/main"
 			: "");
-	if (!connectionString) {
+	if (!resolvedConnectionString) {
 		throw new Error("DATABASE_URL is not defined");
 	}
 
-	const isLocal = new URL(connectionString).hostname === "db.localtest.me";
+	const isHyperdrive = Boolean(connectionString);
+	const isLocal =
+		new URL(resolvedConnectionString).hostname === "db.localtest.me";
 	let pool: PoolType;
-	if (isLocal) {
+	if (isLocal || isHyperdrive) {
 		pool = new PgPool({
-			connectionString,
-			max: 20,
+			connectionString: resolvedConnectionString,
+			max: isHyperdrive ? 5 : 20,
 			idleTimeoutMillis: 30000,
 			connectionTimeoutMillis: 30000,
 		});
 	} else {
-		// Cloudflare Workers cannot reuse a WebSocket connection across requests.
-		// Neon Pool's HTTP mode keeps each query scoped to its request instead.
+		// Vercel/Node環境では既存のNeon serverlessドライバを使用する。
 		neonConfig.poolQueryViaFetch = true;
-		pool = new NeonPool({ connectionString });
+		pool = new NeonPool({ connectionString: resolvedConnectionString });
 	}
 
 	const db = new Kysely<DB>({
@@ -44,10 +47,29 @@ function createDb(): KyselyDbWithPool {
 	return Object.assign(db, { pool });
 }
 
-if (!globalThis.__kyselyDb) {
-	globalThis.__kyselyDb = createDb();
+function getCurrentDb(): KyselyDbWithPool {
+	const requestContext = getDatabaseRequestContext();
+	if (requestContext) {
+		if (!requestContext.kysely) {
+			requestContext.kysely = createDb(requestContext.connectionString);
+		}
+		return requestContext.kysely as KyselyDbWithPool;
+	}
+
+	if (!globalThis.__kyselyDb) {
+		globalThis.__kyselyDb = createDb();
+	}
+	return globalThis.__kyselyDb;
 }
-export let db: KyselyDbWithPool = globalThis.__kyselyDb;
+
+export const db = new Proxy({} as KyselyDbWithPool, {
+	get(_target, prop: string | symbol) {
+		const currentDb = getCurrentDb();
+		const value = currentDb[prop as keyof KyselyDbWithPool];
+		if (typeof value === "function") return value.bind(currentDb);
+		return value;
+	},
+});
 
 export async function disposeDb(): Promise<void> {
 	if (globalThis.__kyselyDb) {
@@ -56,5 +78,4 @@ export async function disposeDb(): Promise<void> {
 		}
 	}
 	globalThis.__kyselyDb = null;
-	db = globalThis.__kyselyDb = createDb();
 }

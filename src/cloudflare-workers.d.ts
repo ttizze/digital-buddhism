@@ -1,5 +1,8 @@
 declare module "cloudflare:workers" {
 	const env: {
+		HYPERDRIVE: {
+			connectionString: string;
+		};
 		ASSETS: {
 			fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
 		};

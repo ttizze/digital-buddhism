@@ -1,13 +1,17 @@
 import * as Sentry from "@sentry/cloudflare";
 import handler from "@tanstack/react-start/server-entry";
+import { runWithDatabaseRequestContext } from "./db/request-context";
 
 type WorkerEnv = {
 	SENTRY_DSN?: string;
+	HYPERDRIVE?: { connectionString: string };
 };
 
 const workerEntry = {
-	fetch(request: Request, _env: WorkerEnv, _ctx: unknown) {
-		return handler.fetch(request);
+	fetch(request: Request, env: WorkerEnv, _ctx: unknown) {
+		return runWithDatabaseRequestContext(env.HYPERDRIVE?.connectionString, () =>
+			handler.fetch(request),
+		);
 	},
 };
 
