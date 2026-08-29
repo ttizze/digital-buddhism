@@ -32,7 +32,6 @@ Evame はTanStack Start（TanStack Router）を使用したWebアプリケーシ
 - **認証**: better auth
 - **国際化**: use-intl
 - **状態管理**: TanStack Router + nuqs (URL検索パラメータ管理)
-- **エディタ**: TipTap
 
 ## ディレクトリ構造
 
