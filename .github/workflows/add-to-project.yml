@@ -1,0 +1,20 @@
+name: Adds all issues and PRs to project board backlog
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number"
+        required: true
+      pr_number:
+        description: "Pull request number"
+
+jobs:
+  add-to-project:
+    name: Add issue or PR to project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: https://github.com/users/ttizze/projects/5
+          github-token: ${{ secrets.PROJECT_TOKEN }}

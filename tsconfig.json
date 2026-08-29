@@ -1,0 +1,30 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"types": ["node", "vite/client", "vitest/globals"],
+		"allowJs": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"strictNullChecks": true,
+		"noEmit": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"jsx": "react-jsx",
+		"incremental": true,
+		"paths": {
+			"@/*": ["./src/*"]
+		}
+	},
+	"include": ["**/*.ts", "**/*.tsx"],
+	"exclude": [
+		"node_modules",
+		"dist",
+		"build",
+		"scripts/convert-romn-to-md-old/**"
+	]
+}

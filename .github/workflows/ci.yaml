@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ci-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 'latest'
+
+      - name: Start test database
+        run: |
+          docker compose -f docker-compose.yml up -d test_neon
+          for i in {1..30}; do
+            if docker compose -f docker-compose.yml exec -T test_neon pg_isready -U postgres > /dev/null 2>&1; then
+              echo "Postgres is ready"
+              break
+            fi
+            sleep 2
+          done
+          docker compose -f docker-compose.yml ps
+
+      - name: Create .env
+        run: |
+          echo "TIPTAP_PRO_API_KEY=${{ secrets.TIPTAP_PRO_API_KEY }}" >> .env
+          echo "DATABASE_URL=postgres://postgres:postgres@db.localtest.me:5435/main" >> .env
+
+      - name: Install dependencies
+        run: |
+          bun install
+
+      - name: Run Biome
+        run: |
+          bun x biome ci .
+
+      - name: Run Tests
+        env:
+          TZ: 'Asia/Tokyo'
+        run: |
+          bun run db:migrate && bun run seed
+          bunx vitest

@@ -1,0 +1,49 @@
+name: Link PR to Issue
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull Request number"
+        required: true
+
+jobs:
+  link_pr_to_issue:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract issue number from branch name
+        id: extract-issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PR_NUMBER="${{ github.event.inputs.pr_number }}"
+            BRANCH_NAME=$(gh pr view $PR_NUMBER --json headRefName -q .headRefName)
+          else
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+            BRANCH_NAME="${{ github.head_ref }}"
+          fi
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          ISSUE_NUMBER=$(echo $BRANCH_NAME | grep -oP 'issue-\K\d+' || true)
+          if [ -z "$ISSUE_NUMBER" ]; then
+            echo "No issue number found in branch name. Workflow will exit."
+            exit 0
+          fi
+          echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Link PR to issue
+        if: steps.extract-issue.outputs.issue_number
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.extract-issue.outputs.pr_number }}
+          ISSUE_NUMBER: ${{ steps.extract-issue.outputs.issue_number }}
+        run: |
+          gh pr comment $PR_NUMBER --body "This PR is linked to issue #$ISSUE_NUMBER"
+          gh issue comment $ISSUE_NUMBER --body "PR #$PR_NUMBER has been linked to this issue"
+          gh pr edit $PR_NUMBER --body "Closes #$ISSUE_NUMBER"

@@ -1,0 +1,43 @@
+import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
+import { SEGMENT_NUMBER } from "@/db/seed-data/content";
+import type { loadAboutPage } from "../../service/load-about-page";
+import { FeatureSection, selectFeatureHeaderAndText } from "./feature-section";
+
+const VOTE_HINT: Record<string, string> = {
+	ja: "訳文をクリックで投票を試す ↓",
+	en: "Click translation to try voting ↓",
+	zh: "点击译文尝试投票 ↓",
+	ko: "번역문을 클릭하여 투표해보기 ↓",
+	es: "Haz clic en la traducción para votar ↓",
+};
+
+export default function RefineFeature({
+	locale,
+	pageDetail,
+}: {
+	locale: string;
+	pageDetail: NonNullable<Awaited<ReturnType<typeof loadAboutPage>>>;
+}) {
+	const featureContent = selectFeatureHeaderAndText({
+		pageDetail,
+		headerNumber: SEGMENT_NUMBER.refineHeader,
+		textNumber: SEGMENT_NUMBER.refineText,
+	});
+
+	if (!featureContent) return null;
+	const { header, text } = featureContent;
+
+	return (
+		<FeatureSection
+			decorationClassName="bottom-0 right-0 h-48 w-48 translate-x-1/3 translate-y-1/3 bg-[radial-gradient(circle,rgba(244,114,182,0.18),transparent_70%)]"
+			header={<SegmentElement segment={header} tagName="span" />}
+			hint={VOTE_HINT[locale] ?? VOTE_HINT.en}
+			panel={
+				<div className="rounded-lg border border-border/60 bg-background/70 p-3 transition-colors hover:bg-background">
+					<SegmentElement segment={text} tagName="span" />
+				</div>
+			}
+			text={<SegmentElement segment={text} tagName="span" />}
+		/>
+	);
+}
