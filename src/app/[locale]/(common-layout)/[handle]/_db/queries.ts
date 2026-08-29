@@ -1,4 +1,3 @@
-import { sql } from "kysely";
 import { db } from "@/db";
 
 export async function fetchUserByHandle(handle: string) {
@@ -13,12 +12,12 @@ export async function getFollowCounts(userId: string) {
 	const [followersResult, followingResult] = await Promise.all([
 		db
 			.selectFrom("follows")
-			.select(sql<number>`count(*)::int`.as("count"))
+			.select((eb) => eb.fn.countAll<number>().as("count"))
 			.where("followingId", "=", userId)
 			.executeTakeFirst(),
 		db
 			.selectFrom("follows")
-			.select(sql<number>`count(*)::int`.as("count"))
+			.select((eb) => eb.fn.countAll<number>().as("count"))
 			.where("followerId", "=", userId)
 			.executeTakeFirst(),
 	]);

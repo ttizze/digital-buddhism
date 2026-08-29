@@ -4,15 +4,30 @@ import { db } from "@/db";
  * ページの翻訳ジョブを取得（各localeの最新COMPLETEDのみ）
  */
 export async function fetchCompletedTranslationJobs(pageId: number) {
-	return await db
+	const rankedQuery = db
 		.selectFrom("translationJobs")
-		.selectAll()
-		.distinctOn(["locale"])
+		.selectAll("translationJobs")
+		.select((eb) =>
+			eb.fn
+				.agg<number>("row_number")
+				.over((ob) =>
+					ob
+						.partitionBy("translationJobs.locale")
+						.orderBy("translationJobs.createdAt", "desc"),
+				)
+				.as("rowNumber"),
+		)
 		.where("pageId", "=", pageId)
-		.where("status", "=", "COMPLETED")
-		.orderBy("locale")
-		.orderBy("createdAt", "desc")
+		.where("status", "=", "COMPLETED");
+
+	const rows = await db
+		.selectFrom(rankedQuery.as("ranked"))
+		.selectAll("ranked")
+		.where("ranked.rowNumber", "=", 1)
+		.orderBy("ranked.locale")
 		.execute();
+
+	return rows.map(({ rowNumber: _, ...job }) => job);
 }
 
 /**

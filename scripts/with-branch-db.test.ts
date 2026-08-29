@@ -1,135 +1,59 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { existsSync } from "node:fs";
+import { createClient } from "@libsql/client";
+import { afterEach, describe, expect, it } from "vitest";
+import {
+	buildLocalDatabaseEnv,
+	createLocalSqliteDatabase,
+} from "./local-sqlite-db";
 
-const queryMock = vi.fn();
-const connectMock = vi.fn();
-const endMock = vi.fn();
-let lastConnectionString = "";
+const databases: Array<Awaited<ReturnType<typeof createLocalSqliteDatabase>>> =
+	[];
 
-vi.mock("pg", () => {
-	return {
-		Client: class {
-			constructor({ connectionString }: { connectionString: string }) {
-				lastConnectionString = connectionString;
-			}
-			connect = connectMock;
-			end = endMock;
-			query = queryMock;
-		},
-	};
+afterEach(async () => {
+	for (const database of databases.splice(0)) {
+		await database.cleanup();
+	}
 });
 
-import {
-	buildDatabaseName,
-	ensureDatabaseExists,
-	hasMigrationArtifactChanges,
-	isMigrationArtifactPath,
-} from "./with-branch-db";
+describe("ローカルSQLiteテストDB", () => {
+	it("baselineを適用した一時DBを並列利用でき、cleanupで削除できる", async () => {
+		const first = await createLocalSqliteDatabase("digital-buddshim-test-");
+		const second = await createLocalSqliteDatabase("digital-buddshim-test-");
+		databases.push(first, second);
 
-describe("with-branch-db", () => {
-	beforeEach(() => {
-		queryMock.mockReset();
-		connectMock.mockReset();
-		endMock.mockReset();
-		lastConnectionString = "";
+		expect(first.path).not.toBe(second.path);
+
+		const client = createClient({ url: first.url });
+		try {
+			const tables = await client.execute(
+				"SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
+			);
+			const foreignKeys = await client.execute("PRAGMA foreign_keys");
+
+			expect(tables.rows.length).toBeGreaterThan(0);
+			expect(Number(foreignKeys.rows[0]?.foreign_keys)).toBe(1);
+		} finally {
+			client.close();
+		}
+
+		expect(existsSync(first.path)).toBe(true);
+		await first.cleanup();
+		expect(existsSync(first.path)).toBe(false);
 	});
 
-	it("ブランチ名が混じっていてもDB名を安全な形式に整える", () => {
-		expect(buildDatabaseName("main", "feature/ABC-123")).toBe(
-			"main__feature_abc_123",
-		);
-	});
-
-	it("対象DBが存在しないときはベースDBから複製する", async () => {
-		queryMock
-			.mockResolvedValueOnce({ rowCount: 0 })
-			.mockResolvedValueOnce({ rowCount: 0 });
-
-		await ensureDatabaseExists(
-			"postgres://user:pass@db.localtest.me:5434/main",
-			"main__feature",
-			"main",
+	it("子プロセス用のDB環境変数は外部DBを参照しない", () => {
+		const env = buildLocalDatabaseEnv(
+			{
+				DATABASE_URL: "postgres://external.invalid/main",
+				TURSO_AUTH_TOKEN: "secret",
+			},
+			"file:///tmp/digital-buddshim-test.sqlite",
 		);
 
-		expect(lastConnectionString).toBe(
-			"postgres://user:pass@db.localtest.me:5434/postgres",
+		expect(env.TURSO_DATABASE_URL).toBe(
+			"file:///tmp/digital-buddshim-test.sqlite",
 		);
-		expect(queryMock).toHaveBeenNthCalledWith(
-			1,
-			"SELECT 1 FROM pg_database WHERE datname = $1",
-			["main__feature"],
-		);
-		expect(queryMock).toHaveBeenNthCalledWith(
-			2,
-			'CREATE DATABASE "main__feature" WITH TEMPLATE "main"',
-		);
-	});
-
-	it("対象DBが存在する場合は複製しない", async () => {
-		queryMock.mockResolvedValueOnce({ rowCount: 1 });
-
-		await ensureDatabaseExists(
-			"postgres://user:pass@db.localtest.me:5434/main",
-			"main__feature",
-			"main",
-		);
-
-		expect(queryMock).toHaveBeenCalledTimes(1);
-	});
-
-	it("テンプレートDB名を指定できる", async () => {
-		queryMock
-			.mockResolvedValueOnce({ rowCount: 0 })
-			.mockResolvedValueOnce({ rowCount: 0 });
-
-		await ensureDatabaseExists(
-			"postgres://user:pass@db.localtest.me:5434/main",
-			"main__feature",
-			"main_template",
-		);
-
-		expect(queryMock).toHaveBeenNthCalledWith(
-			2,
-			'CREATE DATABASE "main__feature" WITH TEMPLATE "main_template"',
-		);
-	});
-
-	it("マイグレーションSQLはブランチDB判定の対象になる", () => {
-		expect(isMigrationArtifactPath("src/drizzle/0015_new_table.sql")).toBe(
-			true,
-		);
-	});
-
-	it("スナップショットJSONはブランチDB判定の対象になる", () => {
-		expect(isMigrationArtifactPath("src/drizzle/meta/0015_snapshot.json")).toBe(
-			true,
-		);
-	});
-
-	it("ジャーナルJSONはブランチDB判定の対象になる", () => {
-		expect(isMigrationArtifactPath("src/drizzle/meta/_journal.json")).toBe(
-			true,
-		);
-	});
-
-	it("スキーマ定義だけの変更はブランチDB判定の対象にしない", () => {
-		expect(isMigrationArtifactPath("src/drizzle/schema.ts")).toBe(false);
-	});
-
-	it("対象ファイルがひとつでもあればブランチDBを使う", () => {
-		expect(
-			hasMigrationArtifactChanges([
-				"src/drizzle/schema.ts",
-				"src/drizzle/0015_new_table.sql",
-			]),
-		).toBe(true);
-	});
-
-	it("対象ファイルがなければブランチDBを使わない", () => {
-		expect(
-			hasMigrationArtifactChanges([
-				"src/drizzle/schema.ts",
-				"src/drizzle/relations.ts",
-			]),
-		).toBe(false);
+		expect(env.TURSO_AUTH_TOKEN).toBe("");
+		expect(env.DATABASE_URL).toBeUndefined();
 	});
 });

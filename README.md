@@ -22,20 +22,18 @@ nix develop
    openssl rand -base64 32
    ```
    Put the generated string into `.env`.
-3. Start DB
-   ```bash
-   docker compose up -d
-   ```
-4. Run migrations and seed
-   ```bash
-   bun run db:migrate
-   bun run seed
-   ```
-5. Start dev server
+3. Start dev server
    ```bash
    bun run dev
    ```
-6. Open `http://localhost:3000`
+   The development command creates an isolated temporary SQLite database and
+   applies the checked-in Turso migration before starting the server. Docker,
+   PostgreSQL, and a manual seed are not required for local development.
+4. Open `http://localhost:3000`
+
+Production uses Turso (libSQL). Configure `TURSO_DATABASE_URL` and
+`TURSO_AUTH_TOKEN` through the deployment secret manager; do not commit either
+value.
 
 ## Key links
 
@@ -47,8 +45,8 @@ nix develop
 
 - `src/routes`: TanStack Start routes
 - `src/app`: Shared implementation during the migration
-- `src/db`: DB connection, types, seed
-- `src/drizzle`: Schema and migrations
+- `src/db`: Kysely connection, database types, and local SQLite helpers
+- `src/drizzle`: SQLite/Turso schema and migrations
 - `src/components`: Shared UI
 
-See `docs/architecture.md` for details.
+See `docs/architecture/architecture.md` for details.

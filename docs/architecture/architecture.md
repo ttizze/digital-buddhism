@@ -1,74 +1,93 @@
 # アーキテクチャ概要
 
-Evame は Next.js（App Router）を中心に構成された翻訳・注釈プラットフォームです。
-本ドキュメントは「全体像」「主要コンポーネント」「依存関係」「データの流れ」を最短で理解するための入口です。
+Evame は TanStack Start を中心に構成された翻訳・注釈プラットフォームです。
+このドキュメントは、全体像と主要な責務を短く確認するための入口です。
 
 ## 技術スタック（現行）
 
-- フレームワーク: Next.js 16（App Router）
+- フレームワーク: TanStack Start（TanStack Router + Vite）
+- 配信: Cloudflare Workers
 - 言語: TypeScript
 - UI: React 19 + Tailwind CSS + Radix UI 系コンポーネント
-- i18n: next-intl
-- DB: PostgreSQL
-- DB アクセス: Kysely（ランタイム） + Drizzle（スキーマ/マイグレーション）
-- 認証: better-auth
+- i18n: use-intl
+- DB: Turso（libSQL / SQLite）
+- DB アクセス: Kysely（ランタイム）+ Drizzle（スキーマ/マイグレーション）
+- 認証: better-auth（SQLite 用DB設定）
 
 ## リポジトリ構成（要約）
 
 ```
 /
 ├── src/
-│   ├── app/                 # Next.js App Router
+│   ├── routes/              # TanStack Start のルート境界
+│   ├── app/                 # 画面・機能の実装
 │   ├── components/          # 共有 UI
-│   ├── db/                  # DB 接続・型・シード
-│   ├── drizzle/             # スキーマとマイグレーション
+│   ├── db/                  # Kysely 接続・型・ローカルSQLiteヘルパー
+│   ├── drizzle/             # SQLite/Turso のスキーマとマイグレーション
 │   ├── i18n/                # i18n 設定
 │   ├── lib/                 # 汎用ユーティリティ（業務ロジック禁止）
 │   └── utils/               # 共有ユーティリティ
-├── docs/                    # ドキュメント
+├── docs/                    # 設計・仕様・運用ドキュメント
 └── ...
 ```
 
-詳細な配置ルールは `docs/architecture/conventions/route-colocation.md` を参照してください。
+詳細な配置ルールは `docs/architecture/conventions/route-colocation.md` を
+参照してください。
 
-## 主要コンポーネントと責務
+## ルート（`src/routes`）
 
-### App Router（`src/app`）
-- 画面・ルート・API ルート（Route Handler）を管理
-- `src/app/[locale]` が多言語対応の基点
-- ルート内のコードはコロケーションルールで完結させる
+- TanStack Router のファイルベースルートを定義する
+- `$locale` などの動的セグメントと、`_common` などのパスレスレイアウトを
+  ファイル名で表現する
+- ページの取得・更新は route loader、server function、API route の境界から
+  機能モジュールを呼び出す
+- ルートツリー生成物は手動編集しない
 
-### 共有 UI（`src/components`）
-- 複数ルートから参照される UI を集約
-- ルート専用コンポーネントは各ルート内へ配置
+機能固有のUIや処理は `src/app` に置き、ルートファイルは入出力と境界の定義に
+集中させます。
 
-### サービス／ドメイン
-- ルート直下の `_service` / `_domain` / `_db` でルート内の共有ロジックを整理
-- コンポーネント専用のロジックはそのコンポーネント配下へ
+## 共有UI（`src/components`）
 
-### DB レイヤー
-- `src/db` で接続・型・シードを管理
-- 取得/更新ロジックはルート内の `_db` や `db/` に置く
+複数ルートから参照されるUIを集約します。1つのルートだけで使うUIとその処理は
+`src/app` の該当機能スコープに置きます。
 
-### 認証
-- `src/auth.ts` がエントリポイント
-- better-auth + magic link を中心に構成
+## DB レイヤー
 
-### i18n
-- `src/i18n` に設定を集約
-- ルートは `src/app/[locale]` を基本とする
+- `src/db`: Kysely の接続、DB型、SQLite向けの値変換、テスト用DBヘルパー
+- `src/drizzle`: スキーマとTurso用マイグレーション
+- ランタイムのDB接続は `TURSO_DATABASE_URL` と `TURSO_AUTH_TOKEN` から作る
+- ローカル開発・テストは、チェックイン済みマイグレーションを適用した一時
+  `file:` SQLite DBを使う
+- 本番はTursoの共有DBを使い、ローカルテストやCIから本番DBへ接続しない
 
-## データの流れ（代表パターン）
+取得・更新ロジックは、利用するルートに近い `_db` または `db` 配下に置きます。
+DB層は接続とデータの取得・更新に集中し、業務判断はdomain/service層で行います。
 
-1. ルートコンポーネントが Server Component として描画
-2. 必要なデータ取得はルート配下の `service` または `_db` 経由で実行
-3. 取得結果を Server Component でレンダリング
-4. ユーザー操作が必要な箇所のみ Client Component を使用
+## 認証
+
+`src/auth.ts` が better-auth のエントリポイントです。認証関連のDBアクセスも
+現在のリクエストのTurso接続を通じて実行します。
+
+## i18n
+
+`src/i18n` に設定を集約し、`src/routes/$locale` を多言語ルートの基点にします。
+
+## 代表的なデータの流れ
+
+1. TanStack Router のルートがリクエストを受ける
+2. loader、server function、またはAPI routeが機能のservice/domain/dbを呼ぶ
+3. DBから取得した値をルート境界へ返す
+4. Reactコンポーネントが画面を描画する
+
+ユーザー操作が必要な箇所だけClient Componentを使用し、環境依存の接続や外部
+サービス呼び出しはserver側の境界に閉じ込めます。
 
 ## 依存方向（要約）
 
 - `service` → `domain` / `db` / `utils`
 - `domain` → `utils`（`db` へ直接依存しない）
 - `components` → `service` / `domain` / `db` / `utils`
+- `routes` → `app` の機能モジュール
 
-詳細は `docs/architecture/conventions/route-colocation.md` を参照してください。
+詳細な配置・依存ルールは `docs/architecture/conventions/route-colocation.md` を
+参照してください。

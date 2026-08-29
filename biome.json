@@ -18,13 +18,15 @@
 			"!coverage",
 			"!.turbo",
 			"!.vercel",
+			"!.wrangler",
 			"!.cache",
 			"!dist",
 			"!.codex",
 			"!.claude",
 			"!.worktree",
 			"!.worktrees",
-			"!src/routeTree.gen.ts"
+			"!src/routeTree.gen.ts",
+			"!src/drizzle/turso/meta"
 		]
 	},
 	"assist": {

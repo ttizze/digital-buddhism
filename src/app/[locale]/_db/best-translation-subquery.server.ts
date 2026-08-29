@@ -11,7 +11,7 @@ export function bestTranslationSubquery(
 	eb: ExpressionBuilder<DB, keyof DB>,
 	{ locale, ownerUserId }: BestTranslationParams,
 ) {
-	return eb
+	const rankedQuery = eb
 		.selectFrom("segmentTranslations")
 		.leftJoin("translationVotes as ownerTv", (join) =>
 			join
@@ -19,17 +19,30 @@ export function bestTranslationSubquery(
 				.on("ownerTv.userId", "=", ownerUserId)
 				.on("ownerTv.isUpvote", "=", true),
 		)
-		.distinctOn("segmentTranslations.segmentId")
 		.select([
 			"segmentTranslations.id",
 			"segmentTranslations.segmentId",
 			"segmentTranslations.text",
 		])
-		.where("segmentTranslations.locale", "=", locale)
-		.orderBy("segmentTranslations.segmentId")
-		.orderBy("ownerTv.isUpvote", (ob) => ob.desc().nullsLast())
-		.orderBy("segmentTranslations.point", "desc")
-		.orderBy("segmentTranslations.createdAt", "desc");
+		.select((eb) =>
+			eb.fn
+				.agg<number>("row_number")
+				.over((ob) =>
+					ob
+						.partitionBy("segmentTranslations.segmentId")
+						.orderBy("ownerTv.isUpvote", (ob) => ob.desc().nullsLast())
+						.orderBy("segmentTranslations.point", "desc")
+						.orderBy("segmentTranslations.createdAt", "desc"),
+				)
+				.as("rowNumber"),
+		)
+		.where("segmentTranslations.locale", "=", locale);
+
+	return eb
+		.selectFrom(rankedQuery.as("ranked"))
+		.select(["ranked.id", "ranked.segmentId", "ranked.text"])
+		.where("ranked.rowNumber", "=", 1)
+		.orderBy("ranked.segmentId");
 }
 
 /**
@@ -37,7 +50,7 @@ export function bestTranslationSubquery(
  * セグメントからページを辿り、各ページのオーナーのupvoteを優先する
  */
 export function bestTranslationByPagesSubquery(locale: string) {
-	return db
+	const rankedQuery = db
 		.selectFrom("segmentTranslations")
 		.innerJoin(
 			"segments as transSeg",
@@ -51,15 +64,28 @@ export function bestTranslationByPagesSubquery(locale: string) {
 				.onRef("ownerTv.userId", "=", "ownerPage.userId")
 				.on("ownerTv.isUpvote", "=", true),
 		)
-		.distinctOn("segmentTranslations.segmentId")
 		.select([
 			"segmentTranslations.id",
 			"segmentTranslations.segmentId",
 			"segmentTranslations.text",
 		])
-		.where("segmentTranslations.locale", "=", locale)
-		.orderBy("segmentTranslations.segmentId")
-		.orderBy("ownerTv.isUpvote", (ob) => ob.desc().nullsLast())
-		.orderBy("segmentTranslations.point", "desc")
-		.orderBy("segmentTranslations.createdAt", "desc");
+		.select((eb) =>
+			eb.fn
+				.agg<number>("row_number")
+				.over((ob) =>
+					ob
+						.partitionBy("segmentTranslations.segmentId")
+						.orderBy("ownerTv.isUpvote", (ob) => ob.desc().nullsLast())
+						.orderBy("segmentTranslations.point", "desc")
+						.orderBy("segmentTranslations.createdAt", "desc"),
+				)
+				.as("rowNumber"),
+		)
+		.where("segmentTranslations.locale", "=", locale);
+
+	return db
+		.selectFrom(rankedQuery.as("ranked"))
+		.select(["ranked.id", "ranked.segmentId", "ranked.text"])
+		.where("ranked.rowNumber", "=", 1)
+		.orderBy("ranked.segmentId");
 }

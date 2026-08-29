@@ -4,6 +4,7 @@ import {
 	getDatabaseClient,
 	getDatabaseRequestContext,
 } from "./request-context";
+import { TursoValueCodecPlugin } from "./turso-value-codec";
 import type { DB } from "./types";
 
 export type KyselyDbWithClient = Kysely<DB> & {
@@ -22,7 +23,7 @@ function createDb(): KyselyDbWithClient {
 			client:
 				client as unknown as import("@libsql/kysely-libsql").libsql.Client,
 		}),
-		plugins: [new CamelCasePlugin()],
+		plugins: [new CamelCasePlugin(), new TursoValueCodecPlugin()],
 	});
 
 	return Object.assign(db, { client });

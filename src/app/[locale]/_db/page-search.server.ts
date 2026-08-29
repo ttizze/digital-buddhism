@@ -62,7 +62,7 @@ async function searchPageIdsByTitle(
 		.select("segments.contentId as pageId")
 		.distinct()
 		.where("segments.number", "=", 0)
-		.where("segments.text", "ilike", `%${query}%`)
+		.where("segments.text", "like", `%${query}%`)
 		.where("pages.status", "=", status)
 		.execute();
 
@@ -190,7 +190,7 @@ export async function searchPagesByContent(
 		.select("segments.contentId as pageId")
 		.distinct()
 		.where("pages.status", "=", "PUBLIC")
-		.where("segments.text", "ilike", `%${query}%`)
+		.where("segments.text", "like", `%${query}%`)
 		.execute();
 
 	const allPageIds = result.map((r) => r.pageId);

@@ -139,11 +139,11 @@ async function updateProofStatus(
 				.on("segmentTranslations.locale", "=", locale),
 		)
 		.select([
-			sql<number>`count(*)::int`.as("totalSegments"),
-			sql<number>`count(case when segment_translations.point >= 1 then 1 end)::int`.as(
+			sql<number>`cast(count(*) as integer)`.as("totalSegments"),
+			sql<number>`cast(count(case when segment_translations.point >= 1 then 1 end) as integer)`.as(
 				"segmentsWith1PlusVotes",
 			),
-			sql<number>`count(case when segment_translations.point >= 2 then 1 end)::int`.as(
+			sql<number>`cast(count(case when segment_translations.point >= 2 then 1 end) as integer)`.as(
 				"segmentsWith2PlusVotes",
 			),
 		])

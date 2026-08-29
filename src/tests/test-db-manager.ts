@@ -1,49 +1,76 @@
-import { execSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { disposeDb } from "@/db";
+import { afterAll } from "vitest";
+import { db, disposeDb } from "@/db";
+import {
+	buildLocalDatabaseEnv,
+	createLocalSqliteDatabase,
+} from "../../scripts/local-sqlite-db";
 import { setupMasterData } from "./db-helpers";
 
-const BASE_URL = "postgres://postgres:postgres@db.localtest.me:5435/main";
-const SERVICE = "test_neon";
+const testDatabaseEnvKeys = [
+	"DATABASE_URL",
+	"TURSO_DATABASE_URL",
+	"TURSO_AUTH_TOKEN",
+] as const;
 
-/** PostgreSQLコマンドを実行 */
-function psql(sql: string): void {
-	execSync(`docker compose exec -T ${SERVICE} psql -U postgres -c "${sql}"`, {
-		stdio: "pipe",
-	});
+function restoreTestDatabaseEnv(
+	previousEnv: ReadonlyMap<string, string | undefined>,
+): void {
+	for (const key of testDatabaseEnvKeys) {
+		const value = previousEnv.get(key);
+		if (value === undefined) {
+			delete process.env[key];
+		} else {
+			process.env[key] = value;
+		}
+	}
 }
 
-/** DB接続をリセット（Drizzle + Kysely） */
+/** DB接続を破棄する（テスト間の接続切り替え用） */
 export async function resetAllClients(): Promise<void> {
-	// Kysely
 	await disposeDb();
 }
 
-/** テストファイルごとにDBを作成（マイグレーション + マスターデータ） */
+/** テストファイルごとに独立したSQLite DBを作成し、schemaとマスターデータを投入する */
 export async function setupDbPerFile(fileUrl: string): Promise<void> {
 	const fileId = createHash("sha256")
 		.update(fileUrl)
 		.digest("hex")
 		.slice(0, 10);
-	const dbName = `main_test_${fileId}`;
-	const dbUrl = BASE_URL.replace(/\/main$/, `/${dbName}`);
-
-	// 接続切断 → DB再作成
-	psql(
-		`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='${dbName}' AND pid<>pg_backend_pid()`,
+	const database = await createLocalSqliteDatabase(
+		`digital-buddshim-vitest-${fileId}-`,
 	);
-	psql(`DROP DATABASE IF EXISTS "${dbName}"`);
-	psql(`CREATE DATABASE "${dbName}" WITH TEMPLATE=template0`);
+	const previousEnv = new Map(
+		testDatabaseEnvKeys.map((key) => [key, process.env[key]]),
+	);
+	delete process.env.DATABASE_URL;
+	Object.assign(process.env, buildLocalDatabaseEnv(process.env, database.url));
 
-	// マイグレーション実行
-	execSync("bunx drizzle-kit migrate", {
-		env: { ...process.env, DATABASE_URL: dbUrl },
-		stdio: "pipe",
+	try {
+		await resetAllClients();
+		await db.client.execute("PRAGMA foreign_keys = ON");
+		await setupMasterData();
+
+		const foreignKeys = await db.client.execute("PRAGMA foreign_keys");
+		if (Number(foreignKeys.rows[0]?.foreign_keys) !== 1) {
+			throw new Error("SQLite foreign key enforcement is disabled for tests");
+		}
+	} catch (error) {
+		try {
+			await resetAllClients();
+		} finally {
+			await database.cleanup();
+			restoreTestDatabaseEnv(previousEnv);
+		}
+		throw error;
+	}
+
+	afterAll(async () => {
+		try {
+			await resetAllClients();
+		} finally {
+			await database.cleanup();
+			restoreTestDatabaseEnv(previousEnv);
+		}
 	});
-
-	// マスターデータ投入
-	process.env.DATABASE_URL = dbUrl;
-	await resetAllClients();
-	await setupMasterData();
-	await resetAllClients();
 }

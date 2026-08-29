@@ -1,34 +1,41 @@
+import { sql } from "kysely";
 import { db } from "@/db";
 import type { SegmentTypeKey } from "@/db/types";
+
+const preservedTables = new Set([
+	"segment_types",
+	"segment_metadata_types",
+	"tags",
+	"drizzle_migrations",
+	"__drizzle_migrations",
+]);
 
 /**
  * データベースをリセット（全テーブルをクリーンアップ）
  * 外部キー制約の順序に注意して削除
  */
 export async function resetDatabase() {
-	// 外部キー制約の順序に注意して削除
-	await db.deleteFrom("segmentAnnotationLinks").execute();
-	await db.deleteFrom("segmentMetadata").execute();
-	await db.deleteFrom("translationVotes").execute();
-	await db.deleteFrom("segmentTranslations").execute();
-	await db.deleteFrom("segments").execute();
-	await db.deleteFrom("notifications").execute();
-	await db.deleteFrom("pageComments").execute();
-	await db.deleteFrom("likePages").execute();
-	await db.deleteFrom("tagPages").execute();
-	await db.deleteFrom("translationJobs").execute();
-	await db.deleteFrom("pageLocaleTranslationProofs").execute();
-	await db.deleteFrom("pageViews").execute();
-	await db.deleteFrom("pages").execute();
-	await db.deleteFrom("contents").execute();
-	await db.deleteFrom("userSettings").execute();
-	await db.deleteFrom("geminiApiKeys").execute();
-	await db.deleteFrom("personalAccessTokens").execute();
-	await db.deleteFrom("follows").execute();
-	await db.deleteFrom("accounts").execute();
-	await db.deleteFrom("sessions").execute();
-	await db.deleteFrom("users").execute();
-	// SegmentTypeとTagはマスターデータなので削除しない（グローバルで管理）
+	await db.client.execute("PRAGMA foreign_keys = OFF");
+	try {
+		const tables = await sql<{ name: string }>`
+			SELECT name
+			FROM sqlite_master
+			WHERE type = 'table' AND name NOT LIKE 'sqlite_%'
+		`.execute(db);
+
+		for (const table of tables.rows) {
+			if (!preservedTables.has(table.name)) {
+				await sql`DELETE FROM ${sql.id(table.name)}`.execute(db);
+			}
+		}
+	} finally {
+		await db.client.execute("PRAGMA foreign_keys = ON");
+	}
+
+	const foreignKeys = await db.client.execute("PRAGMA foreign_keys");
+	if (Number(foreignKeys.rows[0]?.foreign_keys) !== 1) {
+		throw new Error("SQLite foreign key enforcement is disabled");
+	}
 }
 
 /**
