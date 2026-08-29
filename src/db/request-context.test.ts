@@ -68,6 +68,98 @@ describe("データベースのrequestコンテキスト", () => {
 		expect(close).toHaveBeenCalledOnce();
 	});
 
+	it("streaming responseの本文が完了するまでTurso clientを閉じない", async () => {
+		const close = vi.fn();
+		let finishBody: (() => void) | undefined;
+
+		const response = await runWithDatabaseRequestContext(
+			{ url: "file:test.db", authToken: undefined },
+			() => {
+				const context = getDatabaseRequestContext();
+				if (!context) throw new Error("request contextがありません");
+
+				context.client = { close };
+				return new Response(
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue(new TextEncoder().encode("first"));
+							finishBody = () => controller.close();
+						},
+					}),
+				);
+			},
+		);
+
+		expect(close).not.toHaveBeenCalled();
+		finishBody?.();
+		await expect(response.text()).resolves.toBe("first");
+		await vi.waitFor(() => expect(close).toHaveBeenCalledOnce());
+	});
+
+	it("streaming responseがcancelされたらTurso clientを閉じる", async () => {
+		const close = vi.fn();
+
+		const response = await runWithDatabaseRequestContext(
+			{ url: "file:test.db", authToken: undefined },
+			() => {
+				const context = getDatabaseRequestContext();
+				if (!context) throw new Error("request contextがありません");
+
+				context.client = { close };
+				return new Response(new ReadableStream({ pull() {} }));
+			},
+		);
+
+		expect(close).not.toHaveBeenCalled();
+		await response.body?.cancel();
+		await vi.waitFor(() => expect(close).toHaveBeenCalledOnce());
+	});
+
+	it("streaming responseの本文生成が失敗してもTurso clientを閉じる", async () => {
+		const close = vi.fn();
+
+		const response = await runWithDatabaseRequestContext(
+			{ url: "file:test.db", authToken: undefined },
+			() => {
+				const context = getDatabaseRequestContext();
+				if (!context) throw new Error("request contextがありません");
+
+				context.client = { close };
+				return new Response(
+					new ReadableStream({
+						start(controller) {
+							controller.error(new Error("本文生成に失敗"));
+						},
+					}),
+				);
+			},
+		);
+
+		await expect(response.text()).rejects.toThrow("本文生成に失敗");
+		await vi.waitFor(() => expect(close).toHaveBeenCalledOnce());
+	});
+
+	it("streaming responseの本文生成でもrequest contextを引き継ぐ", async () => {
+		const response = await runWithDatabaseRequestContext(
+			{ url: "https://stream.turso.io", authToken: "stream-token" },
+			() =>
+				new Response(
+					new ReadableStream({
+						pull(controller) {
+							controller.enqueue(
+								new TextEncoder().encode(
+									getDatabaseRequestContext()?.url ?? "missing",
+								),
+							);
+							controller.close();
+						},
+					}),
+				),
+		);
+
+		await expect(response.text()).resolves.toBe("https://stream.turso.io");
+	});
+
 	it("request contextの外側では接続情報を返さない", () => {
 		expect(getDatabaseRequestContext()).toBeUndefined();
 	});

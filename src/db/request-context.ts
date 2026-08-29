@@ -58,14 +58,44 @@ export async function runWithDatabaseRequestContext<T>(
 ): Promise<T> {
 	const context: DatabaseRequestContext = connection;
 	return storage.run(context, async () => {
+		let cleanupPromise: Promise<void> | undefined;
+		const cleanup = () => {
+			cleanupPromise ??= (async () => {
+				try {
+					if (context.kysely) await context.kysely.destroy();
+				} finally {
+					(context.client ?? context.drizzle?.$client)?.close();
+				}
+			})();
+			return cleanupPromise;
+		};
+
 		try {
-			return await fn();
-		} finally {
-			try {
-				if (context.kysely) await context.kysely.destroy();
-			} finally {
-				(context.client ?? context.drizzle?.$client)?.close();
+			const result = await fn();
+
+			if (result instanceof Response && result.body) {
+				const { readable, writable } = new TransformStream<
+					Uint8Array,
+					Uint8Array
+				>();
+				const piping = result.body.pipeTo(writable);
+				const cleanupAfterStream = () => {
+					void cleanup().catch(() => undefined);
+				};
+				void piping.then(cleanupAfterStream, cleanupAfterStream);
+
+				return new Response(readable, {
+					headers: result.headers,
+					status: result.status,
+					statusText: result.statusText,
+				}) as T;
 			}
+
+			await cleanup();
+			return result;
+		} catch (error) {
+			await cleanup();
+			throw error;
 		}
 	});
 }
