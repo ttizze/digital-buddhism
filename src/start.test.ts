@@ -1,4 +1,3 @@
-import { sentryGlobalRequestMiddleware } from "@sentry/tanstackstart-react";
 import { csrfSymbol } from "@tanstack/react-start";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -51,15 +50,11 @@ describe("TanStack Startのメンテナンスrequest middleware", () => {
 		readMaintenance.mockReset();
 	});
 
-	it("Sentryを先頭、server functionのCSRF検証をmaintenanceより前に登録する", async () => {
+	it("server functionのCSRF検証をmaintenanceより前に登録する", async () => {
 		const options = await startInstance.getOptions();
-		const [
-			registeredSentryMiddleware,
-			csrfMiddleware,
-			registeredMaintenanceMiddleware,
-		] = options.requestMiddleware ?? [];
+		const [csrfMiddleware, registeredMaintenanceMiddleware] =
+			options.requestMiddleware ?? [];
 
-		expect(registeredSentryMiddleware).toBe(sentryGlobalRequestMiddleware);
 		expect(csrfMiddleware).toBeDefined();
 		if (!csrfMiddleware) {
 			throw new Error("CSRF middlewareが登録されていません");

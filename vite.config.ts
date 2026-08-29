@@ -19,7 +19,15 @@ export default defineConfig({
 			authToken: process.env.SENTRY_AUTH_TOKEN,
 			silent: !process.env.CI,
 			reactComponentAnnotation: { enabled: true },
-			tunnelRoute: "/monitoring",
+			// CloudflareのWorkerではNode SDKのサーバークライアントを作らないため、
+			// トンネルのDSN検証をビルド時の公開DSNで固定する。
+			tunnelRoute: {
+				path: "/monitoring",
+				allowedDsns: [
+					"https://0cda4c09dab97bb05116614428effb0c@o4507906314207232.ingest.us.sentry.io/4508805630263296",
+				],
+			},
+			autoInstrumentMiddleware: false,
 		}),
 	],
 });
