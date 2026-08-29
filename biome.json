@@ -17,7 +17,6 @@
 			"!cst",
 			"!coverage",
 			"!.turbo",
-			"!.vercel",
 			"!.wrangler",
 			"!.cache",
 			"!dist",
