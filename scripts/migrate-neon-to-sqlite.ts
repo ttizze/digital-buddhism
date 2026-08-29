@@ -1,15 +1,13 @@
-import { access, mkdir, mkdtemp, readFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { type Client, createClient } from "@libsql/client";
-import { Pool } from "pg";
+import { Pool, types as postgresTypes } from "pg";
+import { openMigratedTursoDatabase } from "./turso-migrations";
 
-const BASELINE_PATH = join(
-	import.meta.dirname,
-	"../src/drizzle/turso/0000_turso_baseline.sql",
-);
 const BATCH_SIZE = 500;
+const TIMESTAMP_WITHOUT_TIME_ZONE_OID = 1114;
 
 /** 移送対象をアプリケーションの実テーブルだけに限定する。順序はFKを無効にして投入するため意味を持たない。 */
 export const APP_TABLE_NAMES = [
@@ -214,6 +212,21 @@ function parseJsonValue(value: unknown, kind: "json" | "array"): unknown {
 	}
 }
 
+function parsePostgresTimestampWithoutTimeZone(value: string): Date {
+	const timestamp = Date.parse(`${value.replace(" ", "T")}Z`);
+	if (!Number.isFinite(timestamp)) {
+		throw new Error("Invalid timestamp without time zone");
+	}
+	return new Date(timestamp);
+}
+
+export const NEON_SOURCE_TYPES = {
+	getTypeParser: (dataTypeId: number, format?: "text" | "binary") =>
+		dataTypeId === TIMESTAMP_WITHOUT_TIME_ZONE_OID && format !== "binary"
+			? parsePostgresTimestampWithoutTimeZone
+			: postgresTypes.getTypeParser(dataTypeId, format),
+};
+
 function normalizeTimestamp(value: unknown): number {
 	const timestamp =
 		value instanceof Date
@@ -222,7 +235,11 @@ function normalizeTimestamp(value: unknown): number {
 				? value
 				: /^\d+(\.\d+)?$/.test(String(value))
 					? Number(value)
-					: Date.parse(String(value));
+					: /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(
+								String(value),
+							)
+						? parsePostgresTimestampWithoutTimeZone(String(value)).getTime()
+						: Date.parse(String(value));
 	if (!Number.isFinite(timestamp)) throw new Error("Invalid timestamp");
 	return timestamp;
 }
@@ -367,13 +384,6 @@ export function buildTableMetadata(
 	});
 }
 
-async function applyBaseline(client: Client): Promise<void> {
-	const migration = await readFile(BASELINE_PATH, "utf8");
-	await client.executeMultiple(
-		migration.replaceAll("--> statement-breakpoint", "\n"),
-	);
-}
-
 async function createOutputDatabase(
 	outputPath?: string,
 ): Promise<{ client: Client; path: string }> {
@@ -394,14 +404,10 @@ async function createOutputDatabase(
 		}
 		await mkdir(dirname(path), { recursive: true });
 	}
-	const client = createClient({ url: pathToFileURL(path).toString() });
-	try {
-		await applyBaseline(client);
-		return { client, path };
-	} catch (error) {
-		client.close();
-		throw error;
-	}
+	const client = await openMigratedTursoDatabase(
+		pathToFileURL(path).toString(),
+	);
+	return { client, path };
 }
 
 function buildInsertStatement(
@@ -630,6 +636,7 @@ export async function migrateNeonToSqlite(
 		if (!source) {
 			pool = new Pool({
 				connectionString: getNeonConnectionString(options.env ?? process.env),
+				types: NEON_SOURCE_TYPES,
 			});
 			const client = await pool.connect();
 			source = {

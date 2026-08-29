@@ -6,6 +6,7 @@ import {
 	buildTableMetadata,
 	getNeonConnectionString,
 	migrateNeonToSqlite,
+	NEON_SOURCE_TYPES,
 	normalizeSourceValue,
 	validateTableNames,
 } from "./migrate-neon-to-sqlite";
@@ -18,6 +19,30 @@ describe("NeonからSQLiteへ移送する値の変換", () => {
 				new Date("2026-08-29T00:00:00.123Z"),
 			),
 		).toBe(1787961600123);
+	});
+
+	it("PostgreSQLのtimestamp without time zoneを実行TZによらずUTCとして変換する", () => {
+		const originalTimezone = process.env.TZ;
+		process.env.TZ = "Asia/Tokyo";
+		try {
+			const timestamp = NEON_SOURCE_TYPES.getTypeParser(
+				1114,
+				"text",
+			)("2026-08-29 00:00:00");
+			expect(timestamp.toISOString()).toBe("2026-08-29T00:00:00.000Z");
+			expect(
+				normalizeSourceValue(
+					{ dataType: "timestamp without time zone", udtName: "timestamp" },
+					timestamp,
+				),
+			).toBe(1787961600000);
+		} finally {
+			if (originalTimezone === undefined) {
+				delete process.env.TZ;
+			} else {
+				process.env.TZ = originalTimezone;
+			}
+		}
 	});
 
 	it("booleanをSQLiteの0または1へ変換する", () => {
@@ -447,6 +472,12 @@ describe("NeonからSQLiteへの小規模移送リハーサル", () => {
 				url: `file:${summary.generatedDatabasePath}`,
 			});
 			try {
+				const migrations = await resultClient.execute(
+					"SELECT hash, created_at FROM __drizzle_migrations ORDER BY created_at",
+				);
+				expect(migrations.rows).toHaveLength(1);
+				expect(String(migrations.rows[0]?.hash)).toMatch(/^[0-9a-f]{64}$/);
+				expect(Number(migrations.rows[0]?.created_at)).toBe(1787994304423);
 				const journalMode = await resultClient.execute("PRAGMA journal_mode");
 				expect(String(journalMode.rows[0]?.journal_mode).toLowerCase()).toBe(
 					"wal",
