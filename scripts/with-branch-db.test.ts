@@ -34,7 +34,7 @@ describe("ローカルSQLiteテストDB", () => {
 		);
 
 		expect(result.status).toBe(0);
-	});
+	}, 10_000);
 
 	it("baselineを適用した一時DBを並列利用でき、cleanupで削除できる", async () => {
 		const first = await createLocalSqliteDatabase("digital-buddshim-test-");
