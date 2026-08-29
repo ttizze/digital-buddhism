@@ -1,4 +1,4 @@
-import { Pool as NeonPool } from "@neondatabase/serverless";
+import { Pool as NeonPool, neonConfig } from "@neondatabase/serverless";
 import { CamelCasePlugin, Kysely, PostgresDialect } from "kysely";
 import { Pool as PgPool } from "pg";
 import type { DB } from "./types";
@@ -30,6 +30,9 @@ function createDb(): KyselyDbWithPool {
 			connectionTimeoutMillis: 30000,
 		});
 	} else {
+		// Cloudflare Workers cannot reuse a WebSocket connection across requests.
+		// Neon Pool's HTTP mode keeps each query scoped to its request instead.
+		neonConfig.poolQueryViaFetch = true;
 		pool = new NeonPool({ connectionString });
 	}
 

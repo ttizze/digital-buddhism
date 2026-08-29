@@ -30,6 +30,7 @@ export function makeDb(): DrizzleDbWithPool {
 	}
 
 	// Neon serverless 環境
+	neonConfig.poolQueryViaFetch = true;
 	neonConfig.webSocketConstructor = WebSocket;
 	return drizzleNeon(connectionString, { schema });
 }
