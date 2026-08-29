@@ -7,7 +7,6 @@ import {
 	queryPageNavigationData,
 	queryPageViewCount,
 } from "../_db/queries";
-import { preparePageMdast } from "./prepare-page-mdast";
 
 export async function loadPageContentData(
 	pageDetail: PageDetail,
@@ -19,21 +18,18 @@ export async function loadPageContentData(
 		navigationData,
 		childPages,
 		locales,
-		mdast,
+		description,
 	] = await Promise.all([
 		queryPageCounts(pageDetail.id),
 		queryPageViewCount(pageDetail.id),
 		queryPageNavigationData(pageDetail.id, locale, pageDetail.isTipitakaPage),
 		queryChildPagesTree(pageDetail.id, locale, pageDetail.isTipitakaPage),
 		queryCompletedTranslationLocales(pageDetail.id),
-		preparePageMdast(pageDetail.mdastJson),
+		mdastToText(pageDetail.mdastJson).then((text) => text.slice(0, 200)),
 	]);
 
-	const preparedPageDetail = { ...pageDetail, mdastJson: mdast };
-	const description = (await mdastToText(mdast)).slice(0, 200);
-
 	return {
-		pageDetail: preparedPageDetail,
+		pageDetail,
 		pageCounts,
 		pageViewCount,
 		navigationData,
