@@ -1,4 +1,3 @@
-import { PageLikeListClient } from "@/app/[locale]/(common-layout)/_components/page/page-like-button/like-list";
 import { PageList } from "@/app/[locale]/(common-layout)/_components/page/page-list";
 import { PaginationBar } from "@/app/[locale]/(common-layout)/_components/pagination-bar";
 import type { PageForList } from "@/app/[locale]/types";
@@ -26,9 +25,6 @@ export function UserPageList({
 
 	return (
 		<>
-			<PageLikeListClient
-				pageIds={pageForLists.map((pageForList) => pageForList.id)}
-			/>
 			<div>
 				{pageForLists.map((pageForList) => (
 					<PageList

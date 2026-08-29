@@ -22,8 +22,6 @@ export function PaginationBar({ totalPages, currentPage }: PaginationBarProps) {
 		page: parseAsString,
 		query: parseAsString,
 		category: parseAsString,
-		tagPage: parseAsString,
-		sort: parseAsString,
 		tab: parseAsString,
 		view: parseAsString,
 		annotations: parseAsString,

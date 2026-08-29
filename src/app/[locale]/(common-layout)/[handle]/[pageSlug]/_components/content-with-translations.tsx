@@ -1,6 +1,5 @@
 import { use } from "react";
 import { mdastToMarkdown } from "@/app/[locale]/_domain/mdast-to-markdown";
-import { PageTagList } from "@/app/[locale]/(common-layout)/_components/page/page-tag-list";
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
 import type { PageDetail } from "@/app/[locale]/types";
 import { extractTocItems } from "../_domain/extract-toc-items";
@@ -44,7 +43,6 @@ export function ContentWithTranslations({
 			<h1 className="mb-0! ">
 				<SegmentElement segment={titleSegment} />
 			</h1>
-			<PageTagList tag={pageDetail.tagPages.map((tagPage) => tagPage.tag)} />
 			<SubHeader
 				markdown={markdown}
 				pageDetail={pageDetail}

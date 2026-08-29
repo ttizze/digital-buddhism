@@ -1,7 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { EyeIcon } from "lucide-react";
-import { PageLikeButtonClient } from "@/app/[locale]/(common-layout)/_components/page/page-like-button/client";
-import { PageTagList } from "@/app/[locale]/(common-layout)/_components/page/page-tag-list";
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
 import type { PageForList } from "@/app/[locale]/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,13 +26,10 @@ export function PageList({ PageForList, index, locale }: PageListProps) {
 
 			{/* ───── 2) コンテンツ領域 ───── */}
 			{/**
-			 * コンテンツ領域は 3 行の Grid:
-			 *   row‑1: タイトル行
-			 *   row‑2: タグ行
-			 *   row‑3: フッター行（ユーザ & 日付 & ボタン）
+			 * コンテンツ領域はタイトルとフッターの2行。
 			 */}
-			<div className="grid grid-rows-[auto_auto_auto_auto] gap-1 min-w-0">
-				{/* ─ row‑1: タイトル & オーナーアクション ─ */}
+			<div className="grid gap-1 min-w-0">
+				{/* タイトル */}
 				<div className="grid grid-cols-[1fr_auto] gap-2">
 					<Link
 						className="block overflow-hidden"
@@ -55,10 +49,7 @@ export function PageList({ PageForList, index, locale }: PageListProps) {
 					</Link>
 				</div>
 
-				{/* ─ row-2: タグリスト ─ */}
-				<PageTagList tag={PageForList.tags} />
-
-				{/* ─ row-3: ユーザ情報 + ボタン ─ */}
+				{/* ユーザー情報 */}
 				<div className="flex items-center gap-2">
 					<Link
 						className="flex items-center gap-1 min-w-0"
@@ -78,16 +69,6 @@ export function PageList({ PageForList, index, locale }: PageListProps) {
 					<time className="text-xs text-muted-foreground whitespace-nowrap">
 						{PageForList.createdAt.toLocaleDateString(locale)}
 					</time>
-				</div>
-
-				{/* ③ アクション（いいね） */}
-				<div className="flex items-center justify-end gap-2">
-					<EyeIcon className="h-5 w-5" />
-					<span className="text-muted-foreground">{PageForList.viewCount}</span>
-					<PageLikeButtonClient
-						initialLikeCount={PageForList.likeCount}
-						pageId={PageForList.id}
-					/>
 				</div>
 			</div>
 		</article>

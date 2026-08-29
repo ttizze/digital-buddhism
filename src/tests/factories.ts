@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createId } from "@paralleldrive/cuid2";
 import type { Root as MdastRoot } from "mdast";
 import { db } from "@/db";
-import type { JsonValue, PageStatus, SegmentTypeKey } from "@/db/types";
+import type { JsonValue, PageStatus, SegmentTypeKey } from "@/drizzle/types";
 import { getSegmentTypeId } from "./db-helpers";
 
 /**
@@ -44,16 +44,9 @@ export async function createPage(data: {
 	publishedAt?: Date | null;
 	archivedAt?: Date | null;
 }) {
-	const content = await db
-		.insertInto("contents")
-		.values({ kind: "PAGE" })
-		.returningAll()
-		.executeTakeFirstOrThrow();
-
-	const page = await db
+	return db
 		.insertInto("pages")
 		.values({
-			id: content.id,
 			slug: data.slug,
 			userId: data.userId,
 			status: data.status ?? "PUBLIC",
@@ -65,14 +58,13 @@ export async function createPage(data: {
 		})
 		.returningAll()
 		.executeTakeFirstOrThrow();
-	return page;
 }
 
 /**
  * セグメントを作成
  */
 export async function createSegment(data: {
-	contentId: number;
+	pageId: number;
 	number: number;
 	text: string;
 	textAndOccurrenceHash: string;
@@ -83,7 +75,7 @@ export async function createSegment(data: {
 	const segment = await db
 		.insertInto("segments")
 		.values({
-			contentId: data.contentId,
+			contentId: data.pageId,
 			number: data.number,
 			text: data.text,
 			textAndOccurrenceHash: data.textAndOccurrenceHash,
@@ -98,7 +90,7 @@ export async function createSegment(data: {
  * 複数のセグメントを一括作成
  */
 export async function createSegments(data: {
-	contentId: number;
+	pageId: number;
 	segments: Array<{
 		number: number;
 		text: string;
@@ -119,7 +111,7 @@ export async function createSegments(data: {
 		.insertInto("segments")
 		.values(
 			data.segments.map((seg) => ({
-				contentId: data.contentId,
+				contentId: data.pageId,
 				number: seg.number,
 				text: seg.text,
 				textAndOccurrenceHash: seg.textAndOccurrenceHash,
@@ -154,7 +146,7 @@ export async function createPageWithSegments(data: {
 	});
 
 	await createSegments({
-		contentId: page.id,
+		pageId: page.id,
 		segments: data.segments,
 	});
 
@@ -177,61 +169,6 @@ export async function createSegmentAnnotationLink(data: {
 		.returningAll()
 		.executeTakeFirstOrThrow();
 	return link;
-}
-
-/**
- * ページとタグを一緒に作成
- */
-export async function createPageWithTags(data: {
-	userId: string;
-	slug: string;
-	status?: PageStatus;
-	mdastJson?: unknown;
-	sourceLocale?: string;
-	tagNames: string[];
-}) {
-	const page = await createPage({
-		userId: data.userId,
-		slug: data.slug,
-		status: data.status,
-		mdastJson: data.mdastJson,
-		sourceLocale: data.sourceLocale,
-	});
-
-	// タグを作成または取得
-	const tagResults = await Promise.all(
-		data.tagNames.map(async (name) => {
-			const existing = await db
-				.selectFrom("tags")
-				.selectAll()
-				.where("name", "=", name)
-				.executeTakeFirst();
-
-			if (existing) {
-				return existing;
-			}
-
-			const newTag = await db
-				.insertInto("tags")
-				.values({ name })
-				.returningAll()
-				.executeTakeFirstOrThrow();
-			return newTag;
-		}),
-	);
-
-	// タグとページをリンク
-	await db
-		.insertInto("tagPages")
-		.values(
-			tagResults.map((tag) => ({
-				tagId: tag.id,
-				pageId: page.id,
-			})),
-		)
-		.execute();
-
-	return page;
 }
 
 /**
@@ -262,16 +199,16 @@ export async function createPageWithAnnotations(data: {
 		})),
 	});
 
-	// 注釈コンテンツを作成
-	const annotationContent = await db
-		.insertInto("contents")
-		.values({ kind: "PAGE" })
-		.returningAll()
-		.executeTakeFirstOrThrow();
+	// 注釈も独立したページとして作成する
+	const annotationPage = await createPage({
+		userId: data.userId,
+		slug: `${data.mainPageSlug}-annotation`,
+		status: "PUBLIC",
+	});
 
 	// 注釈セグメントを作成
 	await createSegments({
-		contentId: annotationContent.id,
+		pageId: annotationPage.id,
 		segments: data.annotationSegments.map((seg) => ({
 			...seg,
 			segmentTypeKey: "COMMENTARY" as SegmentTypeKey,
@@ -292,7 +229,7 @@ export async function createPageWithAnnotations(data: {
 		const annSegment = await db
 			.selectFrom("segments")
 			.selectAll()
-			.where("contentId", "=", annotationContent.id)
+			.where("contentId", "=", annotationPage.id)
 			.where("number", "=", annotationSegment.number)
 			.executeTakeFirst();
 
@@ -306,7 +243,7 @@ export async function createPageWithAnnotations(data: {
 
 	return {
 		mainPage,
-		annotationContent,
+		annotationPage,
 	};
 }
 

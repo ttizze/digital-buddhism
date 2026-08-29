@@ -5,7 +5,7 @@ import type { TransactionClient } from "@/app/[locale]/_service/sync-segments";
  */
 export async function fetchPrimarySegmentsWithParagraphNumbers(
 	tx: TransactionClient,
-	anchorContentId: number,
+	anchorPageId: number,
 ): Promise<
 	Array<{
 		id: number;
@@ -18,7 +18,7 @@ export async function fetchPrimarySegmentsWithParagraphNumbers(
 		.selectFrom("segments")
 		.innerJoin("segmentTypes", "segmentTypes.id", "segments.segmentTypeId")
 		.select(["segments.id", "segments.number"])
-		.where("segments.contentId", "=", anchorContentId)
+		.where("segments.contentId", "=", anchorPageId)
 		.where("segmentTypes.key", "=", "PRIMARY")
 		.orderBy("segments.number")
 		.execute();
@@ -69,7 +69,7 @@ export async function fetchPrimarySegmentsWithParagraphNumbers(
  */
 export async function fetchLastSegmentBeforeFirstParagraphId(
 	tx: TransactionClient,
-	anchorContentId: number,
+	anchorPageId: number,
 ): Promise<number | null> {
 	const paragraphNumberType = await tx
 		.selectFrom("segmentMetadataTypes")
@@ -86,7 +86,7 @@ export async function fetchLastSegmentBeforeFirstParagraphId(
 		.innerJoin("segmentTypes", "segmentTypes.id", "segments.segmentTypeId")
 		.innerJoin("segmentMetadata", "segmentMetadata.segmentId", "segments.id")
 		.select(["segments.id", "segments.number"])
-		.where("segments.contentId", "=", anchorContentId)
+		.where("segments.contentId", "=", anchorPageId)
 		.where("segmentTypes.key", "=", "PRIMARY")
 		.where("segmentMetadata.metadataTypeId", "=", paragraphNumberType.id)
 		.orderBy("segments.number")
@@ -100,7 +100,7 @@ export async function fetchLastSegmentBeforeFirstParagraphId(
 		.selectFrom("segments")
 		.innerJoin("segmentTypes", "segmentTypes.id", "segments.segmentTypeId")
 		.select("segments.id")
-		.where("segments.contentId", "=", anchorContentId)
+		.where("segments.contentId", "=", anchorPageId)
 		.where("segmentTypes.key", "=", "PRIMARY")
 		.where("segments.number", "<", firstParagraph.number)
 		.orderBy("segments.number", "desc")

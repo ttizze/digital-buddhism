@@ -9,7 +9,6 @@ const searchSchema = z.object({
 	category: z.enum(CATEGORIES).catch("title").default("title"),
 	page: z.coerce.number().int().positive().catch(1).default(1),
 	query: z.string().catch("").default(""),
-	tagPage: z.enum(["true", "false"]).catch("false").default("false"),
 });
 
 export const Route = createFileRoute("/$locale/_common/search")({

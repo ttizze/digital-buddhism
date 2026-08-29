@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { markdownToMdastWithSegments } from "@/app/[locale]/_domain/markdown-to-mdast-with-segments";
 import { db } from "@/db";
-import type { PageStatus } from "@/db/types";
+import type { PageStatus } from "@/drizzle/types";
 import { upsertPageAndSegments } from "../../application/upsert-page-and-segments";
 import { ROOT_SLUG, ROOT_TITLE } from "../../utils/constants";
 
@@ -26,7 +26,7 @@ export async function ensureRootPage(userId: string): Promise<number> {
 		segmentTypeId: null,
 		parentId: null,
 		order: 0,
-		anchorContentId: null,
+		anchorPageId: null,
 		status: "PUBLIC" as PageStatus,
 	});
 

@@ -28,10 +28,8 @@ import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as LocaleCommonIndexRouteImport } from './routes/$locale._common.index'
 import { Route as LocaleCommonHandleRouteImport } from './routes/$locale._common.$handle'
 import { Route as LocaleCommonAboutRouteImport } from './routes/$locale._common.about'
-import { Route as LocaleCommonNewPagesRouteImport } from './routes/$locale._common.new-pages'
 import { Route as LocaleCommonSearchRouteImport } from './routes/$locale._common.search'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as ApiPageLikesStateRouteImport } from './routes/api/page-likes/state'
 import { Route as ApiSyncCliLoginRouteImport } from './routes/api/sync/cli-login'
 import { Route as ApiSyncPullRouteImport } from './routes/api/sync/pull'
 import { Route as ApiSyncPushRouteImport } from './routes/api/sync/push'
@@ -40,8 +38,6 @@ import { Route as SitemapSitemapChar123idChar125DotxmlRouteImport } from './rout
 import { Route as LocaleCommonHandleEditRouteImport } from './routes/$locale._common.$handle.edit'
 import { Route as LocaleCommonHandlePageSlugRouteImport } from './routes/$locale._common.$handle_.$pageSlug'
 import { Route as LocaleCommonAuthLoginRouteImport } from './routes/$locale._common.auth.login'
-import { Route as LocaleCommonTagTagNameRouteImport } from './routes/$locale._common.tag.$tagName'
-import { Route as ApiPageViewsPageIdIncrementRouteImport } from './routes/api/page-views/$pageId/increment'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -137,11 +133,6 @@ const LocaleCommonAboutRoute = LocaleCommonAboutRouteImport.update({
   path: '/about',
   getParentRoute: () => LocaleCommonRoute,
 } as any)
-const LocaleCommonNewPagesRoute = LocaleCommonNewPagesRouteImport.update({
-  id: '/new-pages',
-  path: '/new-pages',
-  getParentRoute: () => LocaleCommonRoute,
-} as any)
 const LocaleCommonSearchRoute = LocaleCommonSearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -150,11 +141,6 @@ const LocaleCommonSearchRoute = LocaleCommonSearchRouteImport.update({
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPageLikesStateRoute = ApiPageLikesStateRouteImport.update({
-  id: '/api/page-likes/state',
-  path: '/api/page-likes/state',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSyncCliLoginRoute = ApiSyncCliLoginRouteImport.update({
@@ -199,17 +185,6 @@ const LocaleCommonAuthLoginRoute = LocaleCommonAuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => LocaleCommonRoute,
 } as any)
-const LocaleCommonTagTagNameRoute = LocaleCommonTagTagNameRouteImport.update({
-  id: '/tag/$tagName',
-  path: '/tag/$tagName',
-  getParentRoute: () => LocaleCommonRoute,
-} as any)
-const ApiPageViewsPageIdIncrementRoute =
-  ApiPageViewsPageIdIncrementRouteImport.update({
-    id: '/api/page-views/$pageId/increment',
-    path: '/api/page-views/$pageId/increment',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -229,10 +204,8 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/$locale/$handle': typeof LocaleCommonHandleRouteWithChildren
   '/$locale/about': typeof LocaleCommonAboutRoute
-  '/$locale/new-pages': typeof LocaleCommonNewPagesRoute
   '/$locale/search': typeof LocaleCommonSearchRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/page-likes/state': typeof ApiPageLikesStateRoute
   '/api/sync/cli-login': typeof ApiSyncCliLoginRoute
   '/api/sync/pull': typeof ApiSyncPullRoute
   '/api/sync/push': typeof ApiSyncPushRoute
@@ -242,8 +215,6 @@ export interface FileRoutesByFullPath {
   '/$locale/$handle/edit': typeof LocaleCommonHandleEditRoute
   '/$locale/$handle/$pageSlug': typeof LocaleCommonHandlePageSlugRoute
   '/$locale/auth/login': typeof LocaleCommonAuthLoginRoute
-  '/$locale/tag/$tagName': typeof LocaleCommonTagTagNameRoute
-  '/api/page-views/$pageId/increment': typeof ApiPageViewsPageIdIncrementRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -263,10 +234,8 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/$locale/$handle': typeof LocaleCommonHandleRouteWithChildren
   '/$locale/about': typeof LocaleCommonAboutRoute
-  '/$locale/new-pages': typeof LocaleCommonNewPagesRoute
   '/$locale/search': typeof LocaleCommonSearchRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/page-likes/state': typeof ApiPageLikesStateRoute
   '/api/sync/cli-login': typeof ApiSyncCliLoginRoute
   '/api/sync/pull': typeof ApiSyncPullRoute
   '/api/sync/push': typeof ApiSyncPushRoute
@@ -275,8 +244,6 @@ export interface FileRoutesByTo {
   '/$locale/$handle/edit': typeof LocaleCommonHandleEditRoute
   '/$locale/$handle/$pageSlug': typeof LocaleCommonHandlePageSlugRoute
   '/$locale/auth/login': typeof LocaleCommonAuthLoginRoute
-  '/$locale/tag/$tagName': typeof LocaleCommonTagTagNameRoute
-  '/api/page-views/$pageId/increment': typeof ApiPageViewsPageIdIncrementRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -298,10 +265,8 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/$locale/_common/$handle': typeof LocaleCommonHandleRouteWithChildren
   '/$locale/_common/about': typeof LocaleCommonAboutRoute
-  '/$locale/_common/new-pages': typeof LocaleCommonNewPagesRoute
   '/$locale/_common/search': typeof LocaleCommonSearchRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/page-likes/state': typeof ApiPageLikesStateRoute
   '/api/sync/cli-login': typeof ApiSyncCliLoginRoute
   '/api/sync/pull': typeof ApiSyncPullRoute
   '/api/sync/push': typeof ApiSyncPushRoute
@@ -311,8 +276,6 @@ export interface FileRoutesById {
   '/$locale/_common/$handle/edit': typeof LocaleCommonHandleEditRoute
   '/$locale/_common/$handle_/$pageSlug': typeof LocaleCommonHandlePageSlugRoute
   '/$locale/_common/auth/login': typeof LocaleCommonAuthLoginRoute
-  '/$locale/_common/tag/$tagName': typeof LocaleCommonTagTagNameRoute
-  '/api/page-views/$pageId/increment': typeof ApiPageViewsPageIdIncrementRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -334,10 +297,8 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/$locale/$handle'
     | '/$locale/about'
-    | '/$locale/new-pages'
     | '/$locale/search'
     | '/api/auth/$'
-    | '/api/page-likes/state'
     | '/api/sync/cli-login'
     | '/api/sync/pull'
     | '/api/sync/push'
@@ -347,8 +308,6 @@ export interface FileRouteTypes {
     | '/$locale/$handle/edit'
     | '/$locale/$handle/$pageSlug'
     | '/$locale/auth/login'
-    | '/$locale/tag/$tagName'
-    | '/api/page-views/$pageId/increment'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -368,10 +327,8 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/$locale/$handle'
     | '/$locale/about'
-    | '/$locale/new-pages'
     | '/$locale/search'
     | '/api/auth/$'
-    | '/api/page-likes/state'
     | '/api/sync/cli-login'
     | '/api/sync/pull'
     | '/api/sync/push'
@@ -380,8 +337,6 @@ export interface FileRouteTypes {
     | '/$locale/$handle/edit'
     | '/$locale/$handle/$pageSlug'
     | '/$locale/auth/login'
-    | '/$locale/tag/$tagName'
-    | '/api/page-views/$pageId/increment'
   id:
     | '__root__'
     | '/'
@@ -402,10 +357,8 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/$locale/_common/$handle'
     | '/$locale/_common/about'
-    | '/$locale/_common/new-pages'
     | '/$locale/_common/search'
     | '/api/auth/$'
-    | '/api/page-likes/state'
     | '/api/sync/cli-login'
     | '/api/sync/pull'
     | '/api/sync/push'
@@ -415,8 +368,6 @@ export interface FileRouteTypes {
     | '/$locale/_common/$handle/edit'
     | '/$locale/_common/$handle_/$pageSlug'
     | '/$locale/_common/auth/login'
-    | '/$locale/_common/tag/$tagName'
-    | '/api/page-views/$pageId/increment'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -433,12 +384,10 @@ export interface RootRouteChildren {
   ApiTranslationJobsRoute: typeof ApiTranslationJobsRoute
   AuthLoginRoute: typeof AuthLoginRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiPageLikesStateRoute: typeof ApiPageLikesStateRoute
   ApiSyncCliLoginRoute: typeof ApiSyncCliLoginRoute
   ApiSyncPullRoute: typeof ApiSyncPullRoute
   ApiSyncPushRoute: typeof ApiSyncPushRoute
   SitemapSitemapChar123idChar125DotxmlRoute: typeof SitemapSitemapChar123idChar125DotxmlRoute
-  ApiPageViewsPageIdIncrementRoute: typeof ApiPageViewsPageIdIncrementRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -576,13 +525,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocaleCommonAboutRouteImport
       parentRoute: typeof LocaleCommonRoute
     }
-    '/$locale/_common/new-pages': {
-      id: '/$locale/_common/new-pages'
-      path: '/new-pages'
-      fullPath: '/$locale/new-pages'
-      preLoaderRoute: typeof LocaleCommonNewPagesRouteImport
-      parentRoute: typeof LocaleCommonRoute
-    }
     '/$locale/_common/search': {
       id: '/$locale/_common/search'
       path: '/search'
@@ -595,13 +537,6 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/page-likes/state': {
-      id: '/api/page-likes/state'
-      path: '/api/page-likes/state'
-      fullPath: '/api/page-likes/state'
-      preLoaderRoute: typeof ApiPageLikesStateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/sync/cli-login': {
@@ -660,20 +595,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocaleCommonAuthLoginRouteImport
       parentRoute: typeof LocaleCommonRoute
     }
-    '/$locale/_common/tag/$tagName': {
-      id: '/$locale/_common/tag/$tagName'
-      path: '/tag/$tagName'
-      fullPath: '/$locale/tag/$tagName'
-      preLoaderRoute: typeof LocaleCommonTagTagNameRouteImport
-      parentRoute: typeof LocaleCommonRoute
-    }
-    '/api/page-views/$pageId/increment': {
-      id: '/api/page-views/$pageId/increment'
-      path: '/api/page-views/$pageId/increment'
-      fullPath: '/api/page-views/$pageId/increment'
-      preLoaderRoute: typeof ApiPageViewsPageIdIncrementRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -691,23 +612,19 @@ const LocaleCommonHandleRouteWithChildren =
 interface LocaleCommonRouteChildren {
   LocaleCommonHandleRoute: typeof LocaleCommonHandleRouteWithChildren
   LocaleCommonAboutRoute: typeof LocaleCommonAboutRoute
-  LocaleCommonNewPagesRoute: typeof LocaleCommonNewPagesRoute
   LocaleCommonSearchRoute: typeof LocaleCommonSearchRoute
   LocaleCommonIndexRoute: typeof LocaleCommonIndexRoute
   LocaleCommonHandlePageSlugRoute: typeof LocaleCommonHandlePageSlugRoute
   LocaleCommonAuthLoginRoute: typeof LocaleCommonAuthLoginRoute
-  LocaleCommonTagTagNameRoute: typeof LocaleCommonTagTagNameRoute
 }
 
 const LocaleCommonRouteChildren: LocaleCommonRouteChildren = {
   LocaleCommonHandleRoute: LocaleCommonHandleRouteWithChildren,
   LocaleCommonAboutRoute: LocaleCommonAboutRoute,
-  LocaleCommonNewPagesRoute: LocaleCommonNewPagesRoute,
   LocaleCommonSearchRoute: LocaleCommonSearchRoute,
   LocaleCommonIndexRoute: LocaleCommonIndexRoute,
   LocaleCommonHandlePageSlugRoute: LocaleCommonHandlePageSlugRoute,
   LocaleCommonAuthLoginRoute: LocaleCommonAuthLoginRoute,
-  LocaleCommonTagTagNameRoute: LocaleCommonTagTagNameRoute,
 }
 
 const LocaleCommonRouteWithChildren = LocaleCommonRoute._addFileChildren(
@@ -757,13 +674,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTranslationJobsRoute: ApiTranslationJobsRoute,
   AuthLoginRoute: AuthLoginRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiPageLikesStateRoute: ApiPageLikesStateRoute,
   ApiSyncCliLoginRoute: ApiSyncCliLoginRoute,
   ApiSyncPullRoute: ApiSyncPullRoute,
   ApiSyncPushRoute: ApiSyncPushRoute,
   SitemapSitemapChar123idChar125DotxmlRoute:
     SitemapSitemapChar123idChar125DotxmlRoute,
-  ApiPageViewsPageIdIncrementRoute: ApiPageViewsPageIdIncrementRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

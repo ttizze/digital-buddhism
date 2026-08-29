@@ -41,15 +41,3 @@ export async function fetchPageIdBySlug(slug: string) {
 		.executeTakeFirst();
 	return result ?? null;
 }
-
-/**
- * ページの閲覧数を取得
- */
-export async function fetchPageViewCount(pageId: number): Promise<number> {
-	const result = await db
-		.selectFrom("pageViews")
-		.select("count")
-		.where("pageId", "=", pageId)
-		.executeTakeFirst();
-	return result?.count ?? 0;
-}

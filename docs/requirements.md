@@ -36,23 +36,11 @@
 - セグメントに注釈セグメントを紐づける
 - 注釈も翻訳対象（セグメント翻訳として扱う）
 
-### コメント
-- ページコメントを投稿できる
-- コメントはスレッド構造（親子）を持つ
-- コメントは論理削除（`isDeleted`）
-- 返信数・最終返信日時を保持する
-- コメント本文もセグメントとして翻訳対象
+### 通知
+- ページセグメント翻訳への投票をページ所有者へ通知する
 
-### いいね/フォロー/通知
-- ページにいいねを付けられる
-- ユーザーをフォローできる
-- 通知タイプ: follow / page comment / page like /
-  page segment translation vote / page comment segment translation vote
-
-### 検索/タグ
-- タイトル/本文/タグ/ユーザーで検索できる
-- ページはタグ付け可能（多対多）
-- タグページからページ一覧を取得できる
+### 検索
+- タイトル/本文/ユーザーで検索できる
 
 ### AI 翻訳/ジョブ
 - 翻訳ジョブを作成し、進捗とステータスを管理する
@@ -82,28 +70,21 @@
 - 返金・チャージバックの一次対応は Polar の標準フローに従う
 
 ## 画面・ルート（代表）
-- `/[locale]`: ホーム（新着/人気/タグ別）
-- `/[locale]/new-pages`: 新着ページ一覧
-- `/[locale]/search`: 検索（title/content/tags/user）
-- `/[locale]/tag/[tagName]`: タグ別一覧
-- `/[locale]/user/[handle]`: ユーザーページ
-- `/[locale]/user/[handle]/page/[pageSlug]`: ページ詳細（公開のみ）
-- `/[locale]/user/[handle]/page/[pageSlug]/preview`: プレビュー
-- `/[locale]/user/[handle]/page-management`: ページ管理
-- `/[locale]/user/[handle]/page/[pageSlug]/edit`: 編集
+- `/[locale]`: ティピタカの階層一覧
+- `/[locale]/search`: 検索（title/content/user）
+- `/[locale]/[handle]`: ユーザーページ
+- `/[locale]/[handle]/[pageSlug]`: ページ詳細
+- `/[locale]/[handle]/[pageSlug]/preview`: プレビュー
+- `/[locale]/[handle]/page-management`: ページ管理
 - `/[locale]/auth/login`: ログイン
 - `/[locale]/terms` / `/[locale]/privacy` / `/[locale]/maintenance`
 
 ## 並び順/ランキング（現行）
-- 新着ページ: `createdAt` 降順
-- 人気ページ: いいね数降順 → `createdAt` 降順
-- タグの人気ページ: いいね数降順
 - 翻訳一覧:
   1) ページオーナーの upvote がある翻訳を最上位
   2) `point` 降順
   3) `createdAt` 降順
 - 最良翻訳の選定: ページオーナー upvote → `point` 降順 → `createdAt` 降順（DISTINCT ON）
-- コメント一覧: `createdAt` 昇順
 
 ## 権限/アクセス
 - 編集/管理はページ所有者のみ
@@ -120,10 +101,8 @@
 - OG 画像生成 API を持つ
 
 ## データ整合性（要点）
-- ページ/コメントは contents と 1:1 で紐づく
-- ページとタグは多対多（`tag_pages`）
+- ページは独立した主キーを持ち、セグメントはそのページへ直接紐づく
 - 翻訳投票は翻訳ID + ユーザーIDで一意
-- フォローは follower + following で一意
 
 ## 必須条件（実装前提）
 - **静的生成を最優先**: ルート全体を dynamic にしない

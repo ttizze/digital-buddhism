@@ -242,33 +242,6 @@ export async function queryChildPagesTree(
 	return buildTitleTree(rows, parentId);
 }
 
-/** 最新値が必要なページのいいね数を取得 */
-export async function queryPageCounts(pageId: number) {
-	const result = await db
-		.selectFrom("pages")
-		.select((eb) => [
-			eb
-				.selectFrom("likePages")
-				.select(eb.fn.countAll<number>().as("count"))
-				.whereRef("likePages.pageId", "=", "pages.id")
-				.as("likeCount"),
-		])
-		.where("pages.id", "=", pageId)
-		.executeTakeFirst();
-
-	return { likeCount: result?.likeCount ?? 0 };
-}
-
-/** ページの閲覧数を取得 */
-export async function queryPageViewCount(pageId: number): Promise<number> {
-	const result = await db
-		.selectFrom("pageViews")
-		.select("count")
-		.where("pageId", "=", pageId)
-		.executeTakeFirst();
-	return result?.count ?? 0;
-}
-
 /** 完了済み翻訳ジョブのlocaleを取得 */
 export async function queryCompletedTranslationLocales(
 	pageId: number,

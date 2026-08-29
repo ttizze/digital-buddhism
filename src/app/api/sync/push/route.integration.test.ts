@@ -3,7 +3,7 @@ import { markdownToMdastWithSegments } from "@/app/[locale]/_domain/markdown-to-
 import { mdastToMarkdown } from "@/app/[locale]/_domain/mdast-to-markdown";
 import { computeRevision } from "@/app/api/sync/_domain/compute-revision";
 import { db } from "@/db";
-import type { JsonValue } from "@/db/types";
+import type { JsonValue } from "@/drizzle/types";
 import { resetDatabase } from "@/tests/db-helpers";
 import {
 	createPage,
@@ -255,7 +255,7 @@ describe("Push API (service layer)", () => {
 		});
 		expect(page.mdastJson).toBe(legacyBody);
 		await createSegments({
-			contentId: page.id,
+			pageId: page.id,
 			segments: [
 				{
 					number: 0,

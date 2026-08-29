@@ -3,25 +3,14 @@ import type { PageDetail } from "@/app/[locale]/types";
 import {
 	queryChildPagesTree,
 	queryCompletedTranslationLocales,
-	queryPageCounts,
 	queryPageNavigationData,
-	queryPageViewCount,
 } from "../_db/queries";
 
 export async function loadPageContentData(
 	pageDetail: PageDetail,
 	locale: string,
 ) {
-	const [
-		pageCounts,
-		pageViewCount,
-		navigationData,
-		childPages,
-		locales,
-		description,
-	] = await Promise.all([
-		queryPageCounts(pageDetail.id),
-		queryPageViewCount(pageDetail.id),
+	const [navigationData, childPages, locales, description] = await Promise.all([
 		queryPageNavigationData(pageDetail.id, locale, pageDetail.isTipitakaPage),
 		queryChildPagesTree(pageDetail.id, locale, pageDetail.isTipitakaPage),
 		queryCompletedTranslationLocales(pageDetail.id),
@@ -30,8 +19,6 @@ export async function loadPageContentData(
 
 	return {
 		pageDetail,
-		pageCounts,
-		pageViewCount,
 		navigationData,
 		childPages,
 		completedTranslationLocales: locales,

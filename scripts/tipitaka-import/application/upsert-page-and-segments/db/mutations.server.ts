@@ -1,10 +1,9 @@
 import type { TransactionClient } from "@/app/[locale]/_service/sync-segments";
-import type { JsonValue, PageStatus } from "@/db/types";
+import type { JsonValue, PageStatus } from "@/drizzle/types";
 
 /**
- * ページをupsertする（DB操作のみ）
- * Kysely版に移行済み
- * 既存の場合は1回のクエリで更新、新規の場合はcontents作成後にpagesをINSERT
+ * Kysely版に移行済み。
+ * 既存なら更新し、新規ならpagesへ直接INSERTする。
  */
 export async function upsertPage(
 	tx: TransactionClient,
@@ -62,17 +61,9 @@ export async function upsertPage(
 		return updated;
 	}
 
-	// 新規作成: contentsを先に作成してからpagesをINSERT
-	const content = await tx
-		.insertInto("contents")
-		.values({ kind: "PAGE" })
-		.returning(["id"])
-		.executeTakeFirstOrThrow();
-
 	const page = await tx
 		.insertInto("pages")
 		.values({
-			id: content.id,
 			slug: p.pageSlug,
 			userId: p.userId,
 			mdastJson: p.mdastJson,

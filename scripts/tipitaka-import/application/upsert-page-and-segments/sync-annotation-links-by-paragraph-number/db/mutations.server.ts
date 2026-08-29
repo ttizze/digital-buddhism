@@ -1,12 +1,9 @@
 import type { TransactionClient } from "@/app/[locale]/_service/sync-segments";
 
-/**
- * アノテーションコンテンツ配下のリンクを全削除する
- * Kysely版に移行済み
- */
-export async function deleteAnnotationLinksByContentId(
+/** 注釈ページ配下のリンクを全削除する。 */
+export async function deleteAnnotationLinksByPageId(
 	tx: TransactionClient,
-	annotationContentId: number,
+	annotationPageId: number,
 ): Promise<void> {
 	await tx
 		.deleteFrom("segmentAnnotationLinks")
@@ -16,7 +13,7 @@ export async function deleteAnnotationLinksByContentId(
 			tx
 				.selectFrom("segments")
 				.select("id")
-				.where("contentId", "=", annotationContentId),
+				.where("contentId", "=", annotationPageId),
 		)
 		.execute();
 }

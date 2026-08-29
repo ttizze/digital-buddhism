@@ -1,4 +1,4 @@
-import type { PageStatus } from "@/db/types";
+import type { PageStatus } from "@/drizzle/types";
 import type { buildJudgments } from "./build-judgments";
 import { upsertPageForSync } from "./db/mutations";
 

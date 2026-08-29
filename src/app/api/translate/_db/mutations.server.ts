@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import type { TranslationStatus } from "@/db/types";
+import type { TranslationStatus } from "@/drizzle/types";
 
 // Convenience helpers to avoid scattering raw status writes around the codebase
 export async function markJobInProgress(translationJobId: number) {

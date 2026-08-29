@@ -12,7 +12,7 @@ describe("fetchNotificationRowsWithRelations", () => {
 		await resetDatabase();
 	});
 
-	it("フォロー、ページいいね、ページ翻訳投票をページ情報付きで返す", async () => {
+	it("ページ翻訳投票をページ情報付きで返す", async () => {
 		const recipient = await createUser({ handle: "notification-recipient" });
 		const actor = await createUser({
 			handle: "notification-actor",
@@ -56,52 +56,27 @@ describe("fetchNotificationRowsWithRelations", () => {
 
 		await db
 			.insertInto("notifications")
-			.values([
-				{
-					userId: recipient.id,
-					actorId: actor.id,
-					type: "FOLLOW",
-				},
-				{
-					userId: recipient.id,
-					actorId: actor.id,
-					type: "PAGE_LIKE",
-					pageId: page.id,
-				},
-				{
-					userId: recipient.id,
-					actorId: actor.id,
-					type: "PAGE_SEGMENT_TRANSLATION_VOTE",
-					segmentTranslationId: translation.id,
-				},
-			])
+			.values({
+				userId: recipient.id,
+				actorId: actor.id,
+				segmentTranslationId: translation.id,
+			})
 			.execute();
 
 		const notifications = await fetchNotificationRowsWithRelations(
 			recipient.handle,
 		);
 
-		expect(notifications).toHaveLength(3);
-		expect(notifications).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					type: "FOLLOW",
-					actorId: actor.id,
-					actorHandle: "notification-actor",
-				}),
-				expect.objectContaining({
-					type: "PAGE_LIKE",
-					pageSlug: "notification-page",
-					pageOwnerHandle: "notification-recipient",
-					pageTitle: "Notification Page",
-				}),
-				expect.objectContaining({
-					type: "PAGE_SEGMENT_TRANSLATION_VOTE",
-					segmentTranslationText: "翻訳された通知セグメント",
-					pageSlug: "notification-page",
-					pageTitle: "Notification Page",
-				}),
-			]),
+		expect(notifications).toHaveLength(1);
+		expect(notifications[0]).toEqual(
+			expect.objectContaining({
+				actorId: actor.id,
+				actorHandle: "notification-actor",
+				segmentTranslationText: "翻訳された通知セグメント",
+				pageSlug: "notification-page",
+				pageOwnerHandle: "notification-recipient",
+				pageTitle: "Notification Page",
+			}),
 		);
 	});
 });

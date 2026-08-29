@@ -47,7 +47,7 @@ function TipitakaTreeList({
 							interactive={false}
 							segment={{
 								id: node.titleSegmentId,
-								contentId: node.id,
+								pageId: node.id,
 								number: 0,
 								text: node.titleText,
 								translationText: node.titleTranslationText,

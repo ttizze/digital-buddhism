@@ -1,15 +1,9 @@
 import { db } from "@/db";
 
 /**
- * 本文にリンクされた注釈のうち、別コンテンツに属するもののコンテンツID一覧を取得
- *
- * - Page と Content は 1:1 で ID が同じなので、mainSegment.contentId = pageId で本文を特定
- * - 本文と同じ contentId の注釈は本文ジョブで翻訳されるため除外し、別コンテンツのみ返す
- * - 注釈が別コンテンツになるケース: ティピタカ系では注釈自体が単体で読まれる構造がある
- *
- * Kysely版に移行済み
+ * 本文ページにリンクされた別ページの注釈ページIDを返す。
  */
-export async function fetchAnnotationContentIdsForPage(
+export async function fetchAnnotationPageIdsForPage(
 	pageId: number,
 ): Promise<number[]> {
 	const result = await db
@@ -24,13 +18,11 @@ export async function fetchAnnotationContentIdsForPage(
 			"segmentAnnotationLinks.annotationSegmentId",
 			"annotationSegment.id",
 		)
-		.innerJoin("contents", "annotationSegment.contentId", "contents.id")
-		.select("annotationSegment.contentId")
+		.select("annotationSegment.contentId as pageId")
 		.distinct()
 		.where("mainSegment.contentId", "=", pageId)
 		.where("annotationSegment.contentId", "!=", pageId)
-		.where("contents.kind", "=", "PAGE")
 		.execute();
 
-	return result.map((row) => row.contentId);
+	return result.map((row) => row.pageId);
 }

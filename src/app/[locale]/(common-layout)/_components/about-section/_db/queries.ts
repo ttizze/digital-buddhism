@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import type { PageStatus } from "@/db/types";
+import type { PageStatus } from "@/drizzle/types";
 
 const LANGUAGE_COUNT = 18;
 

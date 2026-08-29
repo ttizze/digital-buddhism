@@ -1,6 +1,6 @@
 import { syncSegments } from "@/app/[locale]/_service/sync-segments";
 import { db } from "@/db";
-import type { JsonValue, PageStatus } from "@/db/types";
+import type { JsonValue, PageStatus } from "@/drizzle/types";
 
 export async function upsertPageForSync(params: {
 	userId: string;
@@ -27,16 +27,9 @@ export async function upsertPageForSync(params: {
 			return { created: false };
 		}
 
-		const content = await tx
-			.insertInto("contents")
-			.values({ kind: "PAGE" })
-			.returning(["id"])
-			.executeTakeFirstOrThrow();
-
-		await tx
+		const page = await tx
 			.insertInto("pages")
 			.values({
-				id: content.id,
 				slug: params.slug,
 				userId: params.userId,
 				mdastJson: params.mdastJson,
@@ -44,9 +37,10 @@ export async function upsertPageForSync(params: {
 				status: params.status,
 				publishedAt: params.publishedAt,
 			})
-			.execute();
+			.returning("id")
+			.executeTakeFirstOrThrow();
 
-		await syncSegments(tx, content.id, params.segments, null);
+		await syncSegments(tx, page.id, params.segments, null);
 		return { created: true };
 	});
 }

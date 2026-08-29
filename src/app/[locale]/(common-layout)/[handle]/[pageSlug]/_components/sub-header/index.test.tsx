@@ -20,7 +20,7 @@ describe("SubHeader", () => {
 			level: 1,
 			segment: {
 				id: 1,
-				contentId: 1,
+				pageId: 1,
 				number: 1,
 				text: "Heading 1",
 				translationText: null,

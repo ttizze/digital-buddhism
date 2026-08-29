@@ -3,7 +3,7 @@ import {
 	TIPITAKA_SYSTEM_USER_HANDLE,
 } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { db } from "@/db";
-import type { PageStatus, TranslationStatus } from "@/db/types";
+import type { PageStatus, TranslationStatus } from "@/drizzle/types";
 
 export type PageWithUserAndTranslation = Awaited<
 	ReturnType<typeof fetchPagesWithUserAndTranslationChunk>
@@ -14,7 +14,6 @@ function buildPublicSitemapPagesQuery() {
 		.withRecursive("tipitakaPages", (qb) =>
 			qb
 				.selectFrom("pages")
-				.innerJoin("contents", "contents.id", "pages.id")
 				.innerJoin("users", "users.id", "pages.userId")
 				.select([
 					"pages.id",
@@ -24,20 +23,17 @@ function buildPublicSitemapPagesQuery() {
 				])
 				.where("pages.slug", "=", TIPITAKA_ROOT_SLUG)
 				.where("pages.parentId", "is", null)
-				.where("contents.kind", "=", "PAGE")
 				.where("users.handle", "=", TIPITAKA_SYSTEM_USER_HANDLE)
 				.unionAll(
 					qb
 						.selectFrom("pages")
-						.innerJoin("contents", "contents.id", "pages.id")
 						.innerJoin("tipitakaPages", "pages.parentId", "tipitakaPages.id")
 						.select([
 							"pages.id",
 							"pages.parentId",
 							"pages.publishedAt",
 							"pages.status",
-						])
-						.where("contents.kind", "=", "PAGE"),
+						]),
 				),
 		)
 		.withRecursive("publicTipitakaPages", (qb) =>
@@ -154,20 +150,4 @@ export async function fetchPagesWithUserAndTranslationChunk({
 		},
 		translationJobs: translationJobsMap.get(page.pageId) || [],
 	}));
-}
-
-export async function fetchPopularTags(limit = 50): Promise<string[]> {
-	const result = await db
-		.selectFrom("tagPages")
-		.innerJoin("tags", "tagPages.tagId", "tags.id")
-		.innerJoin("pages", "tagPages.pageId", "pages.id")
-		.select(["tags.name"])
-		.select((eb) => eb.fn.countAll<number>().as("count"))
-		.where("pages.status", "=", "PUBLIC" satisfies PageStatus)
-		.groupBy("tags.name")
-		.orderBy("count", "desc")
-		.limit(limit)
-		.execute();
-
-	return result.map((r) => r.name);
 }

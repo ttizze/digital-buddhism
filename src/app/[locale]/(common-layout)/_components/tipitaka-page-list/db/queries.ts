@@ -20,7 +20,6 @@ export async function fetchTipitakaPageTree(
 ): Promise<TipitakaPageTreeNode[]> {
 	const rootPage = await db
 		.selectFrom("pages")
-		.innerJoin("contents", "contents.id", "pages.id")
 		.innerJoin("users", "users.id", "pages.userId")
 		.select("pages.id")
 		.where("pages.slug", "=", TIPITAKA_ROOT_SLUG)
@@ -35,7 +34,6 @@ export async function fetchTipitakaPageTree(
 				]),
 			]),
 		)
-		.where("contents.kind", "=", "PAGE")
 		.executeTakeFirst();
 
 	if (!rootPage) return [];
@@ -98,9 +96,16 @@ export async function fetchTipitakaPageTree(
 		.selectFrom("tipitakaDescendants as pages")
 		// SQLite が巨大な segments 全体を先に走査しないよう、pages を駆動表に固定する。
 		.crossJoin("segments")
-		.innerJoin("contents", "contents.id", "pages.id")
 		.innerJoin("users", "users.id", "pages.userId")
-		.where("contents.kind", "=", "PAGE")
+		.where((eb) =>
+			eb.or([
+				eb("pages.status", "=", "PUBLIC"),
+				eb.and([
+					eb("pages.status", "=", "ARCHIVE"),
+					eb("pages.publishedAt", "is not", null),
+				]),
+			]),
+		)
 		.whereRef("segments.contentId", "=", "pages.id")
 		.where("segments.number", "=", 0)
 		.select((eb) => [
@@ -111,7 +116,6 @@ export async function fetchTipitakaPageTree(
 			"pages.publishedAt",
 			"pages.sourceLocale",
 			"pages.status",
-			"contents.kind as contentKind",
 			"users.handle as userHandle",
 			"segments.id as titleSegmentId",
 			"segments.text as titleText",

@@ -13,7 +13,7 @@ import {
 	vi,
 } from "vitest";
 import { disposeDb } from "@/db";
-import type { JsonValue } from "@/db/types";
+import type { JsonValue } from "@/drizzle/types";
 
 const databasePath = join(
 	tmpdir(),
@@ -25,14 +25,8 @@ let upsertPageAndSegments: typeof import("./index")["upsertPageAndSegments"];
 
 async function createImportTables() {
 	await setupClient.execute(`
-		CREATE TABLE contents (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			kind TEXT NOT NULL
-		)
-	`);
-	await setupClient.execute(`
 		CREATE TABLE pages (
-			id INTEGER PRIMARY KEY,
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			slug TEXT NOT NULL,
 			user_id TEXT NOT NULL,
 			mdast_json TEXT NOT NULL,
@@ -96,7 +90,6 @@ describe("upsertPageAndSegments の libSQL トランザクション", () => {
 		await setupClient.execute("DROP TABLE IF EXISTS segments");
 		await setupClient.execute("DROP TABLE IF EXISTS segment_types");
 		await setupClient.execute("DROP TABLE IF EXISTS pages");
-		await setupClient.execute("DROP TABLE IF EXISTS contents");
 		await createImportTables();
 		await setupClient.execute(
 			"INSERT INTO segment_types (id, key) VALUES (1, 'PRIMARY')",
@@ -119,30 +112,26 @@ describe("upsertPageAndSegments の libSQL トランザクション", () => {
 		segmentTypeId: null,
 		parentId: null,
 		order: 0,
-		anchorContentId: null,
+		anchorPageId: null,
 		status: "DRAFT" as const,
 	};
 
-	it("contentsとpagesを作成し後続処理までcommitする", async () => {
+	it("pagesを作成し後続処理までcommitする", async () => {
 		const result = await upsertPageAndSegments(params);
 
 		expect(result.slug).toBe("tipitaka-page");
-		const contents = await setupClient.execute("SELECT id, kind FROM contents");
 		const pages = await setupClient.execute("SELECT slug, status FROM pages");
-		expect(contents.rows).toEqual([{ id: 1, kind: "PAGE" }]);
 		expect(pages.rows).toEqual([{ slug: "tipitaka-page", status: "DRAFT" }]);
 	});
 
-	it("segments同期の開始前に失敗したらcontentsとpagesをrollbackする", async () => {
+	it("segments同期の開始前に失敗したらpagesをrollbackする", async () => {
 		await setupClient.execute("DELETE FROM segment_types");
 
 		await expect(upsertPageAndSegments(params)).rejects.toThrow(
 			"Primary segment type not found",
 		);
 
-		const contents = await setupClient.execute("SELECT id FROM contents");
 		const pages = await setupClient.execute("SELECT id FROM pages");
-		expect(contents.rows).toEqual([]);
 		expect(pages.rows).toEqual([]);
 	});
 });

@@ -1,7 +1,10 @@
 import { createId } from "@paralleldrive/cuid2";
 import { sql } from "kysely";
 import { db } from "@/db";
-import type { TranslationProofStatus, TranslationStatus } from "@/db/types";
+import type {
+	TranslationProofStatus,
+	TranslationStatus,
+} from "@/drizzle/types";
 
 export async function getOrCreateAIUser(name: string): Promise<string> {
 	// 既存ユーザーを確認

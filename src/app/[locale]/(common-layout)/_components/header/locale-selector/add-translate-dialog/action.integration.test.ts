@@ -148,7 +148,7 @@ describe("translateAction", () => {
 	it("ページに注釈がある場合、注釈も翻訳ジョブに含まれる", async () => {
 		// Arrange: メインページと注釈を作成
 		const user = await createUser();
-		const { mainPage, annotationContent } = await createPageWithAnnotations({
+		const { mainPage, annotationPage } = await createPageWithAnnotations({
 			userId: user.id,
 			mainPageSlug: "page-with-annotations",
 			mainPageSegments: [
@@ -194,11 +194,9 @@ describe("translateAction", () => {
 
 		const annotationCall = vi
 			.mocked(enqueueTranslate)
-			.mock.calls.find(
-				([body]) => body.annotationContentId === annotationContent.id,
-			);
+			.mock.calls.find(([body]) => body.annotationPageId === annotationPage.id);
 		expect(annotationCall?.[0]).toMatchObject({
-			annotationContentId: annotationContent.id,
+			annotationPageId: annotationPage.id,
 			pageId: mainPage.id,
 			targetLocale: "ja",
 		});

@@ -15,7 +15,6 @@ const handleDataInput = z.object({
 	handle: z.string().min(1),
 	locale: localeSchema,
 	page: z.number().int().positive(),
-	sort: z.enum(["popular", "new"]),
 });
 
 async function getCurrentUser() {
@@ -31,12 +30,9 @@ export const getHandleData = createServerFn({ method: "GET" })
 		const currentUser = await getCurrentUser();
 
 		return fetchProfilePage({
-			currentUser: currentUser
-				? { handle: currentUser.handle, id: currentUser.id }
-				: null,
+			currentUser: currentUser ? { handle: currentUser.handle } : null,
 			handle: data.handle,
 			locale: data.locale,
 			page: data.page,
-			sort: data.sort,
 		});
 	});

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { TranslationStatus } from "@/db/types";
+import type { TranslationStatus } from "@/drizzle/types";
 
 const translationStatusValues = [
 	"PENDING",

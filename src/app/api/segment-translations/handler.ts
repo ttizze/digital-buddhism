@@ -54,7 +54,6 @@ export async function getSegmentTranslations(
 		const translations = await db
 			.selectFrom("segmentTranslations as st")
 			.innerJoin("segments as s", "st.segmentId", "s.id")
-			.innerJoin("contents", "s.contentId", "contents.id")
 			.leftJoin("pages as p", "s.contentId", "p.id")
 			.innerJoin("users as u", "st.userId", "u.id")
 			.leftJoin("translationVotes as tv", (join) =>
@@ -82,7 +81,6 @@ export async function getSegmentTranslations(
 			])
 			.where("st.segmentId", "=", segmentId)
 			.where("st.locale", "=", userLocale)
-			.where("contents.kind", "=", "PAGE")
 			.orderBy("ownerUpvote", (ob) => ob.desc().nullsLast())
 			.orderBy("st.point", "desc")
 			.orderBy("st.createdAt", "desc")

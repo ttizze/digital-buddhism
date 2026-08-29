@@ -41,33 +41,28 @@ async function addParagraphNumbersToSegments(
 		.execute();
 }
 
-async function createAnnotationContentWithSegments(
+async function createAnnotationPageWithSegments(
 	texts: string[],
-): Promise<{ annotationContentId: number; annotationSegments: Segment[] }> {
-	const content = await db
-		.insertInto("contents")
-		.values({ kind: "PAGE" })
-		.returningAll()
-		.executeTakeFirstOrThrow();
-	const commentaryTypeId = await getSegmentTypeId("COMMENTARY");
+): Promise<{ annotationPageId: number; annotationSegments: Segment[] }> {
+	const user = await createUser();
+	const annotationPage = await createPageWithSegments({
+		userId: user.id,
+		slug: "annotation-page",
+		segments: texts.map((text, index) => ({
+			number: index,
+			text,
+			textAndOccurrenceHash: `hash-ann-${index}`,
+			segmentTypeKey: "COMMENTARY",
+		})),
+	});
+	const annotationSegments = await db
+		.selectFrom("segments")
+		.selectAll()
+		.where("contentId", "=", annotationPage.id)
+		.orderBy("number")
+		.execute();
 
-	const annotationSegments: Segment[] = [];
-	for (let i = 0; i < texts.length; i++) {
-		const segment = await db
-			.insertInto("segments")
-			.values({
-				contentId: content.id,
-				number: i,
-				text: texts[i],
-				textAndOccurrenceHash: `hash-ann-${i}`,
-				segmentTypeId: commentaryTypeId,
-			})
-			.returningAll()
-			.executeTakeFirstOrThrow();
-		annotationSegments.push(segment);
-	}
-
-	return { annotationContentId: content.id, annotationSegments };
+	return { annotationPageId: annotationPage.id, annotationSegments };
 }
 
 async function createMainPageWithParagraphNumbers(
@@ -111,8 +106,8 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 		const { mainPage, mainSegments } = await createMainPageWithParagraphNumbers(
 			["1", "2"],
 		);
-		const { annotationContentId, annotationSegments } =
-			await createAnnotationContentWithSegments(["Ann 1", "Ann 2"]);
+		const { annotationPageId, annotationSegments } =
+			await createAnnotationPageWithSegments(["Ann 1", "Ann 2"]);
 
 		const paragraphToAnnotationIds = new Map([
 			["1", [annotationSegments[0].id]],
@@ -124,7 +119,7 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 			.execute(async (tx) =>
 				syncAnnotationLinksByParagraphNumber(
 					tx,
-					annotationContentId,
+					annotationPageId,
 					paragraphToAnnotationIds,
 					mainPage.id,
 				),
@@ -156,22 +151,23 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 
 	it("COMMENTARYタイプでなくても、この関数単体ではリンクを作成する", async () => {
 		const { mainPage } = await createMainPageWithParagraphNumbers(["1"]);
-
-		const primaryContent = await db
-			.insertInto("contents")
-			.values({ kind: "PAGE" })
-			.returningAll()
-			.executeTakeFirstOrThrow();
+		const primaryUser = await createUser();
+		const primaryPage = await createPageWithSegments({
+			userId: primaryUser.id,
+			slug: "primary-annotation-page",
+			segments: [
+				{
+					number: 0,
+					text: "Primary segment",
+					textAndOccurrenceHash: "hash-primary",
+					segmentTypeKey: "PRIMARY",
+				},
+			],
+		});
 		const primarySegment = await db
-			.insertInto("segments")
-			.values({
-				contentId: primaryContent.id,
-				number: 0,
-				text: "Primary segment",
-				textAndOccurrenceHash: "hash-primary",
-				segmentTypeId: await getSegmentTypeId("PRIMARY"),
-			})
-			.returningAll()
+			.selectFrom("segments")
+			.selectAll()
+			.where("contentId", "=", primaryPage.id)
 			.executeTakeFirstOrThrow();
 
 		await db
@@ -179,7 +175,7 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 			.execute(async (tx) =>
 				syncAnnotationLinksByParagraphNumber(
 					tx,
-					primaryContent.id,
+					primaryPage.id,
 					new Map([["1", [primarySegment.id]]]),
 					mainPage.id,
 				),
@@ -197,8 +193,8 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 		const { mainPage, mainSegments } = await createMainPageWithParagraphNumbers(
 			["1"],
 		);
-		const { annotationContentId, annotationSegments } =
-			await createAnnotationContentWithSegments(["Ann"]);
+		const { annotationPageId, annotationSegments } =
+			await createAnnotationPageWithSegments(["Ann"]);
 
 		// 既存リンクを作成
 		await db
@@ -214,7 +210,7 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 			.execute(async (tx) =>
 				syncAnnotationLinksByParagraphNumber(
 					tx,
-					annotationContentId,
+					annotationPageId,
 					new Map(),
 					mainPage.id,
 				),
@@ -228,16 +224,16 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 		expect(links).toHaveLength(0);
 	});
 
-	it("anchorContentIdがない場合、リンクは作成されない", async () => {
-		const { annotationContentId, annotationSegments } =
-			await createAnnotationContentWithSegments(["Ann"]);
+	it("anchorPageIdがない場合、リンクは作成されない", async () => {
+		const { annotationPageId, annotationSegments } =
+			await createAnnotationPageWithSegments(["Ann"]);
 
 		await db
 			.transaction()
 			.execute(async (tx) =>
 				syncAnnotationLinksByParagraphNumber(
 					tx,
-					annotationContentId,
+					annotationPageId,
 					new Map([["1", [annotationSegments[0].id]]]),
 					null,
 				),
@@ -253,8 +249,8 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 
 	it("段落番号が一致しない場合、既存リンクは削除され新規リンクは作成されない", async () => {
 		const { mainPage } = await createMainPageWithParagraphNumbers(["1"]);
-		const { annotationContentId, annotationSegments } =
-			await createAnnotationContentWithSegments(["Ann"]);
+		const { annotationPageId, annotationSegments } =
+			await createAnnotationPageWithSegments(["Ann"]);
 
 		// 既存リンクを作成
 		const extraMainSegment = await db
@@ -281,7 +277,7 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 			.execute(async (tx) =>
 				syncAnnotationLinksByParagraphNumber(
 					tx,
-					annotationContentId,
+					annotationPageId,
 					new Map([["999", [annotationSegments[0].id]]]),
 					mainPage.id,
 				),
@@ -299,8 +295,8 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 		const { mainPage, mainSegments } = await createMainPageWithParagraphNumbers(
 			["1"],
 		);
-		const { annotationContentId, annotationSegments } =
-			await createAnnotationContentWithSegments(["Ann 1", "Ann 2"]);
+		const { annotationPageId, annotationSegments } =
+			await createAnnotationPageWithSegments(["Ann 1", "Ann 2"]);
 
 		const paragraphToAnnotationIds = new Map([
 			["1", [annotationSegments[0].id, annotationSegments[1].id]],
@@ -311,7 +307,7 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 			.execute(async (tx) =>
 				syncAnnotationLinksByParagraphNumber(
 					tx,
-					annotationContentId,
+					annotationPageId,
 					paragraphToAnnotationIds,
 					mainPage.id,
 				),
@@ -336,15 +332,15 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 		const { mainPage, mainSegments } = await createMainPageWithParagraphNumbers(
 			["1", "1"],
 		); // 両方同じ段落番号
-		const { annotationContentId, annotationSegments } =
-			await createAnnotationContentWithSegments(["Ann"]);
+		const { annotationPageId, annotationSegments } =
+			await createAnnotationPageWithSegments(["Ann"]);
 
 		await db
 			.transaction()
 			.execute(async (tx) =>
 				syncAnnotationLinksByParagraphNumber(
 					tx,
-					annotationContentId,
+					annotationPageId,
 					new Map([["1", [annotationSegments[0].id]]]),
 					mainPage.id,
 				),
@@ -390,15 +386,15 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 			{ segmentId: mainSegments[1].id, paragraphNumber: "1" },
 		]);
 
-		const { annotationContentId, annotationSegments } =
-			await createAnnotationContentWithSegments(["Ann Preface"]);
+		const { annotationPageId, annotationSegments } =
+			await createAnnotationPageWithSegments(["Ann Preface"]);
 
 		await db
 			.transaction()
 			.execute(async (tx) =>
 				syncAnnotationLinksByParagraphNumber(
 					tx,
-					annotationContentId,
+					annotationPageId,
 					new Map(),
 					mainPage.id,
 					[annotationSegments[0].id],

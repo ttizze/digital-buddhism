@@ -35,7 +35,7 @@ function buildAboutPageDetail() {
 	return {
 		segments: entries.map(([number, text], index) => ({
 			id: index + 1,
-			contentId: 1,
+			pageId: 1,
 			number,
 			text,
 			translationText: null,

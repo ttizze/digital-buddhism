@@ -21,19 +21,19 @@ export async function syncSegmentMetadataAndAnnotationLinks(
 	tx: TransactionClient,
 	hashToSegmentId: Map<string, number>,
 	segments: SegmentDraft[],
-	contentId: number,
-	anchorContentId: number | null,
+	pageId: number,
+	anchorPageId: number | null,
 ): Promise<void> {
 	const logger = createServerLogger("sync-segment-metadata-and-links", {
-		contentId,
-		anchorContentId,
+		pageId,
+		anchorPageId,
 	});
 
 	// 同期対象のセグメントIDのセット
 	const segmentIds = new Set(hashToSegmentId.values());
 
 	logger.debug(
-		{ segmentCount: segmentIds.size, anchorContentId },
+		{ segmentCount: segmentIds.size, anchorPageId },
 		"Starting metadata and annotation links sync",
 	);
 
@@ -43,11 +43,10 @@ export async function syncSegmentMetadataAndAnnotationLinks(
 	// db操作: メタデータを同期
 	await syncSegmentMetadata(tx, segmentIds, metadataDrafts);
 
-	// 現在のコンテンツのセグメントタイプを確認
-	const segmentTypeKey = await fetchSegmentTypeKey(tx, contentId);
+	// COMMENTARYページだけを対応する本文ページへリンクする。
+	const segmentTypeKey = await fetchSegmentTypeKey(tx, pageId);
 
-	// COMMENTARYタイプでない場合もしくはanchorContentIdがない場合は処理を終了（アノテーションリンクはCOMMENTARYのみ）
-	if (segmentTypeKey !== "COMMENTARY" || !anchorContentId) {
+	if (segmentTypeKey !== "COMMENTARY" || !anchorPageId) {
 		return;
 	}
 
@@ -75,9 +74,9 @@ export async function syncSegmentMetadataAndAnnotationLinks(
 
 		await syncAnnotationLinksByParagraphNumber(
 			tx,
-			contentId,
+			pageId,
 			paragraphNumberToAnnotationSegmentIds,
-			anchorContentId,
+			anchorPageId,
 			annotationSegmentsBeforeFirstParagraph,
 		);
 	}

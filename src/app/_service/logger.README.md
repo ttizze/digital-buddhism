@@ -131,7 +131,7 @@ logger.info({ userId, pageSlug }, "User accessed page");
 リクエストIDを含めることで、1つのリクエストに関連するすべてのログを追跡できます：
 
 ```typescript
-const logger = createServerLogger("page-view", {
+const logger = createServerLogger("request", {
   requestId: request.id,  // 重要: リクエスト追跡のため
   userId: user.id,
   path: request.path,
@@ -249,10 +249,10 @@ LOG_PRETTY=true bun run start
 {
   "level": "info",
   "time": "2024-01-15T01:30:45.123Z",
-  "service": "page-view",
-  "pageId": 456,
-  "slug": "my-page",
-  "msg": "Page loaded"
+  "service": "request",
+  "path": "/en/example",
+  "durationMs": 42,
+  "msg": "Request completed"
 }
 ```
 

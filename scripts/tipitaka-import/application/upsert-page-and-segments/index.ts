@@ -2,7 +2,7 @@ import { createServerLogger } from "@/app/_service/logger.server";
 import type { SegmentDraft } from "@/app/[locale]/_domain/remark-hash-and-segments";
 import { syncSegments } from "@/app/[locale]/_service/sync-segments";
 import { db } from "@/db";
-import type { JsonValue, PageStatus } from "@/db/types";
+import type { JsonValue, PageStatus } from "@/drizzle/types";
 import { upsertPage } from "./db/mutations.server";
 import { syncSegmentMetadataAndAnnotationLinks } from "./sync-segment-metadata-and-annotation-links";
 /**
@@ -22,7 +22,7 @@ export async function upsertPageAndSegments(p: {
 	segmentTypeId: number | null;
 	parentId: number | null;
 	order: number;
-	anchorContentId: number | null;
+	anchorPageId: number | null;
 	status: PageStatus;
 }) {
 	const logger = createServerLogger("upsert-page-and-segments", {
@@ -66,7 +66,7 @@ export async function upsertPageAndSegments(p: {
 				hashToSegmentId,
 				p.segments,
 				page.id,
-				p.anchorContentId,
+				p.anchorPageId,
 			);
 
 			return page;

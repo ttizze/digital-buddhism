@@ -13,7 +13,7 @@ import {
 	vi,
 } from "vitest";
 import { disposeDb } from "@/db";
-import type { JsonValue } from "@/db/types";
+import type { JsonValue } from "@/drizzle/types";
 
 const databasePath = join(
 	tmpdir(),
@@ -44,7 +44,7 @@ async function createSyncTables() {
 	await setupClient.execute(`
 		CREATE TABLE segments (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			content_id INTEGER NOT NULL,
+			page_id INTEGER NOT NULL,
 			number INTEGER NOT NULL,
 			text TEXT NOT NULL,
 			text_and_occurrence_hash TEXT NOT NULL,

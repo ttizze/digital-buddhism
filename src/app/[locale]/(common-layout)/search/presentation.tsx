@@ -27,7 +27,6 @@ export function SearchPagePresentation({
 							currentPage={page}
 							locale={locale}
 							pageSummaries={data.pageSummaries}
-							tags={data.tags}
 							totalPages={data.totalPages}
 							users={data.users}
 						/>

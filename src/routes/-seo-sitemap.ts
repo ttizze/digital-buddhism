@@ -2,7 +2,6 @@ import { BASE_URL } from "@/app/_constants/base-url";
 import {
 	countPublicPages,
 	fetchPagesWithUserAndTranslationChunk,
-	fetchPopularTags,
 } from "@/app/_db/sitemap-queries.server";
 
 const CHUNK = 1_000;
@@ -23,7 +22,7 @@ export async function generateSitemapEntries(id: number) {
 	const supportedLocales = ["en", "ja", "zh", "ko", "es"] as const;
 	const defaultLocale = "en";
 
-	const staticPaths = ["/", "/search", "/about", "/new-pages"];
+	const staticPaths = ["/", "/search", "/about"];
 	const staticRoutes = staticPaths.map((route) => ({
 		url: `${BASE_URL}/${defaultLocale}${route === "/" ? "" : route}`,
 		lastModified: new Date(),
@@ -34,22 +33,6 @@ export async function generateSitemapEntries(id: number) {
 				supportedLocales.map((locale) => [
 					locale,
 					`${BASE_URL}/${locale}${route === "/" ? "" : route}`,
-				]),
-			),
-		},
-	}));
-
-	const popularTags = await fetchPopularTags(50);
-	const tagRoutes = popularTags.map((tagName) => ({
-		url: `${BASE_URL}/${defaultLocale}/tag/${encodeURIComponent(tagName)}`,
-		lastModified: new Date(),
-		changeFrequency: "weekly" as const,
-		priority: 0.6,
-		alternates: {
-			languages: Object.fromEntries(
-				supportedLocales.map((locale) => [
-					locale,
-					`${BASE_URL}/${locale}/tag/${encodeURIComponent(tagName)}`,
 				]),
 			),
 		},
@@ -70,7 +53,7 @@ export async function generateSitemapEntries(id: number) {
 		},
 	}));
 
-	return id === 0 ? [...staticRoutes, ...tagRoutes, ...pageRoutes] : pageRoutes;
+	return [...staticRoutes, ...pageRoutes];
 }
 
 function escapeXml(value: string): string {

@@ -7,7 +7,7 @@ import rehypeSlug from "rehype-slug";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import type { Segment } from "@/app/[locale]/types";
-import type { JsonValue } from "@/db/types";
+import type { JsonValue } from "@/drizzle/types";
 import { WrapSegment } from "./wrap-segments";
 
 // --------------

@@ -1,9 +1,9 @@
 import { createTranslationJob } from "@/app/[locale]/_db/mutations.server";
 import { fetchPageIdBySlug } from "@/app/[locale]/_db/page-utility-queries.server";
-import { hasSegmentsForContentId } from "@/app/[locale]/_db/segment-exists.server";
+import { hasSegmentsForPageId } from "@/app/[locale]/_db/segment-exists.server";
 import { enqueueTranslate } from "@/app/[locale]/_infrastructure/qstash/enqueue-translate.server";
 import type { TranslationJobForToast } from "@/app/types/translation-job";
-import { fetchAnnotationContentIdsForPage } from "../db/queries.server";
+import { fetchAnnotationPageIdsForPage } from "../db/queries.server";
 
 /* ───────── 型 ───────── */
 
@@ -19,7 +19,7 @@ interface NewJobParams {
 	aiModel: string;
 	locale: string;
 	pageId: number;
-	annotationContentId: number | null;
+	annotationPageId: number | null;
 	jobs: TranslationJobForToast[];
 }
 
@@ -27,8 +27,8 @@ interface NewJobParams {
 
 /** 翻訳ジョブを作成しキューに投入する */
 async function createAndEnqueueJob(params: NewJobParams) {
-	const contentId = params.annotationContentId ?? params.pageId;
-	const hasSegments = await hasSegmentsForContentId(contentId);
+	const targetPageId = params.annotationPageId ?? params.pageId;
+	const hasSegments = await hasSegmentsForPageId(targetPageId);
 	if (!hasSegments) {
 		return;
 	}
@@ -50,7 +50,7 @@ async function createAndEnqueueJob(params: NewJobParams) {
 		userId: params.userId,
 		targetLocale: params.locale,
 		pageId: params.pageId,
-		annotationContentId: params.annotationContentId,
+		annotationPageId: params.annotationPageId,
 		translationContext: "",
 	});
 }
@@ -79,21 +79,19 @@ export async function translatePage(
 		aiModel: params.aiModel,
 		locale: params.locale,
 		pageId,
-		annotationContentId: null,
+		annotationPageId: null,
 		jobs,
 	});
 
-	// 別コンテンツに属する注釈の翻訳ジョブ
-	// 親ページのジョブと revalidate を紐付けるため pageId はそのまま保持し、
-	// 翻訳を書き込む対象コンテンツを特定するため annotationContentId を渡す
-	const annotationContentIds = await fetchAnnotationContentIdsForPage(pageId);
-	for (const contentId of annotationContentIds) {
+	// リンク先の注釈ページも同じ翻訳操作で処理する。
+	const annotationPageIds = await fetchAnnotationPageIdsForPage(pageId);
+	for (const annotationPageId of annotationPageIds) {
 		await createAndEnqueueJob({
 			userId: params.userId,
 			aiModel: params.aiModel,
 			locale: params.locale,
 			pageId,
-			annotationContentId: contentId,
+			annotationPageId,
 			jobs,
 		});
 	}

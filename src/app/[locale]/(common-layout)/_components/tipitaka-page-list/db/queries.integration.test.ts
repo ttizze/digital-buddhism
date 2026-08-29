@@ -59,14 +59,14 @@ describe("fetchTipitakaPageTree", () => {
 			.execute();
 
 		const firstTitle = await createSegment({
-			contentId: first.id,
+			pageId: first.id,
 			number: 0,
 			text: "paṭhama",
 			textAndOccurrenceHash: "first-title",
 			segmentTypeKey: "PRIMARY",
 		});
 		await createSegment({
-			contentId: second.id,
+			pageId: second.id,
 			number: 0,
 			text: "dutiya",
 			textAndOccurrenceHash: "second-title",

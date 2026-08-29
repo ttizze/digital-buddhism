@@ -68,7 +68,6 @@ async function queryTipitakaVisibility(pageId: number) {
 				),
 		)
 		.selectFrom("ancestors")
-		.innerJoin("contents", "contents.id", "ancestors.id")
 		.innerJoin("users", "users.id", "ancestors.userId")
 		.select([
 			"ancestors.id",
@@ -76,7 +75,6 @@ async function queryTipitakaVisibility(pageId: number) {
 			"ancestors.parentId",
 			"ancestors.publishedAt",
 			"ancestors.status",
-			"contents.kind as contentKind",
 			"users.handle as userHandle",
 		])
 		.execute();
@@ -85,7 +83,6 @@ async function queryTipitakaVisibility(pageId: number) {
 		(ancestor) =>
 			ancestor.slug === TIPITAKA_ROOT_SLUG &&
 			ancestor.parentId === null &&
-			ancestor.contentKind === "PAGE" &&
 			ancestor.userHandle === TIPITAKA_SYSTEM_USER_HANDLE,
 	);
 
@@ -104,42 +101,7 @@ async function queryTipitakaVisibility(pageId: number) {
 }
 
 /**
- * タグを取得
- */
-async function fetchTags(pageId: number) {
-	const result = await db
-		.selectFrom("tagPages")
-		.innerJoin("tags", "tagPages.tagId", "tags.id")
-		.select(["tags.id", "tags.name"])
-		.where("tagPages.pageId", "=", pageId)
-		.execute();
-
-	return result.map((t) => ({ tag: { id: t.id, name: t.name } }));
-}
-
-/**
- * カウントを取得（最新値が必要なのでキャッシュしない）
- */
-export async function fetchPageCounts(pageId: number) {
-	const result = await db
-		.selectFrom("pages")
-		.select((eb) => [
-			eb
-				.selectFrom("likePages")
-				.select(eb.fn.countAll<number>().as("count"))
-				.whereRef("likePages.pageId", "=", "pages.id")
-				.as("likeCount"),
-		])
-		.where("pages.id", "=", pageId)
-		.executeTakeFirst();
-
-	return {
-		likeCount: result?.likeCount ?? 0,
-	};
-}
-
-/**
- * セグメントと対象ページ内の最良翻訳を取得
+ * セグメントを取得（DISTINCT ONで最良の翻訳を1件のみ）
  */
 async function fetchSegments(
 	pageId: number,
@@ -153,7 +115,7 @@ async function fetchSegments(
 		.innerJoin("segmentTypes", "segments.segmentTypeId", "segmentTypes.id")
 		.select([
 			"segments.id",
-			"segments.contentId",
+			"segments.contentId as pageId",
 			"segments.number",
 			"segments.text",
 			"segmentTypes.key as segmentTypeKey",
@@ -257,7 +219,7 @@ async function fetchSegmentsByIds(
 		.innerJoin("segmentTypes", "segments.segmentTypeId", "segmentTypes.id")
 		.select([
 			"segments.id",
-			"segments.contentId",
+			"segments.contentId as pageId",
 			"segments.number",
 			"segments.text",
 			"segmentTypes.key as segmentTypeKey",
@@ -286,14 +248,13 @@ export async function queryPageDetail(slug: string, locale: string) {
 		page.status === "ARCHIVE" ||
 		page.slug === TIPITAKA_ROOT_SLUG ||
 		page.parentId !== null;
-	const [tipitakaVisibility, tags, primarySegments] = await Promise.all([
+	const [tipitakaVisibility, primarySegments] = await Promise.all([
 		shouldCheckTipitakaVisibility
 			? queryTipitakaVisibility(page.id)
 			: Promise.resolve({
 					isPubliclyReadable: false,
 					isTipitakaPage: false,
 				}),
-		fetchTags(page.id),
 		fetchSegments(page.id, locale, page.userId, "PRIMARY"),
 	]);
 	const { isTipitakaPage } = tipitakaVisibility;
@@ -349,6 +310,5 @@ export async function queryPageDetail(slug: string, locale: string) {
 		userName: page.userName,
 		userHandle: page.userHandle,
 		userImage: page.userImage,
-		tagPages: tags,
 	};
 }
