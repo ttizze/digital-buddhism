@@ -44,7 +44,7 @@ async function createSyncTables() {
 	await setupClient.execute(`
 		CREATE TABLE segments (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			page_id INTEGER NOT NULL,
+			content_id INTEGER NOT NULL,
 			number INTEGER NOT NULL,
 			text TEXT NOT NULL,
 			text_and_occurrence_hash TEXT NOT NULL,

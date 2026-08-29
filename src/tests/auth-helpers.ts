@@ -1,5 +1,3 @@
-import { vi } from "vitest";
-import { getCurrentUser } from "@/app/_service/auth-server";
 import type { User } from "@/db/types.helpers";
 
 export type SessionUser = {
@@ -36,14 +34,4 @@ export function toSessionUser(user: User): SessionUser {
 		updatedAt: user.updatedAt as Date,
 		hasGeminiApiKey: false,
 	};
-}
-
-/**
- * getCurrentUserのモックを設定するヘルパー
- * 使用例: mockCurrentUser(user) または mockCurrentUser(null)
- */
-export function mockCurrentUser(user: User | null): void {
-	vi.mocked(getCurrentUser).mockResolvedValue(
-		user ? toSessionUser(user) : null,
-	);
 }

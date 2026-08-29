@@ -1,4 +1,3 @@
-import type { PageStatus } from "@/drizzle/types";
 export const mockUsers = [
 	{
 		id: "mockUserId1",
@@ -27,41 +26,5 @@ export const mockUsers = [
 		image: "mockUserId2",
 		plan: "free",
 		hasGeminiApiKey: false,
-	},
-];
-
-export const mockPages = [
-	{
-		id: 1,
-		userId: "mockUserId1",
-		content: "test",
-		mdastJson: {},
-		slug: "mockUserId1-page1",
-		sourceLocale: "en",
-		status: "PUBLIC" as PageStatus,
-		createdAt: new Date(),
-		updatedAt: new Date(),
-	},
-	{
-		id: 2,
-		userId: "mockUserId2",
-		content: "test",
-		mdastJson: {},
-		slug: "mockUserId2-page1",
-		sourceLocale: "en",
-		status: "PUBLIC" as PageStatus,
-		createdAt: new Date(),
-		updatedAt: new Date(),
-	},
-	{
-		id: 3,
-		userId: "mockUserId1",
-		content: "test",
-		mdastJson: {},
-		slug: "mockUserId1-page2-draft",
-		sourceLocale: "en",
-		status: "DRAFT" as PageStatus,
-		createdAt: new Date(),
-		updatedAt: new Date(),
 	},
 ];

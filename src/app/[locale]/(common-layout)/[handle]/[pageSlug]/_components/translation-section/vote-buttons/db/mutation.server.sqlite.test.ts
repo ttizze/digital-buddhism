@@ -17,7 +17,7 @@ describe("handleVoteのSQLite互換性", () => {
 					const client = getDatabaseClient();
 					await client.execute("CREATE TABLE pages (id INTEGER PRIMARY KEY)");
 					await client.execute(
-						"CREATE TABLE segments (id INTEGER PRIMARY KEY, page_id INTEGER NOT NULL)",
+						"CREATE TABLE segments (id INTEGER PRIMARY KEY, content_id INTEGER NOT NULL)",
 					);
 					await client.execute(
 						"CREATE TABLE segment_translations (id INTEGER PRIMARY KEY, segment_id INTEGER NOT NULL, locale TEXT NOT NULL, point INTEGER NOT NULL, user_id TEXT NOT NULL)",
@@ -30,7 +30,7 @@ describe("handleVoteのSQLite互換性", () => {
 					);
 					await client.execute("INSERT INTO pages (id) VALUES (1)");
 					await client.execute(
-						"INSERT INTO segments (id, page_id) VALUES (1, 1)",
+						"INSERT INTO segments (id, content_id) VALUES (1, 1)",
 					);
 					await client.execute(
 						"INSERT INTO segment_translations (id, segment_id, locale, point, user_id) VALUES (1, 1, 'ja', 0, 'translator')",

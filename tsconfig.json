@@ -21,10 +21,5 @@
 		}
 	},
 	"include": ["**/*.ts", "**/*.tsx"],
-	"exclude": [
-		"node_modules",
-		"dist",
-		"build",
-		"scripts/convert-romn-to-md-old/**"
-	]
+	"exclude": ["node_modules", "dist", "build"]
 }
