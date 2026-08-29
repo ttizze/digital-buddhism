@@ -249,10 +249,11 @@ describe("Push API (service layer)", () => {
 			userId,
 			slug,
 			status: "PUBLIC",
-			// jsonb カラムなので、テキストをそのまま入れたい場合は JSON 文字列として保存する。
-			mdastJson: JSON.stringify(legacyBody),
+			// codec が JsonValue を直列化するため、JSON文字列化せず本文を渡す。
+			mdastJson: legacyBody,
 			publishedAt,
 		});
+		expect(page.mdastJson).toBe(legacyBody);
 		await createSegments({
 			contentId: page.id,
 			segments: [

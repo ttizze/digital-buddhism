@@ -12,12 +12,6 @@ export type Generated<T> =
 		? ColumnType<S, I | undefined, U>
 		: ColumnType<T, T | undefined, T>;
 
-export type Int8 = ColumnType<
-	string,
-	bigint | number | string,
-	bigint | number | string
->;
-
 export type Json = JsonValue;
 
 export type JsonArray = JsonValue[];
@@ -88,12 +82,6 @@ export interface Contents {
 	updatedAt: Generated<Timestamp>;
 }
 
-export interface DrizzleDrizzleMigrations {
-	createdAt: Int8 | null;
-	hash: string;
-	id: Generated<number>;
-}
-
 export interface Follows {
 	createdAt: Generated<Timestamp>;
 	followerId: string;
@@ -129,11 +117,6 @@ export interface LikePages {
 	id: Generated<number>;
 	pageId: number;
 	userId: string | null;
-}
-
-export interface NeonControlPlaneEndpoints {
-	allowedIps: string | null;
-	endpointId: string;
 }
 
 export interface Notifications {
@@ -323,13 +306,11 @@ export interface Verifications {
 export interface DB {
 	accounts: Accounts;
 	contents: Contents;
-	"drizzle.DrizzleMigrations": DrizzleDrizzleMigrations;
 	follows: Follows;
 	geminiApiKeys: GeminiApiKeys;
 	importFiles: ImportFiles;
 	importRuns: ImportRuns;
 	likePages: LikePages;
-	"neonControlPlane.endpoints": NeonControlPlaneEndpoints;
 	notifications: Notifications;
 	personalAccessTokens: PersonalAccessTokens;
 	pageComments: PageComments;

@@ -1,99 +1,99 @@
 # ルート内コロケーション規約
 
-このドキュメントは「このルートのことはこのフォルダだけ見れば分かる」を実現するための配置ルールです。
+このドキュメントは、TanStack Start のルート境界と機能実装の配置ルールを定めます。
+ルートの入出力と機能の責務を分けつつ、関連するコードを近くに保ちます。
 
 ## 基本方針
-- ルート配下で必要なコードを完結させる
-- ルート内の責務を `layer` ごとに分ける
-- `_` は **Next.js のルート除外用** に限定する
+
+- `src/routes` にはTanStack Routerのルート境界を置く
+- ルート固有の機能実装は `src/app` の該当ルート・機能スコープに置く
+- ルートファイルはloader、server function、APIの入出力と境界に集中させる
+- ルートツリー生成物は手動編集しない
 - コンポーネント専用ロジックはそのコンポーネント配下へ置く
-- コンポーネントは責務ごとに分割し、分割したものは同一コンポーネント配下にまとめる
+
+TanStack Routerでは、ファイル名の `$` が動的セグメント、先頭の `_` がパスレス
+レイアウトを表します。例えば `$locale._common.$handle_.$pageSlug.tsx` は、
+`locale`・`handle`・`pageSlug` をURLに持ち、`_common` 自体はURLに含めません。
+ルートにしない隣接ファイルは先頭に `-` を付けます（例: `-index-data.ts`）。
 
 ## ディレクトリ構造（例）
 
 ```
-src/app/[locale]/route-a/
-  _components/            # route-a 専用の UI
-    component-a/
-      service/            # component-a 専用のサービス
-        service-a.ts
-        service-b/
-          domain/
-          db/
-  _db/                    # route-a 専用の DB アクセス
-  _domain/                # route-a 専用のドメイン
-  _service/               # route-a 専用のサービス
-  _hooks/                 # route-a 専用の hooks
-  _utils/                 # route-a 専用の純粋ヘルパー
-  page.tsx
+src/routes/$locale._common.$handle_.$pageSlug.tsx  # ルート境界
+src/routes/$locale/-page-detail-data.ts             # ルート用データ取得
+src/app/[locale]/(common-layout)/[handle]/[pageSlug]/
+  _components/                                      # ルート専用UI
+  _db/                                               # ルート専用DBアクセス
+  _domain/                                           # ルート専用ドメイン
+  _service/                                          # ルート専用サービス
+  _utils/                                            # ルート専用の純粋ヘルパー
 ```
 
 ## 各レイヤーの役割
 
 ### `service/`
-- ユースケース（サービス）のフロー定義
-- `domain/` と `db/` を組み合わせて副作用をオーケストレーション
-- 基本は「1サービス = 1ファイル」。複雑な場合のみサブフォルダ化
+
+- ユースケースのフローを定義する
+- `domain/` と `db/` を組み合わせて副作用をオーケストレーションする
+- 基本は「1サービス = 1ファイル」。複雑な場合のみサブフォルダ化する
 
 ### `domain/`
-- 純粋ビジネスロジック（I/O 禁止）
-- 複数サービスで共有する場合はルート直下の `_domain/`
+
+- 純粋な業務ロジックを置く
+- I/Oへ直接依存しない
+- 複数サービスで共有する場合は、機能の共通スコープへ移す
 
 ### `db/`
-- DB アクセス（Kysely）
-- サービス層からのみ呼び出す
-- ルート全体で使う場合は `_db/`
+
+- KyselyによるDBアクセスを置く
+- サービス層から呼び出す
+- ルート全体で使う場合は `_db/` に置く
 
 ### `utils/`
-- 純粋な小ヘルパー（I/O 禁止）
-- ドメインの意味を持つなら `domain/` に昇格
+
+- I/Oを持たない汎用ヘルパーを置く
+- 業務上の意味を持つ処理は `domain/` に置く
 
 ## 配置ルール
 
-- **ルート直下**: `_components/`, `_db/`, `_domain/`, `_service/`, `_utils/` など（`_` 付き）
-- **コンポーネント配下**: `service/`, `domain/`, `db/`, `utils/`, `hooks/` など（`_` なし）
-- **サービス配下**: `domain/`, `db/` など（`_` なし）
+- **ルート境界**: `src/routes` のTanStack Startルートファイル
+- **ルート用補助**: ルートと同じスコープの先頭 `-` ファイル、または `src/app` の
+  近接する機能ディレクトリ
+- **ルート内共有**: `_components/`, `_db/`, `_domain/`, `_service/`, `_utils/`
+- **コンポーネント配下**: `service/`, `domain/`, `db/`, `utils/`, `hooks/`
 
 ## 依存方向
 
 - `service` → `domain` / `db` / `utils` ✅
 - `domain` → `utils` ✅
-- `domain` → `db` ❌（必ず service 経由）
+- `domain` → `db` ❌（必ずservice経由）
 - `utils` → `db` ❌
 - `components` → `service` / `domain` / `db` / `utils` ✅
+- `routes` → `app` の機能モジュール ✅
 
-## 共有の扱い（例外ではなくルール）
+## 共有の扱い
 
-### ルート内共有
-- 同一ルート内で複数箇所から使うものは、ルート直下の `_service/_domain/_db/_hooks/_utils` に置く
+- 同一ルート内で複数箇所から使うものは、ルート直下の共通スコープに置く
+- APIルートで完結する処理は、そのAPI機能の近くに置く
+- 複数ルートで使う処理は、利用箇所の最小共通祖先へ移す
+- 1箇所でしか使わない処理は、呼び出し元の隣に置く
 
-### API ルート内共有
-- API ルートで完結するものは `src/app/api/{route}/_domain` や `src/app/api/{route}/_types` に置く
-- API から UI 側が参照する型も、API ルート内に配置する
+## types の配置
 
-### Shadcn 由来の `utils`
-- `cn` を含む `utils.ts` は `src/lib/utils.ts` に置く（運用上の固定例外）
-
-## types の配置ルール
-
-- **UI/API 共有型**: 使用する境界に最も近い場所へ置く
-- **ルート内専用型**: そのルート配下へ置く
+- UI/API共有型は使用する境界に最も近い場所へ置く
+- ルート専用型はそのルートの機能スコープへ置く
 
 ## 禁止事項
 
 - `src/lib` に業務ロジックやユースケースを追加しない
 - `domain` から `db` を直接参照しない
-- `_` 付きディレクトリをコンポーネント配下に作らない
-
-## 運用ルール
-
-- 単独参照のものは最も近いスコープへ移動
-- 3件以上で同一関心ならディレクトリ化
-- 変更後は `bun run typecheck` と `bun run biome` を実行
+- ルート境界へDB判断や複雑な業務ロジックを直書きしない
+- ルートツリー生成物を直接編集しない
 
 ## テスト方針
 
-- **`domain/`**: ユニットテストを厚めに。分岐・境界値の責務はここで担保
-- **`utils/`**: シンプルなものは省略可。複雑になったら `domain/` に昇格してテストを書く
-- **`db/`**: 必要箇所だけ統合テスト（テスト DB）。複雑クエリや重要な制約を優先
-- **`service/`**: ハッピーパス＋主要な異常系を押さえ、どの domain/db をどうオーケストレーションするかを確認
+- `domain/`: 分岐・境界値・異常系をユニットテストで担保する
+- `utils/`: 複雑な変換だけを対象にする
+- `db/`: SQLite/Tursoの実装を使う統合テストを、重要な制約とクエリに絞って書く
+- `service/`: ハッピーパスと主要な異常系を確認する
+- 変更後は `bun run typecheck` と `bun x biome ci .` を実行する

@@ -1,4 +1,3 @@
-import { sql } from "kysely";
 import { db } from "@/db";
 
 /**
@@ -11,13 +10,10 @@ export async function fetchPopularTags(limit: number) {
 	const results = await db
 		.selectFrom("tags")
 		.leftJoin("tagPages", "tags.id", "tagPages.tagId")
-		.select([
-			"tags.id",
-			"tags.name",
-			sql<number>`count(tag_pages.page_id)::int`.as("pagesCount"),
-		])
+		.select(["tags.id", "tags.name"])
+		.select((eb) => eb.fn.count("tagPages.pageId").as("pagesCount"))
 		.groupBy(["tags.id", "tags.name"])
-		.orderBy(sql`count(tag_pages.page_id)`, "desc")
+		.orderBy("pagesCount", "desc")
 		.limit(limit)
 		.execute();
 

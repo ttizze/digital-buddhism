@@ -267,7 +267,7 @@ export async function queryCompletedTranslationLocales(
 	const jobs = await db
 		.selectFrom("translationJobs")
 		.select("locale")
-		.distinctOn("locale")
+		.distinct()
 		.where("pageId", "=", pageId)
 		.where("status", "=", "COMPLETED")
 		.orderBy("locale")

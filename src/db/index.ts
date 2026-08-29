@@ -1,59 +1,41 @@
-import { Pool as NeonPool, neonConfig } from "@neondatabase/serverless";
-import { CamelCasePlugin, Kysely, PostgresDialect } from "kysely";
-import { Pool as PgPool } from "pg";
-import { getDatabaseRequestContext } from "./request-context";
+import { LibsqlDialect } from "@libsql/kysely-libsql";
+import { CamelCasePlugin, Kysely } from "kysely";
+import {
+	getDatabaseClient,
+	getDatabaseRequestContext,
+} from "./request-context";
+import { TursoValueCodecPlugin } from "./turso-value-codec";
 import type { DB } from "./types";
 
-type PoolType = NeonPool | PgPool;
-export type KyselyDbWithPool = Kysely<DB> & { pool: PoolType };
+export type KyselyDbWithClient = Kysely<DB> & {
+	client: ReturnType<typeof getDatabaseClient>;
+};
 
 declare global {
-	var __kyselyDb: KyselyDbWithPool | null;
+	var __kyselyDb: KyselyDbWithClient | null;
 }
 
-function createDb(connectionString?: string): KyselyDbWithPool {
-	const resolvedConnectionString =
-		connectionString ||
-		process.env.DATABASE_URL ||
-		(process.env.NODE_ENV === "test"
-			? "postgres://postgres:postgres@db.localtest.me:5435/main"
-			: "");
-	if (!resolvedConnectionString) {
-		throw new Error("DATABASE_URL is not defined");
-	}
-
-	const isHyperdrive = Boolean(connectionString);
-	const isLocal =
-		new URL(resolvedConnectionString).hostname === "db.localtest.me";
-	let pool: PoolType;
-	if (isLocal || isHyperdrive) {
-		pool = new PgPool({
-			connectionString: resolvedConnectionString,
-			max: isHyperdrive ? 5 : 20,
-			idleTimeoutMillis: 30000,
-			connectionTimeoutMillis: 30000,
-		});
-	} else {
-		// Vercel/Node環境では既存のNeon serverlessドライバを使用する。
-		neonConfig.poolQueryViaFetch = true;
-		pool = new NeonPool({ connectionString: resolvedConnectionString });
-	}
-
+function createDb(): KyselyDbWithClient {
+	const client = getDatabaseClient();
 	const db = new Kysely<DB>({
-		dialect: new PostgresDialect({ pool }),
-		plugins: [new CamelCasePlugin()],
+		dialect: new LibsqlDialect({
+			// 0.4.1の型定義だけが内包する古い@libsql/client型との境界。
+			client:
+				client as unknown as import("@libsql/kysely-libsql").libsql.Client,
+		}),
+		plugins: [new CamelCasePlugin(), new TursoValueCodecPlugin()],
 	});
 
-	return Object.assign(db, { pool });
+	return Object.assign(db, { client });
 }
 
-function getCurrentDb(): KyselyDbWithPool {
+function getCurrentDb(): KyselyDbWithClient {
 	const requestContext = getDatabaseRequestContext();
 	if (requestContext) {
 		if (!requestContext.kysely) {
-			requestContext.kysely = createDb(requestContext.connectionString);
+			requestContext.kysely = createDb();
 		}
-		return requestContext.kysely as KyselyDbWithPool;
+		return requestContext.kysely as KyselyDbWithClient;
 	}
 
 	if (!globalThis.__kyselyDb) {
@@ -62,20 +44,28 @@ function getCurrentDb(): KyselyDbWithPool {
 	return globalThis.__kyselyDb;
 }
 
-export const db = new Proxy({} as KyselyDbWithPool, {
+export const db = new Proxy({} as KyselyDbWithClient, {
 	get(_target, prop: string | symbol) {
 		const currentDb = getCurrentDb();
-		const value = currentDb[prop as keyof KyselyDbWithPool];
+		const value = currentDb[prop as keyof KyselyDbWithClient];
 		if (typeof value === "function") return value.bind(currentDb);
 		return value;
 	},
 });
 
 export async function disposeDb(): Promise<void> {
-	if (globalThis.__kyselyDb) {
-		if (typeof globalThis.__kyselyDb.destroy === "function") {
-			await globalThis.__kyselyDb.destroy();
+	try {
+		if (globalThis.__kyselyDb) {
+			if (typeof globalThis.__kyselyDb.destroy === "function") {
+				await globalThis.__kyselyDb.destroy();
+			}
 		}
+	} finally {
+		if (globalThis.__tursoClient) {
+			globalThis.__tursoClient.close();
+		}
+		globalThis.__tursoClient = null;
+		globalThis.__kyselyDb = null;
+		globalThis.__drizzleDb = null;
 	}
-	globalThis.__kyselyDb = null;
 }

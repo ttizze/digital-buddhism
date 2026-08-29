@@ -53,7 +53,7 @@ export const auth = betterAuth({
 	// データベース設定（Kysely を直接使用）
 	database: {
 		db: db,
-		type: "postgres",
+		type: "sqlite",
 	},
 	user: {
 		modelName: "users",

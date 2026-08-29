@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1787994304423,
+      "tag": "0000_turso_baseline",
+      "breakpoints": true
+    }
+  ]
+}

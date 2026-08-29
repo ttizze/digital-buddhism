@@ -9,6 +9,8 @@
 ## 誤解しやすい点
 - このリポジトリは **TanStack Start アプリがルート直下** にあります。ルート境界は `src/routes`、機能モジュールは `src/app` に置きます。
 - **DB は Kysely をランタイムで使用**し、**Drizzle はスキーマ/マイグレーション用**です。
+- **ローカル開発・テストは一時SQLite**、**本番はTurso（libSQL）**です。ローカルDBは `db:with-branch` が作成・破棄するため、PostgreSQLやDockerを前提にしません。
+- 本番の接続情報は `TURSO_DATABASE_URL` と `TURSO_AUTH_TOKEN` で渡します。値をコードやドキュメントへ書きません。
 - 認証は **better-auth** を利用しています（`src/auth.ts`）。
 - i18n は `use-intl` で、`src/routes/$locale` が基本ルートです。
 
@@ -22,7 +24,7 @@
 - **最小変更**・**シンプル優先**・**過剰分割禁止**
 - `useMemo` / `useCallback` は使用しない
 - `useEffect` は必要な場合のみ
-- 変更後は `bun run typecheck` と `bun run lint` を実行
+- 変更後は `bun run typecheck` と `bun x biome ci .` を実行
 
 ## 置き場所の原則
 - ルート内で完結させる（コロケーション）
