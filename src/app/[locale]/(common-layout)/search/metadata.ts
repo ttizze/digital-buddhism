@@ -4,28 +4,23 @@ const metadataByLocale: Record<string, { title: string; description: string }> =
 	{
 		ja: {
 			title: "検索 | Evame",
-			description:
-				"Evameで記事、ユーザー、タグを検索。世界中の多言語コンテンツを見つけよう。",
+			description: "Evameでティピタカのページ、本文、ユーザーを検索できます。",
 		},
 		en: {
 			title: "Search | Evame",
-			description:
-				"Search articles, users, and tags on Evame. Discover multilingual content from around the world.",
+			description: "Search Tipitaka pages, text, and users on Evame.",
 		},
 		zh: {
 			title: "搜索 | Evame",
-			description:
-				"在Evame搜索文章、用户和标签。发现来自世界各地的多语言内容。",
+			description: "在Evame搜索三藏页面、正文和用户。",
 		},
 		ko: {
 			title: "검색 | Evame",
-			description:
-				"Evame에서 기사, 사용자, 태그를 검색하세요. 전 세계의 다국어 콘텐츠를 발견하세요.",
+			description: "Evame에서 티피타카 페이지, 본문, 사용자를 검색하세요.",
 		},
 		es: {
 			title: "Buscar | Evame",
-			description:
-				"Busca artículos, usuarios y etiquetas en Evame. Descubre contenido multilingüe de todo el mundo.",
+			description: "Busca páginas del Tipitaka, texto y usuarios en Evame.",
 		},
 	};
 

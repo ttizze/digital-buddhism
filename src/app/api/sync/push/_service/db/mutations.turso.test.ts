@@ -13,7 +13,7 @@ import {
 	vi,
 } from "vitest";
 import { disposeDb } from "@/db";
-import type { JsonValue } from "@/db/types";
+import type { JsonValue } from "@/drizzle/types";
 
 const databasePath = join(
 	tmpdir(),

@@ -2,7 +2,7 @@ import remarkParse from "remark-parse";
 import { unified } from "unified";
 import { removePosition } from "unist-util-remove-position";
 import { VFile } from "vfile";
-import type { JsonValue } from "@/db/types";
+import type { JsonValue } from "@/drizzle/types";
 import { remarkAutoUploadImages } from "./remark-auto-upload-images";
 import { remarkCustomBlocks } from "./remark-custom-blocks";
 import type { SegmentDraft } from "./remark-hash-and-segments";

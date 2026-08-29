@@ -2,7 +2,7 @@ import "dotenv/config";
 
 import { createId } from "@paralleldrive/cuid2";
 import type { TransactionClient } from "@/app/[locale]/_service/sync-segments";
-import type { JsonValue } from "@/db/types";
+import type { JsonValue } from "@/drizzle/types";
 import { db, disposeDb } from ".";
 import { LOCALE_CONTENT } from "./seed-data/content";
 
@@ -126,13 +126,6 @@ async function upsertPage(params: {
 		const page = await tx
 			.insertInto("pages")
 			.values({
-				id: (
-					await tx
-						.insertInto("contents")
-						.values({ kind: "PAGE", importFileId: null })
-						.returning("id")
-						.executeTakeFirstOrThrow()
-				).id,
 				slug: params.slug,
 				sourceLocale: params.sourceLocale,
 				mdastJson: buildMdastJson(params.content),

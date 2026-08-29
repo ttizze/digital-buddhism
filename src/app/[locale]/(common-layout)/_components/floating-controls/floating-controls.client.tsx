@@ -13,7 +13,6 @@ interface AnnotationType {
 }
 
 interface FloatingControlsProps {
-	likeButton?: React.ReactNode;
 	position?: string;
 	alwaysVisible?: boolean;
 	annotationTypes?: AnnotationType[]; // List of annotation types
@@ -21,7 +20,6 @@ interface FloatingControlsProps {
 	sourceLocale: string;
 }
 export function FloatingControls({
-	likeButton,
 	position = `fixed bottom-4 left-1/2 -translate-x-1/2 duration-300 `,
 	alwaysVisible = false,
 	annotationTypes = [],
@@ -86,15 +84,6 @@ export function FloatingControls({
 					</Button>
 				);
 			})}
-
-			{likeButton && (
-				<div className="flex flex-col items-center gap-1 group">
-					<div className="h-10 w-10">{likeButton}</div>
-					<span className="text-[10px] leading-none text-muted-foreground transition-colors group-hover:text-foreground">
-						Like
-					</span>
-				</div>
-			)}
 
 			<div className="flex flex-col items-center gap-1 group">
 				<ShareDialog />

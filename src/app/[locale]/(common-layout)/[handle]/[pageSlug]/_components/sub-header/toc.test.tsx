@@ -9,7 +9,7 @@ describe("Toc", () => {
 			level: 1,
 			segment: {
 				id: 1,
-				contentId: 1,
+				pageId: 1,
 				number: 1,
 				text: "Heading 1",
 				translationText: "見出し1",
@@ -20,7 +20,7 @@ describe("Toc", () => {
 			level: 2,
 			segment: {
 				id: 2,
-				contentId: 1,
+				pageId: 1,
 				number: 2,
 				text: "This is a very long heading text that should be truncated",
 				translationText: null,

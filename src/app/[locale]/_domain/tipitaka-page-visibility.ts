@@ -1,4 +1,4 @@
-import type { PageStatus } from "@/db/types";
+import type { PageStatus } from "@/drizzle/types";
 
 export const TIPITAKA_ROOT_SLUG = "tipitaka" as const;
 export const TIPITAKA_SYSTEM_USER_HANDLE = "evame" as const;

@@ -24,13 +24,6 @@ describe("ホーム画面", () => {
 			),
 		).toEqual(["tipitaka-pages"]);
 		expect(screen.getByTestId("tipitaka-pages")).toBeInTheDocument();
-		expect(screen.queryByTestId("about-section")).not.toBeInTheDocument();
-		expect(screen.queryByTestId("floating-controls")).not.toBeInTheDocument();
-		expect(screen.queryByTestId("new-pages")).not.toBeInTheDocument();
-		expect(screen.queryByTestId("popular-pages")).not.toBeInTheDocument();
-		expect(
-			screen.queryByRole("link", { name: /More/ }),
-		).not.toBeInTheDocument();
 	});
 });
 

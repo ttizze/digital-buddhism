@@ -16,17 +16,6 @@ describe("TanStack StartのAPIルート登録", () => {
 		expectRouteToMatch("/api/locale-info", "/api/locale-info");
 	});
 
-	it("/api/page-likes/state が実際のルートツリーでマッチする", () => {
-		expectRouteToMatch("/api/page-likes/state", "/api/page-likes/state");
-	});
-
-	it("/api/page-views/example-page-id/increment が実際のルートツリーでマッチする", () => {
-		expectRouteToMatch(
-			"/api/page-views/example-page-id/increment",
-			"/api/page-views/$pageId/increment",
-		);
-	});
-
 	it("/api/og が実際のルートツリーでマッチする", () => {
 		expectRouteToMatch("/api/og", "/api/og");
 	});

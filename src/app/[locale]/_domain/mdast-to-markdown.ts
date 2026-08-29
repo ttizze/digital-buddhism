@@ -1,7 +1,7 @@
 import type { Root } from "mdast";
 import { gfmToMarkdown } from "mdast-util-gfm";
 import { toMarkdown } from "mdast-util-to-markdown";
-import type { JsonValue } from "@/db/types";
+import type { JsonValue } from "@/drizzle/types";
 
 function toRoot(mdastJson: JsonValue): Root | null {
 	if (mdastJson == null) return null;

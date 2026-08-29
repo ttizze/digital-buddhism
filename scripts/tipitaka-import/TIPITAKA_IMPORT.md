@@ -404,8 +404,8 @@ function sortEntries(entries: ImportEntry[]): ImportEntry[] {
 						});
 
 					// 段落番号でセグメントをグループ化
-					// page.id === content.id なので、pageIdをそのままcontentIdとして使用
-					const segments = await getSegmentsForContent(prisma, pageId);
+					// ページIDで対象セグメントを取得
+					const segments = await getSegmentsForPage(prisma, pageId);
 					const paragraphNumberToSegmentIds = buildParagraphSegmentMap(
 						segments,
 					);

@@ -1,12 +1,10 @@
 import { db } from "@/db";
 
-export async function hasSegmentsForContentId(
-	contentId: number,
-): Promise<boolean> {
+export async function hasSegmentsForPageId(pageId: number): Promise<boolean> {
 	const result = await db
 		.selectFrom("segments")
 		.select("id")
-		.where("contentId", "=", contentId)
+		.where("contentId", "=", pageId)
 		.limit(1)
 		.executeTakeFirst();
 

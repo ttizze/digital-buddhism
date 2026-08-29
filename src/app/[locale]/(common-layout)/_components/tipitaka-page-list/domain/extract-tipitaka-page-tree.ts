@@ -2,7 +2,7 @@ import {
 	isPagePubliclyReadable,
 	TIPITAKA_SOURCE_LOCALE,
 } from "@/app/[locale]/_domain/tipitaka-page-visibility";
-import type { ContentKind, PageStatus } from "@/db/types";
+import type { PageStatus } from "@/drizzle/types";
 
 export type TipitakaPageRow = {
 	id: number;
@@ -16,7 +16,6 @@ export type TipitakaPageRow = {
 	titleTranslationText: string | null;
 	sourceLocale: string;
 	status: PageStatus;
-	contentKind: ContentKind;
 };
 
 export type TipitakaPageTreeNode = {
@@ -32,10 +31,10 @@ export type TipitakaPageTreeNode = {
 };
 
 /**
- * ルート配下の公開対象パーリ語 PAGE だけを、DB の親子関係と順序で木にする。
+ * ルート配下の公開対象パーリ語ページだけを、DB の親子関係と順序で木にする。
  *
- * 取得元にかかわらず抽出条件をここで明示しておくことで、トップに出す対象を
- * PUBLIC または公開日時がある ARCHIVE / PAGE / pi から逸脱させない。
+ * 取得元にかかわらず抽出条件をここで明示し、トップに出す対象を
+ * PUBLIC または公開日時がある ARCHIVE / pi から逸脱させない。
  */
 export function extractTipitakaPageTree(
 	rows: readonly TipitakaPageRow[],
@@ -47,9 +46,7 @@ export function extractTipitakaPageTree(
 				isTipitakaPage: true,
 				publishedAt: row.publishedAt,
 				status: row.status,
-			}) &&
-			row.contentKind === "PAGE" &&
-			row.sourceLocale === TIPITAKA_SOURCE_LOCALE,
+			}) && row.sourceLocale === TIPITAKA_SOURCE_LOCALE,
 	);
 	const rowsByParent = new Map<number, TipitakaPageRow[]>();
 

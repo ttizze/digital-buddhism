@@ -1,6 +1,5 @@
 import type { fetchPageDetail } from "@/app/[locale]/_db/fetch-page-detail.server";
-import type { PageStatus } from "@/db/types";
-import type { Tag } from "@/db/types.helpers";
+import type { PageStatus } from "@/drizzle/types";
 
 // fetchPageDetail の戻り値から型を推論
 export type PageDetail = NonNullable<
@@ -9,7 +8,7 @@ export type PageDetail = NonNullable<
 
 export type SegmentWithSegmentType = {
 	id: number;
-	contentId: number;
+	pageId: number;
 	number: number;
 	text: string;
 	translationText: string | null;
@@ -27,11 +26,14 @@ export type SegmentForDetail = SegmentWithSegmentType & {
 	}>;
 };
 
-// SegmentForDetail と TitleSegment のユニオン型
-type SegmentForComment = Omit<SegmentForDetail, "annotations"> & {
+// 注釈は取得経路によって省略される場合がある
+type SegmentWithOptionalAnnotations = Omit<SegmentForDetail, "annotations"> & {
 	annotations?: SegmentForDetail["annotations"];
 };
-export type Segment = SegmentForDetail | SegmentForComment | TitleSegment;
+export type Segment =
+	| SegmentForDetail
+	| SegmentWithOptionalAnnotations
+	| TitleSegment;
 
 export type PageForList = {
 	id: number;
@@ -42,9 +44,6 @@ export type PageForList = {
 	userName: string;
 	userImage: string;
 	titleSegment: TitleSegment;
-	tags: Pick<Tag, "id" | "name">[];
-	likeCount: number;
-	viewCount: number;
 };
 
 export type PageForTree = {

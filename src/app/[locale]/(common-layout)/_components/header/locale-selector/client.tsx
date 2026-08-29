@@ -20,8 +20,8 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import type { TranslationProofStatus } from "@/db/types";
 import type { TranslationJob } from "@/db/types.helpers";
+import type { TranslationProofStatus } from "@/drizzle/types";
 import { cn } from "@/lib/utils";
 import { AddTranslateDialog } from "./add-translate-dialog/client";
 import { TranslationProofStatusIcon } from "./component/translation-proof-status-icon";

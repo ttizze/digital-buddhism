@@ -9,19 +9,17 @@ const profileSearchSchema = z.object({
 	page: z.coerce.number().int().positive().catch(1).default(1),
 	query: z.string().catch("").default(""),
 	tab: z.string().catch("home").default("home"),
-	sort: z.enum(["popular", "new"]).catch("popular").default("popular"),
 });
 
 export const Route = createFileRoute("/$locale/_common/$handle")({
 	validateSearch: profileSearchSchema,
-	loaderDeps: ({ search }) => ({ page: search.page, sort: search.sort }),
+	loaderDeps: ({ search }) => ({ page: search.page }),
 	loader: async ({ deps, params }) => {
 		const data = await getHandleData({
 			data: {
 				handle: params.handle,
 				locale: params.locale,
 				page: deps.page,
-				sort: deps.sort,
 			},
 		});
 		if (!data) {
@@ -77,7 +75,6 @@ function ProfileRoute() {
 			}
 			locale={locale}
 			page={search.page}
-			sort={search.sort}
 		/>
 	);
 }

@@ -31,13 +31,13 @@ export async function getSegmentTypeId(
  */
 export async function fetchExistingSegments(
 	tx: TransactionClient,
-	contentId: number,
+	pageId: number,
 	segmentTypeId: number,
 ): Promise<ExistingSegment[]> {
 	return await tx
 		.selectFrom("segments")
 		.select(["id", "text", "number", "textAndOccurrenceHash"])
-		.where("contentId", "=", contentId)
+		.where("contentId", "=", pageId)
 		.where("segmentTypeId", "=", segmentTypeId)
 		.execute();
 }
@@ -47,7 +47,7 @@ export async function fetchExistingSegments(
  */
 export async function offsetSegmentNumbers(
 	tx: TransactionClient,
-	contentId: number,
+	pageId: number,
 	segmentTypeId: number,
 ): Promise<void> {
 	await tx
@@ -55,7 +55,7 @@ export async function offsetSegmentNumbers(
 		.set({
 			number: sql`number + 1000000`,
 		})
-		.where("contentId", "=", contentId)
+		.where("contentId", "=", pageId)
 		.where("segmentTypeId", "=", segmentTypeId)
 		.execute();
 }
@@ -65,14 +65,14 @@ export async function offsetSegmentNumbers(
  */
 async function upsertSingleSegment(
 	tx: TransactionClient,
-	contentId: number,
+	pageId: number,
 	segmentTypeId: number,
 	draft: SegmentDraft,
 ): Promise<{ hash: string; segmentId: number }> {
 	const segment = await tx
 		.insertInto("segments")
 		.values({
-			contentId,
+			contentId: pageId,
 			text: draft.text,
 			number: draft.number,
 			textAndOccurrenceHash: draft.textAndOccurrenceHash,
@@ -97,7 +97,7 @@ async function upsertSingleSegment(
  */
 export async function upsertSegmentBatch(
 	tx: TransactionClient,
-	contentId: number,
+	pageId: number,
 	segmentTypeId: number,
 	draftsNeedingUpsert: SegmentDraft[],
 ): Promise<Map<string, number>> {
@@ -106,7 +106,7 @@ export async function upsertSegmentBatch(
 
 	const results = await Promise.all(
 		draftsNeedingUpsert.map((draft) =>
-			upsertSingleSegment(tx, contentId, segmentTypeId, draft),
+			upsertSingleSegment(tx, pageId, segmentTypeId, draft),
 		),
 	);
 
@@ -122,7 +122,7 @@ export async function upsertSegmentBatch(
  */
 export async function deleteStaleSegments(
 	tx: TransactionClient,
-	contentId: number,
+	pageId: number,
 	segmentTypeId: number,
 	hashesToDelete: Set<string>,
 ): Promise<void> {
@@ -132,7 +132,7 @@ export async function deleteStaleSegments(
 
 	await tx
 		.deleteFrom("segments")
-		.where("contentId", "=", contentId)
+		.where("contentId", "=", pageId)
 		.where("segmentTypeId", "=", segmentTypeId)
 		.where("textAndOccurrenceHash", "in", [...hashesToDelete])
 		.execute();

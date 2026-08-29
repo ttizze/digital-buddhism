@@ -2,7 +2,7 @@ import { queryByAttribute } from "@testing-library/dom";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Segment } from "@/app/[locale]/types";
-import type { JsonValue } from "@/db/types";
+import type { JsonValue } from "@/drizzle/types";
 
 // 2. その後で被テストモジュールをimport
 import { mdastToReact } from "./index";
@@ -13,7 +13,7 @@ const segments: Segment[] = Array.from(
 	(_, i) =>
 		({
 			id: i + 1,
-			contentId: 1,
+			pageId: 1,
 			number: i + 1,
 			text: "",
 			translationText: null,

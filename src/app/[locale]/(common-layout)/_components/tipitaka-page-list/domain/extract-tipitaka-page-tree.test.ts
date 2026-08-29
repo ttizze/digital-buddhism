@@ -5,7 +5,6 @@ describe("extractTipitakaPageTree", () => {
 	it("公開日時があるARCHIVEのパーリ語ページをTipiṭaka一覧に含める", () => {
 		const rows = [
 			{
-				contentKind: "PAGE" as const,
 				id: 2,
 				order: 1,
 				parentId: 1,

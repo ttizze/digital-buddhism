@@ -93,7 +93,7 @@ async function processTipitakaFile(
 	const fileKeyLower = fileMeta.fileKey.toLowerCase();
 	const isMula = fileMeta.primaryOrCommentary?.toUpperCase() === "MULA";
 
-	let anchorContentId: number | null = null;
+	let anchorPageId: number | null = null;
 	if (!isMula && fileMeta.mulaFileKey) {
 		const anchorId = pageIdByFileKey.get(fileMeta.mulaFileKey.toLowerCase());
 		if (!anchorId) {
@@ -106,14 +106,14 @@ async function processTipitakaFile(
 				"Anchor page not found for mula file - annotation links will not be created",
 			);
 		} else {
-			anchorContentId = anchorId;
+			anchorPageId = anchorId;
 			logger.debug(
 				{
 					mulaFileKey: fileMeta.mulaFileKey,
-					anchorContentId,
+					anchorPageId,
 					fileKey: fileMeta.fileKey,
 				},
-				"Anchor content ID found for commentary",
+				"Anchor page ID found for commentary",
 			);
 		}
 	}
@@ -121,7 +121,7 @@ async function processTipitakaFile(
 	logger.debug(
 		{
 			isMula,
-			anchorContentId,
+			anchorPageId,
 			parentId: parentCategoryPageId,
 			order: pageOrder,
 		},
@@ -133,13 +133,13 @@ async function processTipitakaFile(
 		parentId: parentCategoryPageId,
 		userId,
 		order: pageOrder,
-		anchorContentId,
+		anchorPageId,
 	});
 
 	logger.debug(
 		{
 			contentPageId,
-			anchorContentId,
+			anchorPageId,
 			isMula,
 		},
 		"Content page created",

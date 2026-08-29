@@ -1,10 +1,10 @@
 import { db } from "@/db";
 
-export async function findTitleSegmentText(contentId: number) {
+export async function findTitleSegmentText(pageId: number) {
 	const segment = await db
 		.selectFrom("segments")
 		.select("text")
-		.where("contentId", "=", contentId)
+		.where("contentId", "=", pageId)
 		.where("number", "=", 0)
 		.executeTakeFirst();
 

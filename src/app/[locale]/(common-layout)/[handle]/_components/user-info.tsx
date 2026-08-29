@@ -6,8 +6,6 @@ import { ProfilePageJsonLd } from "@/components/seo/json-ld";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { ProfilePageData } from "../_service/profile";
-import { FollowButtonClient } from "./follow-button/client";
-import { FollowStats } from "./follow-stats";
 
 export function UserInfo({
 	data,
@@ -54,17 +52,10 @@ export function UserInfo({
 									<p className="text-sm text-gray-500 not-prose">
 										@{pageOwner.handle}
 									</p>
-									<FollowStats
-										followerList={data.followerList}
-										followersCount={data.followCounts.followers}
-										followingCount={data.followCounts.following}
-										followingList={data.followingList}
-										locale={locale}
-									/>
 								</div>
 							</div>
 
-							{data.isOwner ? (
+							{data.isOwner && (
 								<Link
 									params={{ handle: pageOwner.handle, locale }}
 									to="/$locale/$handle/edit"
@@ -77,12 +68,6 @@ export function UserInfo({
 										<span className="ml-2 text-sm">Edit Profile</span>
 									</Button>
 								</Link>
-							) : (
-								<FollowButtonClient
-									isFollowing={data.isFollowing}
-									locale={locale}
-									targetUserId={pageOwner.id}
-								/>
 							)}
 						</div>
 					</div>

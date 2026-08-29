@@ -27,7 +27,7 @@ const SEGMENT_UPSERT_CHUNK_SIZE = 200;
  */
 export async function syncSegments(
 	tx: TransactionClient,
-	contentId: number,
+	pageId: number,
 	drafts: SegmentDraft[],
 	segmentTypeId: number | null,
 ): Promise<Map<string, number>> {
@@ -37,7 +37,7 @@ export async function syncSegments(
 	// 既存のセグメントを取得
 	const existingSegments = await fetchExistingSegments(
 		tx,
-		contentId,
+		pageId,
 		resolvedSegmentTypeId,
 	);
 
@@ -48,7 +48,7 @@ export async function syncSegments(
 
 	// 既存セグメントの番号を一時的にオフセットして重複を回避
 	if (existingSegments.length > 0) {
-		await offsetSegmentNumbers(tx, contentId, resolvedSegmentTypeId);
+		await offsetSegmentNumbers(tx, pageId, resolvedSegmentTypeId);
 	}
 
 	// ハッシュ → セグメントIDのマッピング（戻り値として使用）
@@ -60,7 +60,7 @@ export async function syncSegments(
 
 		const upsertedSegmentIds = await upsertSegmentBatch(
 			tx,
-			contentId,
+			pageId,
 			resolvedSegmentTypeId,
 			chunk,
 		);
@@ -73,7 +73,7 @@ export async function syncSegments(
 	}
 
 	// ドラフトに含まれない既存セグメントを削除
-	await deleteStaleSegments(tx, contentId, resolvedSegmentTypeId, staleHashes);
+	await deleteStaleSegments(tx, pageId, resolvedSegmentTypeId, staleHashes);
 
 	return hashToSegmentId;
 }

@@ -1,13 +1,7 @@
-/**
- * ページリスト取得用クエリ
- *
- * Kyselyの機能を活かしたシンプルな実装
- * - 1クエリでページ + ユーザー + タイトル + カウントを取得
- * - タグのみ別クエリ（配列集約のため）
- */
+/** ページリスト取得用クエリ */
 
 import { db } from "@/db";
-import type { PageStatus } from "@/db/types";
+import type { PageStatus } from "@/drizzle/types";
 import type { PageForList, TitleSegment } from "../types";
 import { bestTranslationTextSubquery } from "./best-translation-subquery.server";
 
@@ -26,33 +20,6 @@ type PaginatedResult = {
 	pageForLists: PageForList[];
 	totalPages: number;
 };
-
-// ============================================
-// 共通ヘルパー
-// ============================================
-
-/**
- * タグを取得してMapで返す
- */
-export async function fetchTagsMap(pageIds: number[]) {
-	if (pageIds.length === 0)
-		return new Map<number, { id: number; name: string }[]>();
-
-	const tags = await db
-		.selectFrom("tagPages")
-		.innerJoin("tags", "tagPages.tagId", "tags.id")
-		.select(["tagPages.pageId", "tags.id as tagId", "tags.name as tagName"])
-		.where("tagPages.pageId", "in", pageIds)
-		.execute();
-
-	const map = new Map<number, { id: number; name: string }[]>();
-	for (const t of tags) {
-		const existing = map.get(t.pageId) || [];
-		existing.push({ id: t.tagId, name: t.tagName });
-		map.set(t.pageId, existing);
-	}
-	return map;
-}
 
 /**
  * 総ページ数を取得
@@ -91,17 +58,14 @@ type PageRow = Awaited<
 function toTitleSegment(row: PageRow): TitleSegment {
 	return {
 		id: row.segmentId,
-		contentId: row.id,
+		pageId: row.id,
 		number: 0,
 		text: row.segmentText,
 		translationText: row.translationText ?? null,
 	};
 }
 
-export function toPageForList(
-	row: PageRow,
-	tags: { id: number; name: string }[],
-): PageForList {
+export function toPageForList(row: PageRow): PageForList {
 	return {
 		id: row.id,
 		slug: row.slug,
@@ -111,15 +75,12 @@ export function toPageForList(
 		userName: row.userName,
 		userImage: row.userImage,
 		titleSegment: toTitleSegment(row),
-		tags: tags.map((tag) => ({ id: tag.id, name: tag.name })),
-		likeCount: Number(row.likeCount ?? 0),
-		viewCount: Number(row.pageViewCount ?? 0),
 	};
 }
 
 /**
  * ページリストのベースクエリを構築
- * ページ + ユーザー + タイトルセグメント + 最良翻訳 + カウントを1クエリで取得
+ * ページ + ユーザー + タイトルセグメント + 最良翻訳を1クエリで取得
  */
 export function buildPageListQuery(locale: string) {
 	return (
@@ -159,17 +120,6 @@ export function buildPageListQuery(locale: string) {
 					ownerId: eb.ref("pages.userId"),
 					segmentId: eb.ref("seg.id"),
 				}).as("translationText"),
-				// counts (サブクエリ)
-				eb
-					.selectFrom("likePages")
-					.select(eb.fn.countAll().as("count"))
-					.whereRef("likePages.pageId", "=", "pages.id")
-					.as("likeCount"),
-				eb
-					.selectFrom("pageViews")
-					.select("count")
-					.whereRef("pageViews.pageId", "=", "pages.id")
-					.as("pageViewCount"),
 			])
 	);
 }
@@ -203,61 +153,10 @@ export async function fetchPaginatedNewPageLists({
 		.offset(offset)
 		.execute();
 
-	const pageIds = rows.map((r) => r.id);
-	const [tagsMap, total] = await Promise.all([
-		fetchTagsMap(pageIds),
-		fetchTotalCount("PUBLIC", null, pageOwnerId),
-	]);
-
-	const pageForLists = rows.map((row) =>
-		toPageForList(row, tagsMap.get(row.id) || []),
-	);
+	const total = await fetchTotalCount("PUBLIC", null, pageOwnerId);
 
 	return {
-		pageForLists,
-		totalPages: Math.ceil(total / pageSize),
-	};
-}
-
-/**
- * 人気ページリストを取得
- */
-export async function fetchPaginatedPopularPageLists({
-	page = 1,
-	pageSize = 9,
-	pageOwnerId,
-	locale = "en",
-}: PageListParams): Promise<PaginatedResult> {
-	const offset = (page - 1) * pageSize;
-
-	let query = buildPageListQuery(locale)
-		.where("pages.status", "=", "PUBLIC")
-		.where("pages.parentId", "is", null);
-
-	if (pageOwnerId) {
-		query = query.where("pages.userId", "=", pageOwnerId);
-	}
-
-	// いいね数でソート（サブクエリ）
-	const rows = await query
-		.orderBy("likeCount", "desc")
-		.orderBy("pages.createdAt", "desc")
-		.limit(pageSize)
-		.offset(offset)
-		.execute();
-
-	const pageIds = rows.map((r) => r.id);
-	const [tagsMap, total] = await Promise.all([
-		fetchTagsMap(pageIds),
-		fetchTotalCount("PUBLIC", null, pageOwnerId),
-	]);
-
-	const pageForLists = rows.map((row) =>
-		toPageForList(row, tagsMap.get(row.id) || []),
-	);
-
-	return {
-		pageForLists,
+		pageForLists: rows.map(toPageForList),
 		totalPages: Math.ceil(total / pageSize),
 	};
 }

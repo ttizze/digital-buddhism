@@ -122,73 +122,15 @@ function NotificationContent({
 	notificationRowsWithRelations: NotificationRowsWithRelations;
 	locale: string;
 }) {
-	const { actorHandle, actorName, actorImage, type } =
-		notificationRowsWithRelations;
-	const commonLink = (
-		<Link
-			className="hover:underline font-bold"
-			params={{ handle: actorHandle, locale }}
-			to="/$locale/$handle"
-		>
-			{actorName}
-		</Link>
-	);
-	const commonDate = notificationRowsWithRelations.createdAt.toLocaleString();
-
-	const getPageLink = () => {
-		const pageTitle = notificationRowsWithRelations.pageTitle;
-		const pageSlug = notificationRowsWithRelations.pageSlug;
-		const pageOwnerHandle = notificationRowsWithRelations.pageOwnerHandle;
-		if (!pageTitle || !pageSlug || !pageOwnerHandle) return null;
-		return (
-			<Link
-				className="hover:underline font-bold"
-				params={{ handle: pageOwnerHandle, locale, pageSlug }}
-				to="/$locale/$handle/$pageSlug"
-			>
-				{pageTitle}
-			</Link>
-		);
-	};
-
-	let actionText: React.ReactNode = null;
-	let extraContent: React.ReactNode = null;
-
-	switch (type) {
-		case "PAGE_LIKE":
-			actionText = <span className="text-gray-500"> liked your page </span>;
-			extraContent = getPageLink();
-			if (!extraContent) return null;
-			break;
-		case "FOLLOW":
-			actionText = <span className="text-gray-500"> followed you</span>;
-			break;
-		case "PAGE_SEGMENT_TRANSLATION_VOTE": {
-			const votedText = notificationRowsWithRelations.segmentTranslationText;
-			const pageTitle = notificationRowsWithRelations.pageTitle;
-			const pageSlug = notificationRowsWithRelations.pageSlug;
-			const pageOwnerHandle = notificationRowsWithRelations.pageOwnerHandle;
-			if (!votedText || !pageTitle || !pageSlug || !pageOwnerHandle)
-				return null;
-			actionText = <span className="text-gray-500"> voted for </span>;
-			extraContent = (
-				<>
-					<span>{votedText}</span>
-					<span className="text-gray-500"> on </span>
-					<Link
-						className="hover:underline font-bold"
-						params={{ handle: pageOwnerHandle, locale, pageSlug }}
-						to="/$locale/$handle/$pageSlug"
-					>
-						{pageTitle}
-					</Link>
-				</>
-			);
-			break;
-		}
-		default:
-			return <span>通知</span>;
-	}
+	const {
+		actorHandle,
+		actorImage,
+		actorName,
+		pageOwnerHandle,
+		pageSlug,
+		pageTitle,
+		segmentTranslationText,
+	} = notificationRowsWithRelations;
 
 	return (
 		<>
@@ -200,11 +142,27 @@ function NotificationContent({
 			/>
 			<span className="flex flex-col">
 				<span>
-					{commonLink}
-					{actionText}
-					{extraContent}
+					<Link
+						className="hover:underline font-bold"
+						params={{ handle: actorHandle, locale }}
+						to="/$locale/$handle"
+					>
+						{actorName}
+					</Link>
+					<span className="text-gray-500"> voted for </span>
+					<span>{segmentTranslationText}</span>
+					<span className="text-gray-500"> on </span>
+					<Link
+						className="hover:underline font-bold"
+						params={{ handle: pageOwnerHandle, locale, pageSlug }}
+						to="/$locale/$handle/$pageSlug"
+					>
+						{pageTitle}
+					</Link>
 				</span>
-				<span className="text-gray-500 text-sm">{commonDate}</span>
+				<span className="text-gray-500 text-sm">
+					{notificationRowsWithRelations.createdAt.toLocaleString()}
+				</span>
 			</span>
 		</>
 	);

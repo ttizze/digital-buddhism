@@ -1,19 +1,16 @@
 import { sql } from "kysely";
 import {
 	searchPagesByContent,
-	searchPagesByTag,
 	searchPagesByTitle,
 } from "@/app/[locale]/_db/page-search.server";
 import type { PageForList } from "@/app/[locale]/types";
 import type { SanitizedUser } from "@/app/types";
 import { db } from "@/db";
-import type { Tag } from "@/db/types.helpers";
 import { sanitizeUser } from "../_utils/sanitize-user";
 import type { Category } from "../constants";
 
 export type SearchResultsData = {
 	pageSummaries: PageForList[] | undefined;
-	tags: Tag[] | undefined;
 	users: SanitizedUser[] | undefined;
 	totalPages: number;
 };
@@ -24,18 +21,15 @@ export async function fetchSearchResults({
 	category,
 	page,
 	locale,
-	tagPage,
 }: {
 	query: string;
 	category: Category;
 	page: number;
 	locale: string;
-	tagPage: "true" | "false";
 }): Promise<SearchResultsData> {
 	if (!query || page < 1) {
 		return {
 			pageSummaries: [],
-			tags: [],
 			users: [],
 			totalPages: 0,
 		};
@@ -46,7 +40,6 @@ export async function fetchSearchResults({
 	const take = PAGE_SIZE;
 
 	let pageSummaries: PageForList[] | undefined;
-	let tags: Tag[] | undefined;
 	let users: SanitizedUser[] | undefined;
 	let totalCount = 0;
 
@@ -73,27 +66,6 @@ export async function fetchSearchResults({
 			totalCount = total;
 			break;
 		}
-		case "tags": {
-			if (tagPage === "true") {
-				const { pageForLists: resultPages, total } = await searchPagesByTag(
-					query,
-					skip,
-					take,
-					locale,
-				);
-				pageSummaries = resultPages;
-				totalCount = total;
-			} else {
-				const { tags: resultTags, totalCount: cnt } = await searchTags(
-					query,
-					skip,
-					take,
-				);
-				tags = resultTags;
-				totalCount = cnt;
-			}
-			break;
-		}
 		case "user": {
 			const { users: resultUsers, totalCount: cnt } = await searchUsers(
 				query,
@@ -113,38 +85,8 @@ export async function fetchSearchResults({
 
 	return {
 		pageSummaries,
-		tags,
 		users,
 		totalPages,
-	};
-}
-
-/** タグ検索 (Tag.name) → Tag[] */
-async function searchTags(
-	query: string,
-	skip: number,
-	take: number,
-): Promise<{
-	tags: Tag[];
-	totalCount: number;
-}> {
-	const [tagResults, countResult] = await Promise.all([
-		db
-			.selectFrom("tags")
-			.selectAll()
-			.where("name", "like", `%${query}%`)
-			.limit(take)
-			.offset(skip)
-			.execute(),
-		db
-			.selectFrom("tags")
-			.select(sql<number>`count(*)`.as("count"))
-			.where("name", "like", `%${query}%`)
-			.executeTakeFirst(),
-	]);
-	return {
-		tags: tagResults,
-		totalCount: Number(countResult?.count ?? 0),
 	};
 }
 

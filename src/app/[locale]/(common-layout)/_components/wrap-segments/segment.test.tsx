@@ -5,7 +5,7 @@ import { SegmentElement } from "./segment";
 function makeListSegment(overrides: Partial<TitleSegment> = {}): TitleSegment {
 	return {
 		id: 1,
-		contentId: 1,
+		pageId: 1,
 		number: 1,
 		text: "source",
 		translationText: null,

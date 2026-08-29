@@ -1,11 +1,9 @@
 import { ClientOnly, createFileRoute, notFound } from "@tanstack/react-router";
 import { FloatingControls } from "@/app/[locale]/(common-layout)/_components/floating-controls/floating-controls.client";
-import { PageLikeButtonClient } from "@/app/[locale]/(common-layout)/_components/page/page-like-button/client";
 import {
 	collectAnnotationTypes,
 	PageContent,
 } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/page-content";
-import { PageViewCounter } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/page-view-counter";
 import { buildPageMetadata } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_service/page-metadata";
 import { getPageDetailData } from "./$locale/-page-detail-data";
 
@@ -73,44 +71,14 @@ function PageDetailRoute() {
 				<ClientOnly fallback={null}>
 					<FloatingControls
 						annotationTypes={annotationTypes}
-						likeButton={
-							<PageLikeButtonClient
-								className="w-10 h-10 rounded-full"
-								initialLikeCount={data.pageCounts.likeCount}
-								pageId={data.pageDetail.id}
-								showCount={false}
-							/>
-						}
 						sourceLocale={data.pageDetail.sourceLocale}
 						userLocale={locale}
-					/>
-				</ClientOnly>
-			}
-			likeButton={
-				<ClientOnly fallback={null}>
-					<PageLikeButtonClient
-						initialLikeCount={data.pageCounts.likeCount}
-						pageId={data.pageDetail.id}
-						showCount
 					/>
 				</ClientOnly>
 			}
 			locale={locale}
 			navigationData={data.navigationData}
 			pageDetail={data.pageDetail}
-			pageViewCounter={
-				<ClientOnly
-					fallback={
-						<span className="text-muted-foreground">{data.pageViewCount}</span>
-					}
-				>
-					<PageViewCounter
-						className="text-muted-foreground"
-						initialCount={data.pageViewCount}
-						pageId={data.pageDetail.id}
-					/>
-				</ClientOnly>
-			}
 		/>
 	);
 }

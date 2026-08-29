@@ -16,11 +16,7 @@ import { Client } from "@upstash/qstash";
 import { BASE_URL } from "@/app/_constants/base-url";
 import { createServerLogger } from "@/app/_service/logger.server";
 import { markJobCompleted, markJobInProgress } from "../_db/mutations.server";
-import {
-	getAnnotationSegments,
-	getPageSegments,
-	getPageTitle,
-} from "../_db/queries.server";
+import { getPageSegments, getPageTitle } from "../_db/queries.server";
 import { splitSegments } from "../_domain/split-segments";
 import type { TranslateChunkParams, TranslateJobParams } from "../types";
 
@@ -31,10 +27,9 @@ export async function orchestrateTranslation(params: TranslateJobParams) {
 		targetLocale: params.targetLocale,
 		aiModel: params.aiModel,
 	});
-	// annotationContentId に応じて注釈またはページのセグメントを取得
-	const segments = params.annotationContentId
-		? await getAnnotationSegments(params.annotationContentId)
-		: await getPageSegments(params.pageId);
+	const segments = await getPageSegments(
+		params.annotationPageId ?? params.pageId,
+	);
 
 	// ページタイトルを取得（翻訳プロンプト用）
 	const title = (await getPageTitle(params.pageId)) ?? "";
@@ -72,7 +67,7 @@ export async function orchestrateTranslation(params: TranslateJobParams) {
 				userId: params.userId,
 				targetLocale: params.targetLocale,
 				pageId: params.pageId,
-				annotationContentId: params.annotationContentId,
+				annotationPageId: params.annotationPageId,
 				segments: chunk,
 				title,
 				totalChunks,

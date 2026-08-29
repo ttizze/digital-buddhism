@@ -1,4 +1,3 @@
-import { EyeIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { BASE_URL } from "@/app/_constants/base-url";
 import type { PageDetail } from "@/app/[locale]/types";
@@ -33,8 +32,6 @@ export function PageContent({
 	navigationData,
 	childPages,
 	description,
-	likeButton,
-	pageViewCounter,
 	floatingControls,
 }: {
 	pageDetail: PageDetail;
@@ -42,8 +39,6 @@ export function PageContent({
 	navigationData: NavigationData | null;
 	childPages: PageTitleTree[];
 	description: string;
-	likeButton: ReactNode;
-	pageViewCounter: ReactNode;
 	floatingControls: ReactNode;
 }) {
 	const isDraft =
@@ -84,11 +79,6 @@ export function PageContent({
 			/>
 			<ContentWithTranslations pageDetail={pageDetail} />
 			<ChildPages locale={locale} pages={childPages} />
-			<div className="flex flex-wrap items-center gap-4">
-				<EyeIcon className="h-5 w-5" strokeWidth={1.5} />
-				{pageViewCounter}
-				{likeButton}
-			</div>
 
 			{floatingControls}
 		</article>

@@ -1,4 +1,4 @@
-import type { TranslationProofStatus } from "@/db/types";
+import type { TranslationProofStatus } from "@/drizzle/types";
 
 /**
  * 翻訳の証明ステータスを計算する

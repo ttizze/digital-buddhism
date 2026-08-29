@@ -4,89 +4,33 @@
  */
 
 import type { ColumnType } from "kysely";
-
-export type ContentKind = "PAGE" | "PAGE_COMMENT";
+import type {
+	JsonValue,
+	PageStatus,
+	SegmentTypeKey,
+	TranslationProofStatus,
+	TranslationStatus,
+} from "../drizzle/types";
 
 export type Generated<T> =
 	T extends ColumnType<infer S, infer I, infer U>
 		? ColumnType<S, I | undefined, U>
 		: ColumnType<T, T | undefined, T>;
 
-export type Json = JsonValue;
-
-export type JsonArray = JsonValue[];
-
-export type JsonObject = {
-	[x: string]: JsonValue | undefined;
-};
-
-export type JsonPrimitive = boolean | number | string | null;
-
-export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
-
-export type NotificationType =
-	| "FOLLOW"
-	| "PAGE_COMMENT"
-	| "PAGE_COMMENT_SEGMENT_TRANSLATION_VOTE"
-	| "PAGE_LIKE"
-	| "PAGE_SEGMENT_TRANSLATION_VOTE";
-
-export type PageStatus = "ARCHIVE" | "DRAFT" | "PUBLIC";
-
-export type SegmentTypeKey = "COMMENTARY" | "PRIMARY";
-
-export type Timestamp = ColumnType<Date, Date | string, Date | string>;
-
-export type TranslationProofStatus =
-	| "HUMAN_TOUCHED"
-	| "MACHINE_DRAFT"
-	| "PROOFREAD"
-	| "VALIDATED";
-
-export type TranslationStatus =
-	| "COMPLETED"
-	| "FAILED"
-	| "IN_PROGRESS"
-	| "PENDING";
-
 export interface Accounts {
 	accessToken: string | null;
-	accessTokenExpiresAt: Timestamp | null;
+	accessTokenExpiresAt: Date | null;
 	accountId: string;
-	createdAt: Generated<Timestamp>;
+	createdAt: Generated<Date>;
 	id: string;
 	idToken: string | null;
 	password: string | null;
 	providerId: string;
 	refreshToken: string | null;
-	refreshTokenExpiresAt: Timestamp | null;
+	refreshTokenExpiresAt: Date | null;
 	scope: string | null;
-	updatedAt: Generated<Timestamp>;
+	updatedAt: Generated<Date>;
 	userId: string;
-}
-
-export interface PersonalAccessTokens {
-	createdAt: Generated<Timestamp>;
-	id: Generated<number>;
-	keyHash: string;
-	lastUsedAt: Timestamp | null;
-	name: Generated<string>;
-	userId: string;
-}
-
-export interface Contents {
-	createdAt: Generated<Timestamp>;
-	id: Generated<number>;
-	importFileId: number | null;
-	kind: ContentKind;
-	updatedAt: Generated<Timestamp>;
-}
-
-export interface Follows {
-	createdAt: Generated<Timestamp>;
-	followerId: string;
-	followingId: string;
-	id: Generated<number>;
 }
 
 export interface GeminiApiKeys {
@@ -97,7 +41,7 @@ export interface GeminiApiKeys {
 
 export interface ImportFiles {
 	checksum: string;
-	createdAt: Generated<Timestamp>;
+	createdAt: Generated<Date>;
 	id: Generated<number>;
 	importRunId: number;
 	message: Generated<string>;
@@ -106,42 +50,18 @@ export interface ImportFiles {
 }
 
 export interface ImportRuns {
-	finishedAt: Timestamp | null;
+	finishedAt: Date | null;
 	id: Generated<number>;
-	startedAt: Generated<Timestamp>;
+	startedAt: Generated<Date>;
 	status: Generated<string>;
-}
-
-export interface LikePages {
-	createdAt: Generated<Timestamp>;
-	id: Generated<number>;
-	pageId: number;
-	userId: string | null;
 }
 
 export interface Notifications {
 	actorId: string;
-	createdAt: Generated<Timestamp>;
+	createdAt: Generated<Date>;
 	id: Generated<number>;
-	pageCommentId: number | null;
-	pageId: number | null;
 	read: Generated<boolean>;
-	segmentTranslationId: number | null;
-	type: NotificationType;
-	userId: string;
-}
-
-export interface PageComments {
-	createdAt: Generated<Timestamp>;
-	id: number;
-	isDeleted: Generated<boolean>;
-	lastReplyAt: Timestamp | null;
-	locale: string;
-	mdastJson: Json;
-	pageId: number;
-	parentId: number | null;
-	replyCount: Generated<number>;
-	updatedAt: Generated<Timestamp>;
+	segmentTranslationId: number;
 	userId: string;
 }
 
@@ -153,33 +73,37 @@ export interface PageLocaleTranslationProofs {
 }
 
 export interface Pages {
-	archivedAt: Timestamp | null;
-	createdAt: Generated<Timestamp>;
-	id: number;
-	mdastJson: Json;
+	archivedAt: Date | null;
+	createdAt: Generated<Date>;
+	id: Generated<number>;
+	mdastJson: JsonValue;
 	order: Generated<number>;
 	parentId: number | null;
-	publishedAt: Timestamp | null;
+	publishedAt: Date | null;
 	slug: string;
 	sourceLocale: Generated<string>;
 	status: Generated<PageStatus>;
-	updatedAt: Generated<Timestamp>;
+	updatedAt: Generated<Date>;
 	userId: string;
 }
 
-export interface PageViews {
-	count: Generated<number>;
-	pageId: number;
+export interface PersonalAccessTokens {
+	createdAt: Generated<Date>;
+	id: Generated<number>;
+	keyHash: string;
+	lastUsedAt: Date | null;
+	name: Generated<string>;
+	userId: string;
 }
 
 export interface SegmentAnnotationLinks {
 	annotationSegmentId: number;
-	createdAt: Generated<Timestamp>;
+	createdAt: Generated<Date>;
 	mainSegmentId: number;
 }
 
 export interface SegmentMetadata {
-	createdAt: Generated<Timestamp>;
+	createdAt: Generated<Date>;
 	id: Generated<number>;
 	metadataTypeId: number;
 	segmentId: number;
@@ -194,7 +118,7 @@ export interface SegmentMetadataTypes {
 
 export interface Segments {
 	contentId: number;
-	createdAt: Generated<Timestamp>;
+	createdAt: Generated<Date>;
 	id: Generated<number>;
 	number: number;
 	segmentTypeId: number;
@@ -203,7 +127,7 @@ export interface Segments {
 }
 
 export interface SegmentTranslations {
-	createdAt: Generated<Timestamp>;
+	createdAt: Generated<Date>;
 	id: Generated<number>;
 	locale: string;
 	point: Generated<number>;
@@ -219,58 +143,48 @@ export interface SegmentTypes {
 }
 
 export interface Sessions {
-	createdAt: Generated<Timestamp>;
-	expiresAt: Timestamp;
+	createdAt: Generated<Date>;
+	expiresAt: Date;
 	id: string;
 	ipAddress: string | null;
 	token: string;
-	updatedAt: Generated<Timestamp>;
+	updatedAt: Generated<Date>;
 	userAgent: string | null;
 	userId: string;
 }
 
-export interface TagPages {
-	pageId: number;
-	tagId: number;
-}
-
-export interface Tags {
-	id: Generated<number>;
-	name: string;
-}
-
 export interface TranslationContexts {
 	context: string;
-	createdAt: Generated<Timestamp>;
+	createdAt: Generated<Date>;
 	id: Generated<number>;
 	name: string;
-	updatedAt: Generated<Timestamp>;
+	updatedAt: Generated<Date>;
 	userId: string;
 }
 
 export interface TranslationJobs {
 	aiModel: string;
-	createdAt: Generated<Timestamp>;
+	createdAt: Generated<Date>;
 	error: Generated<string>;
 	id: Generated<number>;
 	locale: string;
 	pageId: number;
 	progress: Generated<number>;
 	status: Generated<TranslationStatus>;
-	updatedAt: Generated<Timestamp>;
+	updatedAt: Generated<Date>;
 	userId: string | null;
 }
 
 export interface TranslationVotes {
-	createdAt: Generated<Timestamp>;
+	createdAt: Generated<Date>;
 	isUpvote: boolean;
 	translationId: number;
-	updatedAt: Generated<Timestamp>;
+	updatedAt: Generated<Date>;
 	userId: string;
 }
 
 export interface Users {
-	createdAt: Generated<Timestamp>;
+	createdAt: Generated<Date>;
 	email: string;
 	emailVerified: boolean | null;
 	handle: string;
@@ -283,40 +197,35 @@ export interface Users {
 	provider: Generated<string>;
 	totalPoints: Generated<number>;
 	twitterHandle: Generated<string>;
-	updatedAt: Generated<Timestamp>;
+	updatedAt: Generated<Date>;
 }
 
 export interface UserSettings {
-	createdAt: Generated<Timestamp>;
+	createdAt: Generated<Date>;
 	id: Generated<number>;
 	targetLocales: Generated<string[]>;
-	updatedAt: Generated<Timestamp>;
+	updatedAt: Generated<Date>;
 	userId: string;
 }
 
 export interface Verifications {
-	createdAt: Timestamp | null;
-	expiresAt: Timestamp;
+	createdAt: Date | null;
+	expiresAt: Date;
 	id: string;
 	identifier: string;
-	updatedAt: Timestamp | null;
+	updatedAt: Date | null;
 	value: string;
 }
 
 export interface DB {
 	accounts: Accounts;
-	contents: Contents;
-	follows: Follows;
 	geminiApiKeys: GeminiApiKeys;
 	importFiles: ImportFiles;
 	importRuns: ImportRuns;
-	likePages: LikePages;
 	notifications: Notifications;
-	personalAccessTokens: PersonalAccessTokens;
-	pageComments: PageComments;
 	pageLocaleTranslationProofs: PageLocaleTranslationProofs;
 	pages: Pages;
-	pageViews: PageViews;
+	personalAccessTokens: PersonalAccessTokens;
 	segmentAnnotationLinks: SegmentAnnotationLinks;
 	segmentMetadata: SegmentMetadata;
 	segmentMetadataTypes: SegmentMetadataTypes;
@@ -324,8 +233,6 @@ export interface DB {
 	segmentTranslations: SegmentTranslations;
 	segmentTypes: SegmentTypes;
 	sessions: Sessions;
-	tagPages: TagPages;
-	tags: Tags;
 	translationContexts: TranslationContexts;
 	translationJobs: TranslationJobs;
 	translationVotes: TranslationVotes;

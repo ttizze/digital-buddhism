@@ -52,8 +52,7 @@ export async function handleVote(
 		const result = await tx
 			.selectFrom("segmentTranslations")
 			.innerJoin("segments", "segmentTranslations.segmentId", "segments.id")
-			.innerJoin("contents", "segments.contentId", "contents.id")
-			.leftJoin("pages", "contents.id", "pages.id")
+			.innerJoin("pages", "segments.contentId", "pages.id")
 			.select([
 				"segmentTranslations.point",
 				"segmentTranslations.locale",
@@ -131,8 +130,7 @@ async function updateProofStatus(
 ) {
 	const stats = await tx
 		.selectFrom("segments")
-		.innerJoin("contents", "segments.contentId", "contents.id")
-		.innerJoin("pages", "contents.id", "pages.id")
+		.innerJoin("pages", "segments.contentId", "pages.id")
 		.leftJoin("segmentTranslations", (join) =>
 			join
 				.onRef("segmentTranslations.segmentId", "=", "segments.id")
@@ -192,7 +190,6 @@ export async function createNotificationPageSegmentTranslationVote(
 			segmentTranslationId: translationId,
 			userId: segmentTranslation.userId,
 			actorId,
-			type: "PAGE_SEGMENT_TRANSLATION_VOTE",
 		})
 		.execute();
 }

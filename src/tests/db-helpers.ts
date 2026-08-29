@@ -1,11 +1,10 @@
 import { sql } from "kysely";
 import { db } from "@/db";
-import type { SegmentTypeKey } from "@/db/types";
+import type { SegmentTypeKey } from "@/drizzle/types";
 
 const preservedTables = new Set([
 	"segment_types",
 	"segment_metadata_types",
-	"tags",
 	"drizzle_migrations",
 	"__drizzle_migrations",
 ]);

@@ -1,7 +1,7 @@
 import GithubSlugger from "github-slugger";
 import { describe, expect, it } from "vitest";
 import type { SegmentForDetail } from "@/app/[locale]/types";
-import type { JsonValue } from "@/db/types";
+import type { JsonValue } from "@/drizzle/types";
 import { extractTocItems } from "./extract-toc-items";
 
 const headingNode = (number: number | null, depth: number): JsonValue => ({
@@ -26,7 +26,7 @@ const createSegment = (
 ): SegmentForDetail =>
 	({
 		id: number,
-		contentId: 1,
+		pageId: 1,
 		number,
 		text,
 		translationText: translatedText,
@@ -59,7 +59,7 @@ describe("extractTocItems", () => {
 				level: 1,
 				segment: {
 					id: 1,
-					contentId: 1,
+					pageId: 1,
 					number: 1,
 					text: "Heading 1",
 					translationText: null,
@@ -70,7 +70,7 @@ describe("extractTocItems", () => {
 				level: 2,
 				segment: {
 					id: 2,
-					contentId: 1,
+					pageId: 1,
 					number: 2,
 					text: "Heading 2",
 					translationText: null,
@@ -81,7 +81,7 @@ describe("extractTocItems", () => {
 				level: 4,
 				segment: {
 					id: 3,
-					contentId: 1,
+					pageId: 1,
 					number: 3,
 					text: "Heading 3",
 					translationText: null,

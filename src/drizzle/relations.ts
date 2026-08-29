@@ -1,17 +1,12 @@
 import { relations } from "drizzle-orm/relations";
 import {
 	accounts,
-	contents,
-	follows,
 	geminiApiKeys,
 	importFiles,
 	importRuns,
-	likePages,
 	notifications,
-	pageComments,
 	pageLocaleTranslationProofs,
 	pages,
-	pageViews,
 	personalAccessTokens,
 	segmentAnnotationLinks,
 	segmentMetadata,
@@ -20,8 +15,6 @@ import {
 	segmentTranslations,
 	segmentTypes,
 	sessions,
-	tagPages,
-	tags,
 	translationContexts,
 	translationJobs,
 	translationVotes,
@@ -39,14 +32,7 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 export const usersRelations = relations(users, ({ many }) => ({
 	accounts: many(accounts),
 	personalAccessTokens: many(personalAccessTokens),
-	follows_followerId: many(follows, {
-		relationName: "follows_followerId_users_id",
-	}),
-	follows_followingId: many(follows, {
-		relationName: "follows_followingId_users_id",
-	}),
 	geminiApiKeys: many(geminiApiKeys),
-	likePages: many(likePages),
 	notifications_actorId: many(notifications, {
 		relationName: "notifications_actorId_users_id",
 	}),
@@ -55,7 +41,6 @@ export const usersRelations = relations(users, ({ many }) => ({
 	}),
 	translationJobs: many(translationJobs),
 	segmentTranslations: many(segmentTranslations),
-	pageComments: many(pageComments),
 	sessions: many(sessions),
 	translationContexts: many(translationContexts),
 	translationVotes: many(translationVotes),
@@ -63,18 +48,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 	userSettings: many(userSettings),
 }));
 
-export const contentsRelations = relations(contents, ({ one, many }) => ({
-	importFile: one(importFiles, {
-		fields: [contents.importFileId],
-		references: [importFiles.id],
-	}),
-	pageComments: many(pageComments),
-	pages: many(pages),
-	segments: many(segments),
-}));
-
-export const importFilesRelations = relations(importFiles, ({ one, many }) => ({
-	contents: many(contents),
+export const importFilesRelations = relations(importFiles, ({ one }) => ({
 	importRun: one(importRuns, {
 		fields: [importFiles.importRunId],
 		references: [importRuns.id],
@@ -95,19 +69,6 @@ export const importRunsRelations = relations(importRuns, ({ many }) => ({
 	importFiles: many(importFiles),
 }));
 
-export const followsRelations = relations(follows, ({ one }) => ({
-	user_followerId: one(users, {
-		fields: [follows.followerId],
-		references: [users.id],
-		relationName: "follows_followerId_users_id",
-	}),
-	user_followingId: one(users, {
-		fields: [follows.followingId],
-		references: [users.id],
-		relationName: "follows_followingId_users_id",
-	}),
-}));
-
 export const geminiApiKeysRelations = relations(geminiApiKeys, ({ one }) => ({
 	user: one(users, {
 		fields: [geminiApiKeys.userId],
@@ -115,28 +76,10 @@ export const geminiApiKeysRelations = relations(geminiApiKeys, ({ one }) => ({
 	}),
 }));
 
-export const likePagesRelations = relations(likePages, ({ one }) => ({
-	page: one(pages, {
-		fields: [likePages.pageId],
-		references: [pages.id],
-	}),
-	user: one(users, {
-		fields: [likePages.userId],
-		references: [users.id],
-	}),
-}));
-
 export const pagesRelations = relations(pages, ({ one, many }) => ({
-	likePages: many(likePages),
-	notifications: many(notifications),
 	translationJobs: many(translationJobs),
-	pageViews: many(pageViews),
-	pageComments: many(pageComments),
 	pageLocaleTranslationProofs: many(pageLocaleTranslationProofs),
-	content: one(contents, {
-		fields: [pages.id],
-		references: [contents.id],
-	}),
+	segments: many(segments),
 	page: one(pages, {
 		fields: [pages.parentId],
 		references: [pages.id],
@@ -149,7 +92,6 @@ export const pagesRelations = relations(pages, ({ one, many }) => ({
 		fields: [pages.userId],
 		references: [users.id],
 	}),
-	tagPages: many(tagPages),
 }));
 
 export const notificationsRelations = relations(notifications, ({ one }) => ({
@@ -157,14 +99,6 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 		fields: [notifications.actorId],
 		references: [users.id],
 		relationName: "notifications_actorId_users_id",
-	}),
-	pageComment: one(pageComments, {
-		fields: [notifications.pageCommentId],
-		references: [pageComments.id],
-	}),
-	page: one(pages, {
-		fields: [notifications.pageId],
-		references: [pages.id],
 	}),
 	segmentTranslation: one(segmentTranslations, {
 		fields: [notifications.segmentTranslationId],
@@ -176,33 +110,6 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 		relationName: "notifications_userId_users_id",
 	}),
 }));
-
-export const pageCommentsRelations = relations(
-	pageComments,
-	({ one, many }) => ({
-		notifications: many(notifications),
-		content: one(contents, {
-			fields: [pageComments.id],
-			references: [contents.id],
-		}),
-		page: one(pages, {
-			fields: [pageComments.pageId],
-			references: [pages.id],
-		}),
-		pageComment: one(pageComments, {
-			fields: [pageComments.parentId],
-			references: [pageComments.id],
-			relationName: "pageComments_parentId_pageComments_id",
-		}),
-		pageComments: many(pageComments, {
-			relationName: "pageComments_parentId_pageComments_id",
-		}),
-		user: one(users, {
-			fields: [pageComments.userId],
-			references: [users.id],
-		}),
-	}),
-);
 
 export const segmentTranslationsRelations = relations(
 	segmentTranslations,
@@ -236,9 +143,9 @@ export const translationJobsRelations = relations(
 
 export const segmentsRelations = relations(segments, ({ one, many }) => ({
 	segmentTranslations: many(segmentTranslations),
-	content: one(contents, {
-		fields: [segments.contentId],
-		references: [contents.id],
+	page: one(pages, {
+		fields: [segments.pageId],
+		references: [pages.id],
 	}),
 	segmentType: one(segmentTypes, {
 		fields: [segments.segmentTypeId],
@@ -250,13 +157,6 @@ export const segmentsRelations = relations(segments, ({ one, many }) => ({
 	}),
 	segmentAnnotationLinks_mainSegmentId: many(segmentAnnotationLinks, {
 		relationName: "segmentAnnotationLinks_mainSegmentId_segments_id",
-	}),
-}));
-
-export const pageViewsRelations = relations(pageViews, ({ one }) => ({
-	page: one(pages, {
-		fields: [pageViews.pageId],
-		references: [pages.id],
 	}),
 }));
 
@@ -331,21 +231,6 @@ export const userSettingsRelations = relations(userSettings, ({ one }) => ({
 		fields: [userSettings.userId],
 		references: [users.id],
 	}),
-}));
-
-export const tagPagesRelations = relations(tagPages, ({ one }) => ({
-	page: one(pages, {
-		fields: [tagPages.pageId],
-		references: [pages.id],
-	}),
-	tag: one(tags, {
-		fields: [tagPages.tagId],
-		references: [tags.id],
-	}),
-}));
-
-export const tagsRelations = relations(tags, ({ many }) => ({
-	tagPages: many(tagPages),
 }));
 
 export const segmentAnnotationLinksRelations = relations(

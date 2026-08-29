@@ -15,9 +15,6 @@ describe("handleVoteのSQLite互換性", () => {
 				{ url: `file:${dbPath}`, authToken: undefined },
 				async () => {
 					const client = getDatabaseClient();
-					await client.execute(
-						"CREATE TABLE contents (id INTEGER PRIMARY KEY)",
-					);
 					await client.execute("CREATE TABLE pages (id INTEGER PRIMARY KEY)");
 					await client.execute(
 						"CREATE TABLE segments (id INTEGER PRIMARY KEY, content_id INTEGER NOT NULL)",
@@ -31,7 +28,6 @@ describe("handleVoteのSQLite互換性", () => {
 					await client.execute(
 						"CREATE TABLE page_locale_translation_proofs (id INTEGER PRIMARY KEY AUTOINCREMENT, page_id INTEGER NOT NULL, locale TEXT NOT NULL, translation_proof_status TEXT NOT NULL, UNIQUE (page_id, locale))",
 					);
-					await client.execute("INSERT INTO contents (id) VALUES (1)");
 					await client.execute("INSERT INTO pages (id) VALUES (1)");
 					await client.execute(
 						"INSERT INTO segments (id, content_id) VALUES (1, 1)",

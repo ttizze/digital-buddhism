@@ -8,7 +8,7 @@ import { VFile } from "vfile";
 import { remarkAutoUploadImages } from "@/app/[locale]/_domain/remark-auto-upload-images";
 import type { SegmentDraft } from "@/app/[locale]/_domain/remark-hash-and-segments";
 import { remarkHashAndSegments } from "@/app/[locale]/_domain/remark-hash-and-segments";
-import type { JsonValue } from "@/db/types";
+import type { JsonValue } from "@/drizzle/types";
 
 interface Params {
 	header?: string;

@@ -1,6 +1,6 @@
 import GithubSlugger from "github-slugger";
 import type { SegmentForDetail, TitleSegment } from "@/app/[locale]/types";
-import type { JsonObject, JsonValue } from "@/db/types";
+import type { JsonObject, JsonValue } from "@/drizzle/types";
 
 export interface TocItem {
 	anchorId: string;
@@ -73,7 +73,7 @@ export function extractTocItems({
 			level,
 			segment: {
 				id: segment.id,
-				contentId: segment.contentId,
+				pageId: segment.pageId,
 				number: segment.number,
 				text: segment.text,
 				translationText: segment.translationText,

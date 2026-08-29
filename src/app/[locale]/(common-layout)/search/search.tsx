@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit3, FileText, Hash, User } from "lucide-react";
+import { Edit3, FileText, User } from "lucide-react";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { useTransition } from "react";
 import {
@@ -46,8 +46,6 @@ export function SearchPageClient({ locale }: { locale: string }) {
 				return <FileText className="mr-1 h-4 w-4" />;
 			case "user":
 				return <User className="mr-1 h-4 w-4" />;
-			case "tags":
-				return <Hash className="mr-1 h-4 w-4" />;
 			case "content":
 				return <Edit3 className="mr-1 h-4 w-4" />;
 			default:

@@ -21,9 +21,6 @@ export type UserInsert = InferInsertModel<typeof schema.users>;
 export type Page = InferSelectModel<typeof schema.pages>;
 export type PageInsert = InferInsertModel<typeof schema.pages>;
 
-export type Content = InferSelectModel<typeof schema.contents>;
-export type ContentInsert = InferInsertModel<typeof schema.contents>;
-
 export type Segment = InferSelectModel<typeof schema.segments>;
 export type SegmentInsert = InferInsertModel<typeof schema.segments>;
 
@@ -33,18 +30,6 @@ export type SegmentTranslation = InferSelectModel<
 export type SegmentTranslationInsert = InferInsertModel<
 	typeof schema.segmentTranslations
 >;
-
-export type PageComment = InferSelectModel<typeof schema.pageComments>;
-export type PageCommentInsert = InferInsertModel<typeof schema.pageComments>;
-
-export type Tag = InferSelectModel<typeof schema.tags>;
-export type TagInsert = InferInsertModel<typeof schema.tags>;
-
-export type TagPage = InferSelectModel<typeof schema.tagPages>;
-export type TagPageInsert = InferInsertModel<typeof schema.tagPages>;
-
-export type LikePage = InferSelectModel<typeof schema.likePages>;
-export type LikePageInsert = InferInsertModel<typeof schema.likePages>;
 
 export type Notification = InferSelectModel<typeof schema.notifications>;
 export type NotificationInsert = InferInsertModel<typeof schema.notifications>;
@@ -59,18 +44,12 @@ export type TranslationJobInsert = InferInsertModel<
 	typeof schema.translationJobs
 >;
 
-export type PageView = InferSelectModel<typeof schema.pageViews>;
-export type PageViewInsert = InferInsertModel<typeof schema.pageViews>;
-
 export type PageLocaleTranslationProof = InferSelectModel<
 	typeof schema.pageLocaleTranslationProofs
 >;
 export type PageLocaleTranslationProofInsert = InferInsertModel<
 	typeof schema.pageLocaleTranslationProofs
 >;
-
-export type Follow = InferSelectModel<typeof schema.follows>;
-export type FollowInsert = InferInsertModel<typeof schema.follows>;
 
 export type Account = InferSelectModel<typeof schema.accounts>;
 export type AccountInsert = InferInsertModel<typeof schema.accounts>;
@@ -116,12 +95,15 @@ export type Verification = InferSelectModel<typeof schema.verifications>;
 export type VerificationInsert = InferInsertModel<typeof schema.verifications>;
 
 // Enum型のエクスポート
-export type ContentKind = (typeof schema.contentKind.enumValues)[number];
-export type NotificationType =
-	(typeof schema.notificationType.enumValues)[number];
 export type PageStatus = (typeof schema.pageStatus.enumValues)[number];
 export type SegmentTypeKey = (typeof schema.segmentTypeKey.enumValues)[number];
 export type TranslationProofStatus =
 	(typeof schema.translationProofStatus.enumValues)[number];
 export type TranslationStatus =
 	(typeof schema.translationStatus.enumValues)[number];
+
+export type JsonPrimitive = boolean | null | number | string;
+export type JsonArray = JsonValue[];
+export type JsonObject = { [key: string]: JsonValue | undefined };
+export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
+export type Json = JsonValue;

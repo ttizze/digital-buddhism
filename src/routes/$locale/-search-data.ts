@@ -15,7 +15,6 @@ const searchInput = z.object({
 		),
 	page: z.number().int().positive(),
 	query: z.string(),
-	tagPage: z.enum(["true", "false"]),
 });
 
 export const getSearchData = createServerFn({ method: "GET" })

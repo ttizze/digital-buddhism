@@ -7,22 +7,9 @@ import {
 	primaryKey,
 	sqliteTable,
 	text,
-	unique,
 	uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
-export const contentKind = {
-	enumValues: ["PAGE", "PAGE_COMMENT"],
-} as const;
-export const notificationType = {
-	enumValues: [
-		"FOLLOW",
-		"PAGE_COMMENT",
-		"PAGE_LIKE",
-		"PAGE_SEGMENT_TRANSLATION_VOTE",
-		"PAGE_COMMENT_SEGMENT_TRANSLATION_VOTE",
-	],
-} as const;
 export const pageStatus = {
 	enumValues: ["DRAFT", "PUBLIC", "ARCHIVE"],
 } as const;
@@ -76,35 +63,6 @@ export const accounts = sqliteTable(
 	],
 );
 
-export const contents = sqliteTable(
-	"contents",
-	{
-		id: integer().primaryKey({ autoIncrement: true }).notNull(),
-		kind: text("kind", { enum: contentKind.enumValues }).notNull(),
-		createdAt: integer("created_at", { mode: "timestamp_ms" })
-			.defaultNow()
-			.notNull(),
-		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-			.defaultNow()
-			.notNull(),
-		importFileId: integer("import_file_id"),
-	},
-	(table) => [
-		check(
-			"contents_kind_check",
-			sql`${table.kind} IN ('PAGE', 'PAGE_COMMENT')`,
-		),
-		index("contents_kind_idx").on(table.kind),
-		foreignKey({
-			columns: [table.importFileId],
-			foreignColumns: [importFiles.id],
-			name: "contents_import_file_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("set null"),
-	],
-);
-
 export const personalAccessTokens = sqliteTable(
 	"personal_access_tokens",
 	{
@@ -154,40 +112,6 @@ export const importFiles = sqliteTable(
 	],
 );
 
-export const follows = sqliteTable(
-	"follows",
-	{
-		id: integer().primaryKey({ autoIncrement: true }).notNull(),
-		createdAt: integer("created_at", { mode: "timestamp_ms" })
-			.defaultNow()
-			.notNull(),
-		followerId: text("follower_id").notNull(),
-		followingId: text("following_id").notNull(),
-	},
-	(table) => [
-		index("follows_follower_id_idx").on(table.followerId),
-		index("follows_following_id_idx").on(table.followingId),
-		foreignKey({
-			columns: [table.followerId],
-			foreignColumns: [users.id],
-			name: "follows_follower_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-		foreignKey({
-			columns: [table.followingId],
-			foreignColumns: [users.id],
-			name: "follows_following_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-		unique("follows_follower_id_following_id_key").on(
-			table.followerId,
-			table.followingId,
-		),
-	],
-);
-
 export const geminiApiKeys = sqliteTable(
 	"gemini_api_keys",
 	{
@@ -217,60 +141,19 @@ export const importRuns = sqliteTable("import_runs", {
 	status: text().default("RUNNING").notNull(),
 });
 
-export const likePages = sqliteTable(
-	"like_pages",
-	{
-		id: integer().primaryKey({ autoIncrement: true }).notNull(),
-		pageId: integer("page_id").notNull(),
-		createdAt: integer("created_at", { mode: "timestamp_ms" })
-			.defaultNow()
-			.notNull(),
-		userId: text("user_id"),
-	},
-	(table) => [
-		index("like_pages_page_id_idx").on(table.pageId),
-		index("like_pages_user_id_idx").on(table.userId),
-		uniqueIndex("like_pages_user_id_page_id_key").on(
-			table.userId,
-			table.pageId,
-		),
-		foreignKey({
-			columns: [table.pageId],
-			foreignColumns: [pages.id],
-			name: "like_pages_page_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-		foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "like_pages_user_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-	],
-);
-
 export const notifications = sqliteTable(
 	"notifications",
 	{
 		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		userId: text("user_id").notNull(),
-		type: text("type", { enum: notificationType.enumValues }).notNull(),
 		read: integer({ mode: "boolean" }).default(false).notNull(),
 		createdAt: integer("created_at", { mode: "timestamp_ms" })
 			.defaultNow()
 			.notNull(),
 		actorId: text("actor_id").notNull(),
-		pageCommentId: integer("page_comment_id"),
-		pageId: integer("page_id"),
-		segmentTranslationId: integer("segment_translation_id"),
+		segmentTranslationId: integer("segment_translation_id").notNull(),
 	},
 	(table) => [
-		check(
-			"notifications_type_check",
-			sql`${table.type} IN ('FOLLOW', 'PAGE_COMMENT', 'PAGE_LIKE', 'PAGE_SEGMENT_TRANSLATION_VOTE', 'PAGE_COMMENT_SEGMENT_TRANSLATION_VOTE')`,
-		),
 		index("notifications_actor_id_idx").on(table.actorId),
 		index("notifications_user_id_idx").on(table.userId),
 		foreignKey({
@@ -281,26 +164,12 @@ export const notifications = sqliteTable(
 			.onUpdate("cascade")
 			.onDelete("cascade"),
 		foreignKey({
-			columns: [table.pageCommentId],
-			foreignColumns: [pageComments.id],
-			name: "notifications_page_comment_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("set null"),
-		foreignKey({
-			columns: [table.pageId],
-			foreignColumns: [pages.id],
-			name: "notifications_page_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("set null"),
-		foreignKey({
 			columns: [table.segmentTranslationId],
 			foreignColumns: [segmentTranslations.id],
 			name: "notifications_segment_translation_id_fkey",
 		})
 			.onUpdate("cascade")
-			.onDelete("set null"),
+			.onDelete("cascade"),
 		foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
@@ -408,87 +277,6 @@ export const segmentTranslations = sqliteTable(
 	],
 );
 
-export const pageViews = sqliteTable(
-	"page_views",
-	{
-		pageId: integer("page_id").primaryKey().notNull(),
-		count: integer().default(0).notNull(),
-	},
-	(table) => [
-		foreignKey({
-			columns: [table.pageId],
-			foreignColumns: [pages.id],
-			name: "page_views_pageId_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-	],
-);
-
-export const pageComments = sqliteTable(
-	"page_comments",
-	{
-		id: integer().primaryKey().notNull(),
-		pageId: integer("page_id").notNull(),
-		createdAt: integer("created_at", { mode: "timestamp_ms" })
-			.defaultNow()
-			.notNull(),
-		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-			.defaultNow()
-			.notNull(),
-		locale: text().notNull(),
-		userId: text("user_id").notNull(),
-		parentId: integer("parent_id"),
-		mdastJson: text("mdast_json", { mode: "json" }).notNull(),
-		isDeleted: integer("is_deleted", { mode: "boolean" })
-			.default(false)
-			.notNull(),
-		lastReplyAt: integer("last_reply_at", { mode: "timestamp_ms" }),
-		replyCount: integer("reply_count").default(0).notNull(),
-	},
-	(table) => [
-		index("page_comments_page_id_parent_id_created_at_idx").on(
-			table.pageId,
-			table.parentId,
-			table.createdAt,
-		),
-		index("page_comments_parent_id_is_deleted_created_at_idx").on(
-			table.parentId,
-			table.isDeleted,
-			table.createdAt,
-		),
-		index("page_comments_user_id_idx").on(table.userId),
-		foreignKey({
-			columns: [table.id],
-			foreignColumns: [contents.id],
-			name: "page_comments_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-		foreignKey({
-			columns: [table.pageId],
-			foreignColumns: [pages.id],
-			name: "page_comments_page_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-		foreignKey({
-			columns: [table.parentId],
-			foreignColumns: [table.id],
-			name: "page_comments_parent_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("set null"),
-		foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "page_comments_user_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-	],
-);
-
 export const sessions = sqliteTable(
 	"sessions",
 	{
@@ -559,18 +347,6 @@ export const segmentMetadataTypes = sqliteTable(
 		label: text().notNull(),
 	},
 	(table) => [uniqueIndex("segment_metadata_types_key_key").on(table.key)],
-);
-
-export const tags = sqliteTable(
-	"tags",
-	{
-		id: integer().primaryKey({ autoIncrement: true }).notNull(),
-		name: text().notNull(),
-	},
-	(table) => [
-		index("tags_name_idx").on(table.name),
-		uniqueIndex("tags_name_key").on(table.name),
-	],
 );
 
 export const translationContexts = sqliteTable(
@@ -676,13 +452,6 @@ export const pages = sqliteTable(
 		),
 		index("pages_user_id_idx").on(table.userId),
 		foreignKey({
-			columns: [table.id],
-			foreignColumns: [contents.id],
-			name: "pages_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-		foreignKey({
 			columns: [table.parentId],
 			foreignColumns: [table.id],
 			name: "pages_parent_id_fkey",
@@ -703,7 +472,7 @@ export const segments = sqliteTable(
 	"segments",
 	{
 		id: integer().primaryKey({ autoIncrement: true }).notNull(),
-		contentId: integer("content_id").notNull(),
+		pageId: integer("content_id").notNull(),
 		number: integer().notNull(),
 		text: text().notNull(),
 		textAndOccurrenceHash: text("text_and_occurrence_hash").notNull(),
@@ -713,22 +482,22 @@ export const segments = sqliteTable(
 		segmentTypeId: integer("segment_type_id").notNull(),
 	},
 	(table) => [
-		index("segments_content_id_idx").on(table.contentId),
+		index("segments_content_id_idx").on(table.pageId),
 		uniqueIndex("segments_content_id_number_key").on(
-			table.contentId,
+			table.pageId,
 			table.number,
 		),
 		uniqueIndex("segments_content_id_text_and_occurrence_hash_key").on(
-			table.contentId,
+			table.pageId,
 			table.textAndOccurrenceHash,
 		),
 		index("segments_text_and_occurrence_hash_idx").on(
 			table.textAndOccurrenceHash,
 		),
 		foreignKey({
-			columns: [table.contentId],
-			foreignColumns: [contents.id],
-			name: "segments_content_id_fkey",
+			columns: [table.pageId],
+			foreignColumns: [pages.id],
+			name: "segments_page_id_fkey",
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
@@ -840,36 +609,6 @@ export const userSettings = sqliteTable(
 		})
 			.onUpdate("cascade")
 			.onDelete("restrict"),
-	],
-);
-
-export const tagPages = sqliteTable(
-	"tag_pages",
-	{
-		tagId: integer("tag_id").notNull(),
-		pageId: integer("page_id").notNull(),
-	},
-	(table) => [
-		index("tag_pages_pageId_idx").on(table.pageId),
-		index("tag_pages_tagId_idx").on(table.tagId),
-		foreignKey({
-			columns: [table.pageId],
-			foreignColumns: [pages.id],
-			name: "tag_pages_pageId_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-		foreignKey({
-			columns: [table.tagId],
-			foreignColumns: [tags.id],
-			name: "tag_pages_tagId_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-		primaryKey({
-			columns: [table.tagId, table.pageId],
-			name: "tag_pages_pkey",
-		}),
 	],
 );
 

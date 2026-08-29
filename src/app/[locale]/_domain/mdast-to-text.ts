@@ -1,4 +1,4 @@
-import type { JsonValue } from "@/db/types";
+import type { JsonValue } from "@/drizzle/types";
 
 /**
  * MDASTノード（JsonValue）をテキストに変換

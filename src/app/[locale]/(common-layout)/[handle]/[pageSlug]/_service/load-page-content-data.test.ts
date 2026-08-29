@@ -4,23 +4,17 @@ import type { PageDetail } from "@/app/[locale]/types";
 const {
 	queryChildPagesTreeMock,
 	queryCompletedTranslationLocalesMock,
-	queryPageCountsMock,
 	queryPageNavigationDataMock,
-	queryPageViewCountMock,
 } = vi.hoisted(() => ({
 	queryChildPagesTreeMock: vi.fn(),
 	queryCompletedTranslationLocalesMock: vi.fn(),
-	queryPageCountsMock: vi.fn(),
 	queryPageNavigationDataMock: vi.fn(),
-	queryPageViewCountMock: vi.fn(),
 }));
 
 vi.mock("../_db/queries", () => ({
 	queryChildPagesTree: queryChildPagesTreeMock,
 	queryCompletedTranslationLocales: queryCompletedTranslationLocalesMock,
-	queryPageCounts: queryPageCountsMock,
 	queryPageNavigationData: queryPageNavigationDataMock,
-	queryPageViewCount: queryPageViewCountMock,
 }));
 
 import { loadPageContentData } from "./load-page-content-data";
@@ -29,9 +23,7 @@ describe("loadPageContentData", () => {
 	beforeEach(() => {
 		queryChildPagesTreeMock.mockReset().mockResolvedValue([]);
 		queryCompletedTranslationLocalesMock.mockReset().mockResolvedValue([]);
-		queryPageCountsMock.mockReset().mockResolvedValue({ likeCount: 0 });
 		queryPageNavigationDataMock.mockReset().mockResolvedValue(null);
-		queryPageViewCountMock.mockReset().mockResolvedValue(0);
 	});
 
 	it("外部リンクを含む本文でも読込中に外部通信しない", async () => {
@@ -70,7 +62,6 @@ describe("loadPageContentData", () => {
 			userName: "Author",
 			userHandle: "author",
 			userImage: "",
-			tagPages: [],
 		} satisfies PageDetail;
 
 		try {

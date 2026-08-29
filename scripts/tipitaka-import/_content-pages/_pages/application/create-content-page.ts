@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import { markdownToMdastWithSegments } from "@/app/[locale]/_domain/markdown-to-mdast-with-segments";
-import type { PageStatus } from "@/db/types";
+import type { PageStatus } from "@/drizzle/types";
 import { upsertPageAndSegments } from "../../../application/upsert-page-and-segments";
 import { parseDirSegment } from "../../../domain/parse-dir-segment/parse-dir-segment";
 import type { TipitakaFileMeta } from "../../../types";
@@ -15,7 +15,7 @@ interface ContentPageParams {
 	parentId: number;
 	userId: string;
 	order: number;
-	anchorContentId: number | null;
+	anchorPageId: number | null;
 }
 
 export async function createContentPage({
@@ -23,7 +23,7 @@ export async function createContentPage({
 	parentId,
 	userId,
 	order,
-	anchorContentId,
+	anchorPageId,
 }: ContentPageParams): Promise<number> {
 	const filePath = getFilePath(tipitakaFileMeta);
 	const raw = await fs.readFile(filePath, "utf8");
@@ -52,7 +52,7 @@ export async function createContentPage({
 		segmentTypeId,
 		parentId,
 		order,
-		anchorContentId,
+		anchorPageId,
 		status: "PUBLIC" as PageStatus,
 	});
 

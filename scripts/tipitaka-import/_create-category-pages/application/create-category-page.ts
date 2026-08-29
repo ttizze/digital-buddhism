@@ -1,6 +1,6 @@
 import { markdownToMdastWithSegments } from "@/app/[locale]/_domain/markdown-to-mdast-with-segments";
 import { db } from "@/db";
-import type { PageStatus } from "@/db/types";
+import type { PageStatus } from "@/drizzle/types";
 import { upsertPageAndSegments } from "../../application/upsert-page-and-segments";
 import { slugify } from "../../utils/slugify";
 
@@ -34,7 +34,7 @@ export async function createCategoryPage({
 		segmentTypeId: null,
 		parentId,
 		order,
-		anchorContentId: null,
+		anchorPageId: null,
 		status: "PUBLIC" satisfies PageStatus,
 	});
 

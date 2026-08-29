@@ -1,5 +1,5 @@
 import type { LocaleOption } from "@/app/_constants/locale";
-import type { TranslationProofStatus } from "@/db/types";
+import type { TranslationProofStatus } from "@/drizzle/types";
 
 export type LocaleStatus = "source" | "translated" | "untranslated";
 

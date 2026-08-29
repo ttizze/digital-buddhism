@@ -90,7 +90,7 @@ describe("POST /api/translate/chunk", () => {
 			title: "Test Page",
 			totalChunks: 1,
 			chunkIndex: 0,
-			annotationContentId: null,
+			annotationPageId: null,
 		};
 
 		// Act
@@ -183,7 +183,7 @@ describe("POST /api/translate/chunk", () => {
 			title: "Test Page",
 			totalChunks: 1,
 			chunkIndex: 0,
-			annotationContentId: null,
+			annotationPageId: null,
 		};
 
 		// Act
@@ -288,7 +288,7 @@ describe("POST /api/translate/chunk", () => {
 			title: "Test Page",
 			totalChunks: 2,
 			chunkIndex: 0,
-			annotationContentId: null,
+			annotationPageId: null,
 		};
 
 		// Act
