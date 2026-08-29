@@ -1,22 +1,8 @@
 import { queryByAttribute } from "@testing-library/dom";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { Segment } from "@/app/[locale]/types";
 import type { JsonValue } from "@/db/types";
-
-vi.mock("react-tweet", () => ({
-	Tweet: ({ id }: { id: string }) => (
-		<span data-testid={`tweet-${id}`}>Tweet ID: {id}</span>
-	),
-}));
-
-vi.stubGlobal(
-	"fetch",
-	vi.fn().mockResolvedValue({
-		ok: true,
-		json: async () => [],
-	}),
-);
 
 // 2. その後で被テストモジュールをimport
 import { mdastToReact } from "./index";
@@ -64,7 +50,7 @@ describe("mdastToReact", () => {
 		expect(screen.getByText("def")).toBeInTheDocument();
 	});
 
-	it("converts Twitter/X links to XPost components", async () => {
+	it("外部URLを埋め込みに変換せずリンクとして描画する", async () => {
 		const mdast: JsonValue = {
 			type: "root",
 			children: [
@@ -73,18 +59,8 @@ describe("mdastToReact", () => {
 					children: [
 						{
 							type: "link",
-							url: "https://twitter.com/user/status/1234567890",
-							children: [{ type: "text", value: "Check this tweet" }],
-						},
-					],
-				},
-				{
-					type: "paragraph",
-					children: [
-						{
-							type: "link",
 							url: "https://x.com/user/status/9876543210",
-							children: [{ type: "text", value: "Check this X post" }],
+							children: [{ type: "text", value: "X post" }],
 						},
 					],
 				},
@@ -93,34 +69,24 @@ describe("mdastToReact", () => {
 					children: [
 						{
 							type: "link",
-							url: "https://example.com/not-a-tweet",
-							children: [{ type: "text", value: "Regular link" }],
+							url: "https://example.com/article",
+							children: [{ type: "text", value: "Article" }],
 						},
 					],
 				},
 			],
 		};
 
-		const el = await mdastToReact({
-			mdast: mdast,
-			segments,
-		});
+		const el = await mdastToReact({ mdast, segments });
 		render(el);
 
-		// Twitterリンクが正しくXPostコンポーネントに変換されているか確認
-		expect(screen.getByTestId("tweet-1234567890")).toBeInTheDocument();
-		expect(screen.getByText("Tweet ID: 1234567890")).toBeInTheDocument();
-
-		// X.comリンクも同様に変換されているか確認
-		expect(screen.getByTestId("tweet-9876543210")).toBeInTheDocument();
-		expect(screen.getByText("Tweet ID: 9876543210")).toBeInTheDocument();
-
-		// 通常のリンクはそのままaタグとして残っているか確認
-		expect(screen.getByText("Regular link")).toBeInTheDocument();
-		const regularLink = screen.getByText("Regular link").closest("a");
-		expect(regularLink).toHaveAttribute(
+		expect(screen.getByText("X post").closest("a")).toHaveAttribute(
 			"href",
-			"https://example.com/not-a-tweet",
+			"https://x.com/user/status/9876543210",
+		);
+		expect(screen.getByText("Article").closest("a")).toHaveAttribute(
+			"href",
+			"https://example.com/article",
 		);
 	});
 	it("renders different HTML elements correctly", async () => {

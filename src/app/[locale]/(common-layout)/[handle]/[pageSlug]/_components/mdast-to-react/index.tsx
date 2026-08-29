@@ -1,7 +1,6 @@
 import type { ReactElement } from "react";
 import { type ComponentType, createElement, type JSX } from "react";
 import * as jsxRuntime from "react/jsx-runtime";
-import { Tweet as XPost } from "react-tweet";
 import rehypeRaw from "rehype-raw";
 import rehypeReact from "rehype-react";
 import rehypeSlug from "rehype-slug";
@@ -9,7 +8,6 @@ import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import type { Segment } from "@/app/[locale]/types";
 import type { JsonValue } from "@/db/types";
-import { remarkTweet } from "./remark-tweet";
 import { WrapSegment } from "./wrap-segments";
 
 // --------------
@@ -65,7 +63,6 @@ export async function mdastToReact<T extends Segment = Segment>({
 	);
 
 	const processor = unified()
-		.use(remarkTweet)
 		.use(remarkRehype, { allowDangerousHtml: true }) // mdast → hast
 		.use(rehypeRaw) // parse raw HTML
 		.use(rehypeSlug) // add slug ids
@@ -75,11 +72,6 @@ export async function mdastToReact<T extends Segment = Segment>({
 			components: {
 				// Render markdown images without a framework-specific image loader.
 				img: ImgComponent,
-				tweet: (props: { id: string }) => (
-					<span className="not-prose">
-						<XPost id={props.id} />
-					</span>
-				),
 				...segmentComponents,
 			},
 		});
