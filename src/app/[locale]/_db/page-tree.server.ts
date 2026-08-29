@@ -1,4 +1,4 @@
-import { bestTranslationByPagesSubquery } from "@/app/[locale]/_db/best-translation-subquery.server";
+import { bestTranslationTextSubquery } from "@/app/[locale]/_db/best-translation-subquery.server";
 import { db } from "@/db";
 import type { PageForTree } from "../types";
 
@@ -45,10 +45,7 @@ export async function fetchChildPagesTree(
 				.onRef("segments.contentId", "=", "descendants.id")
 				.on("segments.number", "=", 0),
 		)
-		.leftJoin(bestTranslationByPagesSubquery(locale).as("trans"), (join) =>
-			join.onRef("trans.segmentId", "=", "segments.id"),
-		)
-		.select([
+		.select((eb) => [
 			"descendants.id",
 			"descendants.slug",
 			"descendants.parentId",
@@ -56,7 +53,11 @@ export async function fetchChildPagesTree(
 			"users.handle as userHandle",
 			"segments.id as titleSegmentId",
 			"segments.text as titleText",
-			"trans.text as titleTranslationText",
+			bestTranslationTextSubquery({
+				locale,
+				ownerId: eb.ref("descendants.userId"),
+				segmentId: eb.ref("segments.id"),
+			}).as("titleTranslationText"),
 		])
 		.execute();
 

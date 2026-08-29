@@ -1,4 +1,4 @@
-import { bestTranslationByPagesSubquery } from "@/app/[locale]/_db/best-translation-subquery.server";
+import { bestTranslationTextSubquery } from "@/app/[locale]/_db/best-translation-subquery.server";
 import type { PageForTree } from "@/app/[locale]/types";
 import { db } from "@/db";
 
@@ -61,9 +61,6 @@ export async function queryPageNavigationData(
 				.onRef("segments.contentId", "=", "ancestors.id")
 				.on("segments.number", "=", 0),
 		)
-		.leftJoin(bestTranslationByPagesSubquery(locale).as("trans"), (join) =>
-			join.onRef("trans.segmentId", "=", "segments.id"),
-		)
 		.select([
 			"ancestors.id",
 			"ancestors.slug",
@@ -72,8 +69,14 @@ export async function queryPageNavigationData(
 			"users.handle as userHandle",
 			"segments.id as titleSegmentId",
 			"segments.text as titleText",
-			"trans.text as titleTranslationText",
 		])
+		.select((eb) =>
+			bestTranslationTextSubquery({
+				locale,
+				ownerId: eb.ref("ancestors.userId"),
+				segmentId: eb.ref("segments.id"),
+			}).as("titleTranslationText"),
+		)
 		.execute();
 
 	if (breadcrumb.length === 0) return null;
@@ -135,9 +138,6 @@ export async function queryPageNavigationData(
 				.onRef("segments.contentId", "=", "descendants.id")
 				.on("segments.number", "=", 0),
 		)
-		.leftJoin(bestTranslationByPagesSubquery(locale).as("trans"), (join) =>
-			join.onRef("trans.segmentId", "=", "segments.id"),
-		)
 		.select([
 			"descendants.id",
 			"descendants.slug",
@@ -146,8 +146,14 @@ export async function queryPageNavigationData(
 			"users.handle as userHandle",
 			"segments.id as titleSegmentId",
 			"segments.text as titleText",
-			"trans.text as titleTranslationText",
 		])
+		.select((eb) =>
+			bestTranslationTextSubquery({
+				locale,
+				ownerId: eb.ref("descendants.userId"),
+				segmentId: eb.ref("segments.id"),
+			}).as("titleTranslationText"),
+		)
 		.execute();
 
 	const treeNodes = buildTree(descendantRows, rootNode.id);
@@ -215,9 +221,6 @@ export async function queryChildPagesTree(
 				.onRef("segments.contentId", "=", "descendants.id")
 				.on("segments.number", "=", 0),
 		)
-		.leftJoin(bestTranslationByPagesSubquery(locale).as("trans"), (join) =>
-			join.onRef("trans.segmentId", "=", "segments.id"),
-		)
 		.select([
 			"descendants.id",
 			"descendants.slug",
@@ -226,8 +229,14 @@ export async function queryChildPagesTree(
 			"users.handle as userHandle",
 			"segments.id as titleSegmentId",
 			"segments.text as titleText",
-			"trans.text as titleTranslationText",
 		])
+		.select((eb) =>
+			bestTranslationTextSubquery({
+				locale,
+				ownerId: eb.ref("descendants.userId"),
+				segmentId: eb.ref("segments.id"),
+			}).as("titleTranslationText"),
+		)
 		.execute();
 
 	return buildTitleTree(rows, parentId);
