@@ -1,8 +1,8 @@
-import parse from "html-react-parser";
 import type { ReactNode } from "react";
+import * as jsxRuntime from "react/jsx-runtime";
 import rehypeParse from "rehype-parse";
+import rehypeReact from "rehype-react";
 import rehypeSanitize from "rehype-sanitize";
-import rehypeStringify from "rehype-stringify";
 import { unified } from "unified";
 
 function normalizeInlineHtml(text: string): string {
@@ -20,10 +20,9 @@ function normalizeInlineHtml(text: string): string {
 const processor = unified()
 	.use(rehypeParse, { fragment: true })
 	.use(rehypeSanitize)
-	.use(rehypeStringify);
+	.use(rehypeReact, jsxRuntime);
 
 export function sanitizeAndParseText(text: string): ReactNode {
 	const normalized = normalizeInlineHtml(text);
-	const sanitized = processor.processSync(normalized).toString();
-	return parse(sanitized);
+	return processor.processSync(normalized).result as ReactNode;
 }
