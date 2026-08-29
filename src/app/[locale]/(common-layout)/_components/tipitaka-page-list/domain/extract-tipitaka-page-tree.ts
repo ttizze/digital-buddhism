@@ -34,8 +34,7 @@ export type TipitakaPageTreeNode = {
 /**
  * ルート配下の公開対象パーリ語 PAGE だけを、DB の親子関係と順序で木にする。
  *
- * SQL 側でも公開 PAGE を再帰的に辿るが、抽出条件をここでも明示しておく。
- * そのため、呼び出し側が別の取得元を渡した場合にも、トップに出す対象を
+ * 取得元にかかわらず抽出条件をここで明示しておくことで、トップに出す対象を
  * PUBLIC または公開日時がある ARCHIVE / PAGE / pi から逸脱させない。
  */
 export function extractTipitakaPageTree(
