@@ -27,8 +27,8 @@ nix develop
    bun run dev
    ```
    The development command creates an isolated temporary SQLite database and
-   applies the checked-in Turso migration before starting the server. Docker,
-   PostgreSQL, and a manual seed are not required for local development.
+   applies the checked-in Turso migration and seed before starting the server.
+   Docker, PostgreSQL, and a manual seed are not required for local development.
 4. Open `http://localhost:3000`
 
 Production uses Turso (libSQL). Configure `TURSO_DATABASE_URL` and

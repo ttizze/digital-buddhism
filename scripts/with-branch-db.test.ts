@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { createClient } from "@libsql/client";
 import { afterEach, describe, expect, it } from "vitest";
@@ -16,6 +17,25 @@ afterEach(async () => {
 });
 
 describe("ローカルSQLiteテストDB", () => {
+	it("--seed付きの開発コマンドは同じ一時DBにPRIMARYを用意してから起動する", () => {
+		const result = spawnSync(
+			"bun",
+			[
+				"run",
+				"db:with-branch",
+				"--",
+				"--seed",
+				"--",
+				"bun",
+				"-e",
+				'const client = (await import("@libsql/client")).createClient({ url: process.env.TURSO_DATABASE_URL }); const result = await client.execute("SELECT key FROM segment_types WHERE key = \'PRIMARY\'"); client.close(); if (result.rows.length !== 1) process.exit(1);',
+			],
+			{ encoding: "utf8" },
+		);
+
+		expect(result.status).toBe(0);
+	});
+
 	it("baselineを適用した一時DBを並列利用でき、cleanupで削除できる", async () => {
 		const first = await createLocalSqliteDatabase("digital-buddshim-test-");
 		const second = await createLocalSqliteDatabase("digital-buddshim-test-");
@@ -53,7 +73,7 @@ describe("ローカルSQLiteテストDB", () => {
 		expect(env.TURSO_DATABASE_URL).toBe(
 			"file:///tmp/digital-buddshim-test.sqlite",
 		);
-		expect(env.TURSO_AUTH_TOKEN).toBe("");
+		expect(env.TURSO_AUTH_TOKEN).toBe("local");
 		expect(env.DATABASE_URL).toBeUndefined();
 	});
 });

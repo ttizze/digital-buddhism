@@ -4,7 +4,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "bun run db:with-branch -- vite dev --config vite.config.ts --port 3000",
+		"dev": "bun run db:with-branch -- --seed -- vite dev --config vite.config.ts --port 3000",
 		"build": "vite build --config vite.config.ts",
 		"preview": "vite preview",
 		"deploy": "bun run build && wrangler deploy",
@@ -24,7 +24,7 @@
 		"db:prod:migrate": "drizzle-kit migrate",
 		"db:prod:seed": "tsx src/db/seed.ts",
 		"db:migrate:sqlite": "bun scripts/migrate-neon-to-sqlite.ts",
-		"init": "bun install && bun run db:migrate && bun run seed",
+		"init": "bun install",
 		"vercel-build": " (bun run db:prod:migrate || (echo '1st migrate failed; retrying in 8s' && sleep 8 && bun run db:prod:migrate )) && bun run build",
 		"biome": "bunx @biomejs/biome check --write .",
 		"typecheck": "tsc --noEmit",

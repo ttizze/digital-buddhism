@@ -26,7 +26,7 @@ nix develop
    ```bash
    bun run dev
    ```
-   開発コマンドが、チェックイン済みのTurso用マイグレーションを適用した
+   開発コマンドが、チェックイン済みのTurso用マイグレーションとシードを適用した
    使い捨ての一時SQLite DBを自動作成します。ローカル開発にDocker、
    PostgreSQL、手動のシードは不要です。
 4. `http://localhost:3000` を開く

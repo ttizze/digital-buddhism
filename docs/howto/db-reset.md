@@ -2,7 +2,8 @@
 
 このリポジトリのローカル開発・テストでは、コマンドごとに一時SQLite DBを
 作成します。`db:with-branch` がTurso用のチェックイン済みマイグレーションを
-適用し、コマンド終了後にDBを破棄します。そのため、開発DBを手動でリセット
+適用し、`bun run dev` では同じDBへシードした後に起動します。コマンド終了後に
+DBを破棄するため、開発DBを手動でリセット
 したり、Docker/PostgreSQLを起動したりする必要はありません。
 
 ```bash
@@ -31,8 +32,10 @@ TURSO_DATABASE_URL=file:///absolute/path/to/database.sqlite \
 本番DBの変更は、接続情報を安全な方法で環境変数へ読み込んだうえで、明示的に
 実行します。
 
+同じTurso URLを設定したシェルで、マイグレーション後にシードを実行します。
+
 ```bash
-bun run db:prod:migrate
+bun run db:prod:migrate && bun run db:prod:seed
 ```
 
 必要な環境変数は `TURSO_DATABASE_URL` と `TURSO_AUTH_TOKEN` です。値はGitへ

@@ -4,30 +4,40 @@ import {
 	createLocalSqliteDatabase,
 } from "./local-sqlite-db";
 
+function runCommand(commandArgs: string[], env: NodeJS.ProcessEnv): number {
+	const result = spawnSync(commandArgs[0], commandArgs.slice(1), {
+		stdio: "inherit",
+		env,
+	});
+	if (result.error) {
+		console.error(result.error);
+		return 1;
+	}
+	if (result.status !== null) return result.status;
+	if (result.signal) {
+		console.error(`Command terminated by signal ${result.signal}`);
+	}
+	return 1;
+}
+
 async function main(): Promise<void> {
-	const commandArgs = process.argv.slice(2);
+	const args = process.argv.slice(2);
+	const shouldSeed = args[0] === "--seed";
+	const commandArgs = shouldSeed ? args.slice(args[1] === "--" ? 2 : 1) : args;
 	if (commandArgs.length === 0) {
 		throw new Error("A command is required");
 	}
 
 	const database = await createLocalSqliteDatabase("digital-buddshim-command-");
+	const env = buildLocalDatabaseEnv(process.env, database.url);
 	let exitCode = 0;
 
 	try {
-		const result = spawnSync(commandArgs[0], commandArgs.slice(1), {
-			stdio: "inherit",
-			env: buildLocalDatabaseEnv(process.env, database.url),
-		});
-		if (result.error) {
-			console.error(result.error);
-			exitCode = 1;
-		} else if (result.status === null) {
-			if (result.signal) {
-				console.error(`Command terminated by signal ${result.signal}`);
-			}
-			exitCode = 1;
-		} else {
-			exitCode = result.status;
+		if (shouldSeed) {
+			exitCode = runCommand(["bun", "run", "tsx", "src/db/seed.ts"], env);
+		}
+		if (exitCode === 0) {
+			exitCode = runCommand(commandArgs, env);
 		}
 	} finally {
 		await database.cleanup();
