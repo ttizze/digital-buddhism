@@ -28,8 +28,17 @@ export async function getOgImage(request: Request): Promise<Response> {
 
 	if (!pageDetail) {
 		const response = new ImageResponse(
-			<div tw="flex items-center justify-center w-full h-full bg-slate-100">
-				<p tw="text-6xl">Page Not Found</p>
+			<div
+				style={{
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					width: "100%",
+					height: "100%",
+					backgroundColor: "#f1f5f9",
+				}}
+			>
+				<p style={{ fontSize: "60px", lineHeight: 1 }}>Page Not Found</p>
 			</div>,
 			{
 				width: 1200,
@@ -52,18 +61,50 @@ export async function getOgImage(request: Request): Promise<Response> {
 		<div
 			style={{
 				fontFamily: "Inter,BIZ UDPGothic",
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+				backgroundColor: "#000",
+				width: "100%",
+				height: "100%",
+				padding: "24px",
 			}}
-			tw="flex items-center justify-center bg-black w-full h-full p-6"
 		>
-			<div tw="bg-slate-100 flex flex-col items-center justify-start w-[95%] h-[95%] rounded-xl p-10">
-				<div tw="flex items-center justify-between w-full ">
-					<div tw="flex items-center">
+			<div
+				style={{
+					backgroundColor: "#f1f5f9",
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "center",
+					justifyContent: "flex-start",
+					width: "95%",
+					height: "95%",
+					borderRadius: "12px",
+					padding: "40px",
+				}}
+			>
+				<div
+					style={{
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "space-between",
+						width: "100%",
+					}}
+				>
+					<div style={{ display: "flex", alignItems: "center" }}>
 						<img
 							alt={pageDetail.userName}
 							src={pageDetail.userImage}
-							tw="w-24 h-24 rounded-full mr-4"
+							style={{
+								width: "96px",
+								height: "96px",
+								borderRadius: "9999px",
+								marginRight: "16px",
+							}}
 						/>
-						<p tw="text-6xl ">{pageDetail.userName}</p>
+						<p style={{ fontSize: "60px", lineHeight: 1 }}>
+							{pageDetail.userName}
+						</p>
 					</div>
 					<img
 						alt="logo"
@@ -73,7 +114,9 @@ export async function getOgImage(request: Request): Promise<Response> {
 						}}
 					/>
 				</div>
-				<p tw="text-6xl  mt-14">{pageDetail.title}</p>
+				<p style={{ fontSize: "60px", lineHeight: 1, marginTop: "56px" }}>
+					{pageDetail.title}
+				</p>
 			</div>
 		</div>,
 		{
