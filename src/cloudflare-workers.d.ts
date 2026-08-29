@@ -1,8 +1,7 @@
 declare module "cloudflare:workers" {
 	const env: {
-		HYPERDRIVE: {
-			connectionString: string;
-		};
+		TURSO_DATABASE_URL: string;
+		TURSO_AUTH_TOKEN: string;
 		ASSETS: {
 			fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
 		};

@@ -4,13 +4,18 @@ import { runWithDatabaseRequestContext } from "./db/request-context";
 
 type WorkerEnv = {
 	SENTRY_DSN?: string;
-	HYPERDRIVE?: { connectionString: string };
+	TURSO_DATABASE_URL?: string;
+	TURSO_AUTH_TOKEN?: string;
 };
 
 const workerEntry = {
 	fetch(request: Request, env: WorkerEnv, _ctx: unknown) {
-		return runWithDatabaseRequestContext(env.HYPERDRIVE?.connectionString, () =>
-			handler.fetch(request),
+		return runWithDatabaseRequestContext(
+			{
+				url: env.TURSO_DATABASE_URL,
+				authToken: env.TURSO_AUTH_TOKEN,
+			},
+			() => handler.fetch(request),
 		);
 	},
 };

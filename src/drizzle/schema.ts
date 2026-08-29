@@ -1,47 +1,42 @@
 import { sql } from "drizzle-orm";
 import {
-	boolean,
+	check,
 	foreignKey,
 	index,
 	integer,
-	jsonb,
-	pgEnum,
-	pgTable,
 	primaryKey,
-	serial,
+	sqliteTable,
 	text,
-	timestamp,
 	unique,
 	uniqueIndex,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/sqlite-core";
 
-export const contentKind = pgEnum("content_kind", ["PAGE", "PAGE_COMMENT"]);
-export const notificationType = pgEnum("notification_type", [
-	"FOLLOW",
-	"PAGE_COMMENT",
-	"PAGE_LIKE",
-	"PAGE_SEGMENT_TRANSLATION_VOTE",
-	"PAGE_COMMENT_SEGMENT_TRANSLATION_VOTE",
-]);
-export const pageStatus = pgEnum("page_status", ["DRAFT", "PUBLIC", "ARCHIVE"]);
-export const segmentTypeKey = pgEnum("segment_type_key", [
-	"PRIMARY",
-	"COMMENTARY",
-]);
-export const translationProofStatus = pgEnum("translation_proof_status", [
-	"MACHINE_DRAFT",
-	"HUMAN_TOUCHED",
-	"PROOFREAD",
-	"VALIDATED",
-]);
-export const translationStatus = pgEnum("translation_status", [
-	"PENDING",
-	"IN_PROGRESS",
-	"COMPLETED",
-	"FAILED",
-]);
+export const contentKind = {
+	enumValues: ["PAGE", "PAGE_COMMENT"],
+} as const;
+export const notificationType = {
+	enumValues: [
+		"FOLLOW",
+		"PAGE_COMMENT",
+		"PAGE_LIKE",
+		"PAGE_SEGMENT_TRANSLATION_VOTE",
+		"PAGE_COMMENT_SEGMENT_TRANSLATION_VOTE",
+	],
+} as const;
+export const pageStatus = {
+	enumValues: ["DRAFT", "PUBLIC", "ARCHIVE"],
+} as const;
+export const segmentTypeKey = {
+	enumValues: ["PRIMARY", "COMMENTARY"],
+} as const;
+export const translationProofStatus = {
+	enumValues: ["MACHINE_DRAFT", "HUMAN_TOUCHED", "PROOFREAD", "VALIDATED"],
+} as const;
+export const translationStatus = {
+	enumValues: ["PENDING", "IN_PROGRESS", "COMPLETED", "FAILED"],
+} as const;
 
-export const accounts = pgTable(
+export const accounts = sqliteTable(
 	"accounts",
 	{
 		userId: text("user_id").notNull(),
@@ -51,28 +46,25 @@ export const accounts = pgTable(
 		accessToken: text("access_token"),
 		scope: text(),
 		idToken: text("id_token"),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 		id: text().primaryKey().notNull(),
 		password: text(),
-		refreshTokenExpiresAt: timestamp("refresh_token_expires_at", {
-			precision: 3,
-			mode: "string",
+		refreshTokenExpiresAt: integer("refresh_token_expires_at", {
+			mode: "timestamp_ms",
 		}),
-		updatedAt: timestamp("updated_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
-		accessTokenExpiresAt: timestamp("access_token_expires_at", {
-			precision: 3,
-			mode: "string",
+		accessTokenExpiresAt: integer("access_token_expires_at", {
+			mode: "timestamp_ms",
 		}),
 	},
 	(table) => [
-		uniqueIndex("accounts_provider_accountId_key").using(
-			"btree",
-			table.providerId.asc().nullsLast(),
-			table.accountId.asc().nullsLast(),
+		uniqueIndex("accounts_provider_accountId_key").on(
+			table.providerId,
+			table.accountId,
 		),
 		foreignKey({
 			columns: [table.userId],
@@ -84,21 +76,25 @@ export const accounts = pgTable(
 	],
 );
 
-export const contents = pgTable(
+export const contents = sqliteTable(
 	"contents",
 	{
-		id: serial().primaryKey().notNull(),
-		kind: contentKind().notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
+		kind: text("kind", { enum: contentKind.enumValues }).notNull(),
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
-		updatedAt: timestamp("updated_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 		importFileId: integer("import_file_id"),
 	},
 	(table) => [
-		index("contents_kind_idx").using("btree", table.kind.asc().nullsLast()),
+		check(
+			"contents_kind_check",
+			sql`${table.kind} IN ('PAGE', 'PAGE_COMMENT')`,
+		),
+		index("contents_kind_idx").on(table.kind),
 		foreignKey({
 			columns: [table.importFileId],
 			foreignColumns: [importFiles.id],
@@ -109,27 +105,21 @@ export const contents = pgTable(
 	],
 );
 
-export const personalAccessTokens = pgTable(
+export const personalAccessTokens = sqliteTable(
 	"personal_access_tokens",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		keyHash: text("key_hash").notNull(),
 		userId: text("user_id").notNull(),
 		name: text().default("").notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
 			.defaultNow()
 			.notNull(),
-		lastUsedAt: timestamp("last_used_at", { precision: 3, mode: "string" }),
+		lastUsedAt: integer("last_used_at", { mode: "timestamp_ms" }),
 	},
 	(table) => [
-		uniqueIndex("personal_access_tokens_key_hash_key").using(
-			"btree",
-			table.keyHash.asc().nullsLast(),
-		),
-		index("personal_access_tokens_user_id_idx").using(
-			"btree",
-			table.userId.asc().nullsLast(),
-		),
+		uniqueIndex("personal_access_tokens_key_hash_key").on(table.keyHash),
+		index("personal_access_tokens_user_id_idx").on(table.userId),
 		foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
@@ -140,17 +130,17 @@ export const personalAccessTokens = pgTable(
 	],
 );
 
-export const importFiles = pgTable(
+export const importFiles = sqliteTable(
 	"import_files",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		importRunId: integer("import_run_id").notNull(),
 		path: text().notNull(),
 		checksum: text().notNull(),
 		status: text().default("PENDING").notNull(),
 		message: text().default("").notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 	},
 	(table) => [
@@ -164,25 +154,19 @@ export const importFiles = pgTable(
 	],
 );
 
-export const follows = pgTable(
+export const follows = sqliteTable(
 	"follows",
 	{
-		id: serial().primaryKey().notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 		followerId: text("follower_id").notNull(),
 		followingId: text("following_id").notNull(),
 	},
 	(table) => [
-		index("follows_follower_id_idx").using(
-			"btree",
-			table.followerId.asc().nullsLast(),
-		),
-		index("follows_following_id_idx").using(
-			"btree",
-			table.followingId.asc().nullsLast(),
-		),
+		index("follows_follower_id_idx").on(table.followerId),
+		index("follows_following_id_idx").on(table.followingId),
 		foreignKey({
 			columns: [table.followerId],
 			foreignColumns: [users.id],
@@ -204,22 +188,16 @@ export const follows = pgTable(
 	],
 );
 
-export const geminiApiKeys = pgTable(
+export const geminiApiKeys = sqliteTable(
 	"gemini_api_keys",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		apiKey: text("api_key").default("").notNull(),
 		userId: text("user_id").notNull(),
 	},
 	(table) => [
-		index("gemini_api_keys_user_id_idx").using(
-			"btree",
-			table.userId.asc().nullsLast(),
-		),
-		uniqueIndex("gemini_api_keys_user_id_key").using(
-			"btree",
-			table.userId.asc().nullsLast(),
-		),
+		index("gemini_api_keys_user_id_idx").on(table.userId),
+		uniqueIndex("gemini_api_keys_user_id_key").on(table.userId),
 		foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
@@ -230,38 +208,31 @@ export const geminiApiKeys = pgTable(
 	],
 );
 
-export const importRuns = pgTable("import_runs", {
-	id: serial().primaryKey().notNull(),
-	startedAt: timestamp("started_at", { precision: 3, mode: "string" })
-		.default(sql`CURRENT_TIMESTAMP`)
+export const importRuns = sqliteTable("import_runs", {
+	id: integer().primaryKey({ autoIncrement: true }).notNull(),
+	startedAt: integer("started_at", { mode: "timestamp_ms" })
+		.defaultNow()
 		.notNull(),
-	finishedAt: timestamp("finished_at", { precision: 3, mode: "string" }),
+	finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
 	status: text().default("RUNNING").notNull(),
 });
 
-export const likePages = pgTable(
+export const likePages = sqliteTable(
 	"like_pages",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		pageId: integer("page_id").notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 		userId: text("user_id"),
 	},
 	(table) => [
-		index("like_pages_page_id_idx").using(
-			"btree",
-			table.pageId.asc().nullsLast(),
-		),
-		index("like_pages_user_id_idx").using(
-			"btree",
-			table.userId.asc().nullsLast(),
-		),
-		uniqueIndex("like_pages_user_id_page_id_key").using(
-			"btree",
-			table.userId.asc().nullsLast(),
-			table.pageId.asc().nullsLast(),
+		index("like_pages_page_id_idx").on(table.pageId),
+		index("like_pages_user_id_idx").on(table.userId),
+		uniqueIndex("like_pages_user_id_page_id_key").on(
+			table.userId,
+			table.pageId,
 		),
 		foreignKey({
 			columns: [table.pageId],
@@ -280,15 +251,15 @@ export const likePages = pgTable(
 	],
 );
 
-export const notifications = pgTable(
+export const notifications = sqliteTable(
 	"notifications",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		userId: text("user_id").notNull(),
-		type: notificationType().notNull(),
-		read: boolean().default(false).notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		type: text("type", { enum: notificationType.enumValues }).notNull(),
+		read: integer({ mode: "boolean" }).default(false).notNull(),
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 		actorId: text("actor_id").notNull(),
 		pageCommentId: integer("page_comment_id"),
@@ -296,14 +267,12 @@ export const notifications = pgTable(
 		segmentTranslationId: integer("segment_translation_id"),
 	},
 	(table) => [
-		index("notifications_actor_id_idx").using(
-			"btree",
-			table.actorId.asc().nullsLast(),
+		check(
+			"notifications_type_check",
+			sql`${table.type} IN ('FOLLOW', 'PAGE_COMMENT', 'PAGE_LIKE', 'PAGE_SEGMENT_TRANSLATION_VOTE', 'PAGE_COMMENT_SEGMENT_TRANSLATION_VOTE')`,
 		),
-		index("notifications_user_id_idx").using(
-			"btree",
-			table.userId.asc().nullsLast(),
-		),
+		index("notifications_actor_id_idx").on(table.actorId),
+		index("notifications_user_id_idx").on(table.userId),
 		foreignKey({
 			columns: [table.actorId],
 			foreignColumns: [users.id],
@@ -342,50 +311,50 @@ export const notifications = pgTable(
 	],
 );
 
-export const segmentTypes = pgTable(
+export const segmentTypes = sqliteTable(
 	"segment_types",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		label: text().notNull(),
-		key: segmentTypeKey().notNull(),
+		key: text("key", { enum: segmentTypeKey.enumValues }).notNull(),
 	},
 	(table) => [
-		index("segment_types_key_idx").using("btree", table.key.asc().nullsLast()),
-		uniqueIndex("segment_types_key_label_key").using(
-			"btree",
-			table.key.asc().nullsLast(),
-			table.label.asc().nullsLast(),
+		check(
+			"segment_types_key_check",
+			sql`${table.key} IN ('PRIMARY', 'COMMENTARY')`,
 		),
-		index("segment_types_label_idx").using(
-			"btree",
-			table.label.asc().nullsLast(),
-		),
+		index("segment_types_key_idx").on(table.key),
+		uniqueIndex("segment_types_key_label_key").on(table.key, table.label),
+		index("segment_types_label_idx").on(table.label),
 	],
 );
 
-export const translationJobs = pgTable(
+export const translationJobs = sqliteTable(
 	"translation_jobs",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		pageId: integer("page_id").notNull(),
 		userId: text("user_id"),
 		locale: text().notNull(),
 		aiModel: text("ai_model").notNull(),
-		status: translationStatus().default("PENDING").notNull(),
+		status: text("status", { enum: translationStatus.enumValues })
+			.default("PENDING")
+			.notNull(),
 		progress: integer().default(0).notNull(),
 		error: text().default("").notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
-		updatedAt: timestamp("updated_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 	},
 	(table) => [
-		index("translation_jobs_userId_idx").using(
-			"btree",
-			table.userId.asc().nullsLast(),
+		check(
+			"translation_jobs_status_check",
+			sql`${table.status} IN ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED')`,
 		),
+		index("translation_jobs_userId_idx").on(table.userId),
 		foreignKey({
 			columns: [table.pageId],
 			foreignColumns: [pages.id],
@@ -403,29 +372,25 @@ export const translationJobs = pgTable(
 	],
 );
 
-export const segmentTranslations = pgTable(
+export const segmentTranslations = sqliteTable(
 	"segment_translations",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		segmentId: integer("segment_id").notNull(),
 		locale: text().notNull(),
 		text: text().notNull(),
 		point: integer().default(0).notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 		userId: text("user_id").notNull(),
 	},
 	(table) => [
-		index("segment_translations_segment_id_locale_idx").using(
-			"btree",
-			table.segmentId.asc().nullsLast(),
-			table.locale.asc().nullsLast(),
+		index("segment_translations_segment_id_locale_idx").on(
+			table.segmentId,
+			table.locale,
 		),
-		index("segment_translations_user_id_idx").using(
-			"btree",
-			table.userId.asc().nullsLast(),
-		),
+		index("segment_translations_user_id_idx").on(table.userId),
 		foreignKey({
 			columns: [table.segmentId],
 			foreignColumns: [segments.id],
@@ -443,7 +408,7 @@ export const segmentTranslations = pgTable(
 	],
 );
 
-export const pageViews = pgTable(
+export const pageViews = sqliteTable(
 	"page_views",
 	{
 		pageId: integer("page_id").primaryKey().notNull(),
@@ -460,42 +425,39 @@ export const pageViews = pgTable(
 	],
 );
 
-export const pageComments = pgTable(
+export const pageComments = sqliteTable(
 	"page_comments",
 	{
 		id: integer().primaryKey().notNull(),
 		pageId: integer("page_id").notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
-		updatedAt: timestamp("updated_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 		locale: text().notNull(),
 		userId: text("user_id").notNull(),
 		parentId: integer("parent_id"),
-		mdastJson: jsonb("mdast_json").notNull(),
-		isDeleted: boolean("is_deleted").default(false).notNull(),
-		lastReplyAt: timestamp("last_reply_at", { precision: 3, mode: "string" }),
+		mdastJson: text("mdast_json", { mode: "json" }).notNull(),
+		isDeleted: integer("is_deleted", { mode: "boolean" })
+			.default(false)
+			.notNull(),
+		lastReplyAt: integer("last_reply_at", { mode: "timestamp_ms" }),
 		replyCount: integer("reply_count").default(0).notNull(),
 	},
 	(table) => [
-		index("page_comments_page_id_parent_id_created_at_idx").using(
-			"btree",
-			table.pageId.asc().nullsLast(),
-			table.parentId.asc().nullsLast(),
-			table.createdAt.asc().nullsLast(),
+		index("page_comments_page_id_parent_id_created_at_idx").on(
+			table.pageId,
+			table.parentId,
+			table.createdAt,
 		),
-		index("page_comments_parent_id_is_deleted_created_at_idx").using(
-			"btree",
-			table.parentId.asc().nullsLast(),
-			table.isDeleted.asc().nullsLast(),
-			table.createdAt.asc().nullsLast(),
+		index("page_comments_parent_id_is_deleted_created_at_idx").on(
+			table.parentId,
+			table.isDeleted,
+			table.createdAt,
 		),
-		index("page_comments_user_id_idx").using(
-			"btree",
-			table.userId.asc().nullsLast(),
-		),
+		index("page_comments_user_id_idx").on(table.userId),
 		foreignKey({
 			columns: [table.id],
 			foreignColumns: [contents.id],
@@ -527,30 +489,24 @@ export const pageComments = pgTable(
 	],
 );
 
-export const sessions = pgTable(
+export const sessions = sqliteTable(
 	"sessions",
 	{
 		token: text().notNull(),
 		userId: text("user_id").notNull(),
-		expiresAt: timestamp("expires_at", {
-			precision: 3,
-			mode: "string",
-		}).notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 		id: text().primaryKey().notNull(),
 		ipAddress: text("ip_address"),
-		updatedAt: timestamp("updated_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 		userAgent: text("user_agent"),
 	},
 	(table) => [
-		uniqueIndex("sessions_token_key").using(
-			"btree",
-			table.token.asc().nullsLast(),
-		),
+		uniqueIndex("sessions_token_key").on(table.token),
 		foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
@@ -561,25 +517,29 @@ export const sessions = pgTable(
 	],
 );
 
-export const pageLocaleTranslationProofs = pgTable(
+export const pageLocaleTranslationProofs = sqliteTable(
 	"page_locale_translation_proofs",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		pageId: integer("page_id").notNull(),
 		locale: text().notNull(),
-		translationProofStatus: translationProofStatus("translation_proof_status")
+		translationProofStatus: text("translation_proof_status", {
+			enum: translationProofStatus.enumValues,
+		})
 			.default("MACHINE_DRAFT")
 			.notNull(),
 	},
 	(table) => [
-		uniqueIndex("page_locale_translation_proofs_page_id_locale_key").using(
-			"btree",
-			table.pageId.asc().nullsLast(),
-			table.locale.asc().nullsLast(),
+		check(
+			"page_locale_translation_proofs_status_check",
+			sql`${table.translationProofStatus} IN ('MACHINE_DRAFT', 'HUMAN_TOUCHED', 'PROOFREAD', 'VALIDATED')`,
 		),
-		index("page_locale_translation_proofs_translation_proof_status_idx").using(
-			"btree",
-			table.translationProofStatus.asc().nullsLast(),
+		uniqueIndex("page_locale_translation_proofs_page_id_locale_key").on(
+			table.pageId,
+			table.locale,
+		),
+		index("page_locale_translation_proofs_translation_proof_status_idx").on(
+			table.translationProofStatus,
 		),
 		foreignKey({
 			columns: [table.pageId],
@@ -591,52 +551,44 @@ export const pageLocaleTranslationProofs = pgTable(
 	],
 );
 
-export const segmentMetadataTypes = pgTable(
+export const segmentMetadataTypes = sqliteTable(
 	"segment_metadata_types",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		key: text().notNull(),
 		label: text().notNull(),
 	},
-	(table) => [
-		uniqueIndex("segment_metadata_types_key_key").using(
-			"btree",
-			table.key.asc().nullsLast(),
-		),
-	],
+	(table) => [uniqueIndex("segment_metadata_types_key_key").on(table.key)],
 );
 
-export const tags = pgTable(
+export const tags = sqliteTable(
 	"tags",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		name: text().notNull(),
 	},
 	(table) => [
-		index("tags_name_idx").using("btree", table.name.asc().nullsLast()),
-		uniqueIndex("tags_name_key").using("btree", table.name.asc().nullsLast()),
+		index("tags_name_idx").on(table.name),
+		uniqueIndex("tags_name_key").on(table.name),
 	],
 );
 
-export const translationContexts = pgTable(
+export const translationContexts = sqliteTable(
 	"translation_contexts",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		userId: text("user_id").notNull(),
 		name: text().notNull(),
 		context: text().notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
 			.defaultNow()
 			.notNull(),
-		updatedAt: timestamp("updated_at", { precision: 3, mode: "string" })
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
 			.defaultNow()
 			.notNull(),
 	},
 	(table) => [
-		index("translation_contexts_user_id_idx").using(
-			"btree",
-			table.userId.asc().nullsLast(),
-		),
+		index("translation_contexts_user_id_idx").on(table.userId),
 		foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
@@ -647,33 +599,26 @@ export const translationContexts = pgTable(
 	],
 );
 
-export const translationVotes = pgTable(
+export const translationVotes = sqliteTable(
 	"translation_votes",
 	{
 		translationId: integer("translation_id").notNull(),
 		userId: text("user_id").notNull(),
-		isUpvote: boolean("is_upvote").notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		isUpvote: integer("is_upvote", { mode: "boolean" }).notNull(),
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
-		updatedAt: timestamp("updated_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 	},
 	(table) => [
-		index("translation_votes_translation_id_idx").using(
-			"btree",
-			table.translationId.asc().nullsLast(),
+		index("translation_votes_translation_id_idx").on(table.translationId),
+		uniqueIndex("translation_votes_translation_id_user_id_key").on(
+			table.translationId,
+			table.userId,
 		),
-		uniqueIndex("translation_votes_translation_id_user_id_key").using(
-			"btree",
-			table.translationId.asc().nullsLast(),
-			table.userId.asc().nullsLast(),
-		),
-		index("translation_votes_user_id_idx").using(
-			"btree",
-			table.userId.asc().nullsLast(),
-		),
+		index("translation_votes_user_id_idx").on(table.userId),
 		foreignKey({
 			columns: [table.translationId],
 			foreignColumns: [segmentTranslations.id],
@@ -691,54 +636,45 @@ export const translationVotes = pgTable(
 	],
 );
 
-export const pages = pgTable(
+export const pages = sqliteTable(
 	"pages",
 	{
 		id: integer().primaryKey().notNull(),
 		slug: text().notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 		sourceLocale: text("source_locale").default("unknown").notNull(),
-		updatedAt: timestamp("updated_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
-		status: pageStatus().default("DRAFT").notNull(),
+		status: text("status", { enum: pageStatus.enumValues })
+			.default("DRAFT")
+			.notNull(),
 		userId: text("user_id").notNull(),
-		mdastJson: jsonb("mdast_json").notNull(),
+		mdastJson: text("mdast_json", { mode: "json" }).notNull(),
 		order: integer().default(0).notNull(),
 		parentId: integer("parent_id"),
-		publishedAt: timestamp("published_at", { precision: 3, mode: "string" }),
-		archivedAt: timestamp("archived_at", { precision: 3, mode: "string" }),
+		publishedAt: integer("published_at", { mode: "timestamp_ms" }),
+		archivedAt: integer("archived_at", { mode: "timestamp_ms" }),
 	},
 	(table) => [
-		index("pages_created_at_idx").using(
-			"btree",
-			table.createdAt.asc().nullsLast(),
+		check(
+			"pages_status_check",
+			sql`${table.status} IN ('DRAFT', 'PUBLIC', 'ARCHIVE')`,
 		),
-		index("pages_parent_id_idx").using(
-			"btree",
-			table.parentId.asc().nullsLast(),
+		index("pages_created_at_idx").on(table.createdAt),
+		index("pages_parent_id_idx").on(table.parentId),
+		index("pages_parent_id_order_idx").on(table.parentId, table.order),
+		index("pages_slug_idx").on(table.slug),
+		uniqueIndex("pages_slug_key").on(table.slug),
+		index("pages_status_created_at_idx").on(table.status, table.createdAt),
+		index("pages_status_parent_id_created_at_idx").on(
+			table.status,
+			table.parentId,
+			table.createdAt,
 		),
-		index("pages_parent_id_order_idx").using(
-			"btree",
-			table.parentId.asc().nullsLast(),
-			table.order.asc().nullsLast(),
-		),
-		index("pages_slug_idx").using("btree", table.slug.asc().nullsLast()),
-		uniqueIndex("pages_slug_key").using("btree", table.slug.asc().nullsLast()),
-		index("pages_status_created_at_idx").using(
-			"btree",
-			table.status.asc().nullsLast(),
-			table.createdAt.asc().nullsLast(),
-		),
-		index("pages_status_parent_id_created_at_idx").using(
-			"btree",
-			table.status.asc().nullsLast(),
-			table.parentId.asc().nullsLast(),
-			table.createdAt.asc().nullsLast(),
-		),
-		index("pages_user_id_idx").using("btree", table.userId.asc().nullsLast()),
+		index("pages_user_id_idx").on(table.userId),
 		foreignKey({
 			columns: [table.id],
 			foreignColumns: [contents.id],
@@ -763,37 +699,31 @@ export const pages = pgTable(
 	],
 );
 
-export const segments = pgTable(
+export const segments = sqliteTable(
 	"segments",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		contentId: integer("content_id").notNull(),
 		number: integer().notNull(),
 		text: text().notNull(),
 		textAndOccurrenceHash: text("text_and_occurrence_hash").notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 		segmentTypeId: integer("segment_type_id").notNull(),
 	},
 	(table) => [
-		index("segments_content_id_idx").using(
-			"btree",
-			table.contentId.asc().nullsLast(),
+		index("segments_content_id_idx").on(table.contentId),
+		uniqueIndex("segments_content_id_number_key").on(
+			table.contentId,
+			table.number,
 		),
-		uniqueIndex("segments_content_id_number_key").using(
-			"btree",
-			table.contentId.asc().nullsLast(),
-			table.number.asc().nullsLast(),
+		uniqueIndex("segments_content_id_text_and_occurrence_hash_key").on(
+			table.contentId,
+			table.textAndOccurrenceHash,
 		),
-		uniqueIndex("segments_content_id_text_and_occurrence_hash_key").using(
-			"btree",
-			table.contentId.asc().nullsLast(),
-			table.textAndOccurrenceHash.asc().nullsLast(),
-		),
-		index("segments_text_and_occurrence_hash_idx").using(
-			"btree",
-			table.textAndOccurrenceHash.asc().nullsLast(),
+		index("segments_text_and_occurrence_hash_idx").on(
+			table.textAndOccurrenceHash,
 		),
 		foreignKey({
 			columns: [table.contentId],
@@ -812,31 +742,24 @@ export const segments = pgTable(
 	],
 );
 
-export const segmentMetadata = pgTable(
+export const segmentMetadata = sqliteTable(
 	"segment_metadata",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		segmentId: integer("segment_id").notNull(),
 		metadataTypeId: integer("metadata_type_id").notNull(),
 		value: text().notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 	},
 	(table) => [
-		index("segment_metadata_metadata_type_id_idx").using(
-			"btree",
-			table.metadataTypeId.asc().nullsLast(),
-		),
-		index("segment_metadata_segment_id_idx").using(
-			"btree",
-			table.segmentId.asc().nullsLast(),
-		),
-		uniqueIndex("segment_metadata_segment_id_metadata_type_id_value_key").using(
-			"btree",
-			table.segmentId.asc().nullsLast(),
-			table.metadataTypeId.asc().nullsLast(),
-			table.value.asc().nullsLast(),
+		index("segment_metadata_metadata_type_id_idx").on(table.metadataTypeId),
+		index("segment_metadata_segment_id_idx").on(table.segmentId),
+		uniqueIndex("segment_metadata_segment_id_metadata_type_id_value_key").on(
+			table.segmentId,
+			table.metadataTypeId,
+			table.value,
 		),
 		foreignKey({
 			columns: [table.metadataTypeId],
@@ -855,31 +778,28 @@ export const segmentMetadata = pgTable(
 	],
 );
 
-export const verifications = pgTable("verifications", {
+export const verifications = sqliteTable("verifications", {
 	id: text().primaryKey().notNull(),
 	identifier: text().notNull(),
 	value: text().notNull(),
-	expiresAt: timestamp("expires_at", {
-		precision: 3,
-		mode: "string",
-	}).notNull(),
-	createdAt: timestamp("created_at", { precision: 3, mode: "string" }),
-	updatedAt: timestamp("updated_at", { precision: 3, mode: "string" }),
+	expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+	createdAt: integer("created_at", { mode: "timestamp_ms" }),
+	updatedAt: integer("updated_at", { mode: "timestamp_ms" }),
 });
 
-export const users = pgTable(
+export const users = sqliteTable(
 	"users",
 	{
 		image: text().default("https://evame.tech/avatar.png").notNull(),
 		plan: text().default("free").notNull(),
 		totalPoints: integer("total_points").default(0).notNull(),
-		isAi: boolean("is_ai").default(false).notNull(),
+		isAi: integer("is_ai", { mode: "boolean" }).default(false).notNull(),
 		provider: text().default("Credentials").notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
-		updatedAt: timestamp("updated_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 		name: text().default("new_user").notNull(),
 		handle: text().notNull(),
@@ -887,38 +807,32 @@ export const users = pgTable(
 		id: text().primaryKey().notNull(),
 		email: text().notNull(),
 		twitterHandle: text("twitter_handle").default("").notNull(),
-		emailVerified: boolean("email_verified"),
+		emailVerified: integer("email_verified", { mode: "boolean" }),
 	},
 	(table) => [
-		uniqueIndex("users_email_key").using(
-			"btree",
-			table.email.asc().nullsLast(),
-		),
-		uniqueIndex("users_handle_key").using(
-			"btree",
-			table.handle.asc().nullsLast(),
-		),
+		uniqueIndex("users_email_key").on(table.email),
+		uniqueIndex("users_handle_key").on(table.handle),
 	],
 );
 
-export const userSettings = pgTable(
+export const userSettings = sqliteTable(
 	"user_settings",
 	{
-		id: serial().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		userId: text("user_id").notNull(),
-		targetLocales: text("target_locales").array().default(["RAY"]).notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		targetLocales: text("target_locales", { mode: "json" })
+			.$type<string[]>()
+			.default(["RAY"])
 			.notNull(),
-		updatedAt: timestamp("updated_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
+			.notNull(),
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 	},
 	(table) => [
-		uniqueIndex("user_settings_user_id_key").using(
-			"btree",
-			table.userId.asc().nullsLast(),
-		),
+		uniqueIndex("user_settings_user_id_key").on(table.userId),
 		foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
@@ -929,18 +843,15 @@ export const userSettings = pgTable(
 	],
 );
 
-export const tagPages = pgTable(
+export const tagPages = sqliteTable(
 	"tag_pages",
 	{
 		tagId: integer("tag_id").notNull(),
 		pageId: integer("page_id").notNull(),
 	},
 	(table) => [
-		index("tag_pages_pageId_idx").using(
-			"btree",
-			table.pageId.asc().nullsLast(),
-		),
-		index("tag_pages_tagId_idx").using("btree", table.tagId.asc().nullsLast()),
+		index("tag_pages_pageId_idx").on(table.pageId),
+		index("tag_pages_tagId_idx").on(table.tagId),
 		foreignKey({
 			columns: [table.pageId],
 			foreignColumns: [pages.id],
@@ -962,23 +873,21 @@ export const tagPages = pgTable(
 	],
 );
 
-export const segmentAnnotationLinks = pgTable(
+export const segmentAnnotationLinks = sqliteTable(
 	"segment_annotation_links",
 	{
 		mainSegmentId: integer("main_segment_id").notNull(),
 		annotationSegmentId: integer("annotation_segment_id").notNull(),
-		createdAt: timestamp("created_at", { precision: 3, mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
 			.notNull(),
 	},
 	(table) => [
-		index("segment_annotation_links_annotation_segment_id_idx").using(
-			"btree",
-			table.annotationSegmentId.asc().nullsLast(),
+		index("segment_annotation_links_annotation_segment_id_idx").on(
+			table.annotationSegmentId,
 		),
-		index("segment_annotation_links_main_segment_id_idx").using(
-			"btree",
-			table.mainSegmentId.asc().nullsLast(),
+		index("segment_annotation_links_main_segment_id_idx").on(
+			table.mainSegmentId,
 		),
 		foreignKey({
 			columns: [table.annotationSegmentId],

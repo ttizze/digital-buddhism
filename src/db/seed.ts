@@ -3,7 +3,7 @@ import "dotenv/config";
 import { createId } from "@paralleldrive/cuid2";
 import type { TransactionClient } from "@/app/[locale]/_service/sync-segments";
 import type { JsonValue } from "@/db/types";
-import { db } from ".";
+import { db, disposeDb } from ".";
 import { LOCALE_CONTENT } from "./seed-data/content";
 
 type LocaleKey = keyof typeof LOCALE_CONTENT;
@@ -283,8 +283,5 @@ seed()
 		process.exit(1);
 	})
 	.finally(async () => {
-		// プールを閉じる
-		if (db.pool) {
-			await db.pool.end();
-		}
+		await disposeDb();
 	});
