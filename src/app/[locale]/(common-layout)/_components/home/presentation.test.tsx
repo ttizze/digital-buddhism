@@ -1,42 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { getHomeMetadata } from "./metadata";
-
-vi.mock("@tanstack/react-router", () => ({
-	ClientOnly: ({ children }: { children: ReactNode }) => <>{children}</>,
-	Link: ({ children }: { children: ReactNode }) => (
-		<a data-testid="more-link" href="/en/new-pages">
-			{children}
-		</a>
-	),
-}));
-
-vi.mock("../about-section/presentation", () => ({
-	default: ({ floatingControls }: { floatingControls: ReactNode }) => (
-		<section
-			data-has-floating-controls={String(Boolean(floatingControls))}
-			data-testid="about-section"
-		>
-			About
-			{floatingControls}
-		</section>
-	),
-}));
-
-vi.mock("../floating-controls/floating-controls.client", () => ({
-	FloatingControls: () => <div data-testid="floating-controls" />,
-}));
-
-vi.mock("../page/new-page-list/presentation", () => ({
-	NewPageListPresentation: () => <section data-testid="new-pages">New</section>,
-}));
-
-vi.mock("../page/popular-page-list/presentation", () => ({
-	PopularPageListPresentation: () => (
-		<section data-testid="popular-pages">Popular</section>
-	),
-}));
 
 vi.mock("../tipitaka-page-list/tipitaka-page-list", () => ({
 	TipitakaPageList: () => (
@@ -47,75 +11,26 @@ vi.mock("../tipitaka-page-list/tipitaka-page-list", () => ({
 import { HomePresentation } from "./presentation";
 
 const data: Parameters<typeof HomePresentation>[0]["data"] = {
-	pageDetail: {
-		id: 1,
-		isTipitakaPage: false,
-		isPublishedTipitakaArchive: false,
-		slug: "evame",
-		title: "Evame",
-		status: "PUBLIC",
-		sourceLocale: "en",
-		parentId: null,
-		order: 0,
-		mdastJson: null,
-		segments: [],
-		createdAt: new Date("2026-01-01"),
-		updatedAt: new Date("2026-01-01"),
-		userId: "user-id",
-		userName: "Evame",
-		userHandle: "evame",
-		userImage: "",
-		tagPages: [],
-	},
-	stats: { articles: 1, translations: 2, languages: 18 },
-	newPages: { pageForLists: [], totalPages: 0 },
-	popularPages: { pageForLists: [], totalPages: 0 },
 	tipitakaPages: [],
 };
 
 describe("ホーム画面", () => {
-	it("既存セクションを順番どおり表示しMoreリンクを維持する", () => {
+	it("Tipitakaだけを表示し非表示セクションを含めない", () => {
 		const { container } = render(<HomePresentation data={data} locale="en" />);
 
 		expect(
 			[...container.querySelectorAll("[data-testid]")].map((element) =>
 				element.getAttribute("data-testid"),
 			),
-		).toEqual([
-			"about-section",
-			"floating-controls",
-			"new-pages",
-			"more-link",
-			"popular-pages",
-			"tipitaka-pages",
-		]);
-		expect(screen.getByTestId("about-section")).toHaveAttribute(
-			"data-has-floating-controls",
-			"false",
-		);
-		expect(screen.getAllByTestId("floating-controls")).toHaveLength(1);
-		expect(screen.getByRole("link", { name: /More/ })).toBeInTheDocument();
-	});
-
-	it("Aboutページがなくても一覧を表示しAboutSectionだけ省略する", () => {
-		const { container } = render(
-			<HomePresentation data={{ ...data, pageDetail: null }} locale="en" />,
-		);
-
+		).toEqual(["tipitaka-pages"]);
+		expect(screen.getByTestId("tipitaka-pages")).toBeInTheDocument();
 		expect(screen.queryByTestId("about-section")).not.toBeInTheDocument();
+		expect(screen.queryByTestId("floating-controls")).not.toBeInTheDocument();
+		expect(screen.queryByTestId("new-pages")).not.toBeInTheDocument();
+		expect(screen.queryByTestId("popular-pages")).not.toBeInTheDocument();
 		expect(
-			[...container.querySelectorAll("[data-testid]")].map((element) =>
-				element.getAttribute("data-testid"),
-			),
-		).toEqual([
-			"floating-controls",
-			"new-pages",
-			"more-link",
-			"popular-pages",
-			"tipitaka-pages",
-		]);
-		expect(screen.getByTestId("floating-controls")).toBeInTheDocument();
-		expect(screen.getByRole("link", { name: /More/ })).toBeInTheDocument();
+			screen.queryByRole("link", { name: /More/ }),
+		).not.toBeInTheDocument();
 	});
 });
 
