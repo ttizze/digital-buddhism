@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { type ComponentType, createElement, type JSX } from "react";
+import { createElement, type JSX } from "react";
 import * as jsxRuntime from "react/jsx-runtime";
 import rehypeRaw from "rehype-raw";
 import rehypeReact from "rehype-react";
@@ -24,21 +24,6 @@ const SEGMENTABLE = [
 	"th",
 	"blockquote",
 ] as const satisfies readonly (keyof JSX.IntrinsicElements)[];
-
-type ImgProps = Omit<JSX.IntrinsicElements["img"], "src"> & {
-	src?: string;
-};
-
-const ImgComponent: ComponentType<ImgProps> = ({ src = "", ...props }) => (
-	<img
-		{...props}
-		alt={props.alt ?? ""}
-		className="h-auto w-auto max-w-full"
-		height={props.height ?? 300}
-		src={src}
-		width={props.width ?? 300}
-	/>
-);
 
 interface Params<T extends Segment = Segment> {
 	mdast: JsonValue;
@@ -70,8 +55,6 @@ export async function mdastToReact<T extends Segment = Segment>({
 			createElement,
 			...jsxRuntime,
 			components: {
-				// Render markdown images without a framework-specific image loader.
-				img: ImgComponent,
 				...segmentComponents,
 			},
 		});
