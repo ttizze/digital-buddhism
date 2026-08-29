@@ -33,6 +33,14 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			"@": path.resolve(import.meta.dirname, "src"),
+			"@cloudflare/pages-plugin-vercel-og/api": path.resolve(
+				import.meta.dirname,
+				"src/tests/cloudflare-vercel-og.ts",
+			),
+			"cloudflare:workers": path.resolve(
+				import.meta.dirname,
+				"src/tests/cloudflare-workers.ts",
+			),
 		},
 	},
 });
