@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { db } from "@/db";
 import { resetDatabase } from "@/tests/db-helpers";
-import { createPage, createUser } from "@/tests/factories";
+import {
+	createPage,
+	createPageWithSegments,
+	createUser,
+} from "@/tests/factories";
 import { setupDbPerFile } from "@/tests/test-db-manager";
 import { queryPageDetail } from "./queries";
 
@@ -33,5 +38,61 @@ describe("queryPageDetail", () => {
 		});
 
 		await expect(queryPageDetail("public-child", "ja")).resolves.toBeNull();
+	});
+
+	it("対象セグメントごとにページオーナー推奨の翻訳を選ぶ", async () => {
+		const pageOwner = await createUser({ handle: "owner" });
+		const translator = await createUser({ handle: "translator" });
+		const page = await createPageWithSegments({
+			userId: pageOwner.id,
+			slug: "translated-page",
+			segments: [
+				{
+					number: 0,
+					text: "Hello",
+					textAndOccurrenceHash: "translated-page-title",
+					segmentTypeKey: "PRIMARY",
+				},
+			],
+		});
+		const segment = await db
+			.selectFrom("segments")
+			.select("id")
+			.where("contentId", "=", page.id)
+			.executeTakeFirstOrThrow();
+
+		await db
+			.insertInto("segmentTranslations")
+			.values({
+				segmentId: segment.id,
+				locale: "ja",
+				text: "高ポイント翻訳",
+				point: 100,
+				userId: translator.id,
+			})
+			.execute();
+		const ownerTranslation = await db
+			.insertInto("segmentTranslations")
+			.values({
+				segmentId: segment.id,
+				locale: "ja",
+				text: "オーナー推奨翻訳",
+				point: 1,
+				userId: translator.id,
+			})
+			.returning("id")
+			.executeTakeFirstOrThrow();
+		await db
+			.insertInto("translationVotes")
+			.values({
+				translationId: ownerTranslation.id,
+				userId: pageOwner.id,
+				isUpvote: true,
+			})
+			.execute();
+
+		const result = await queryPageDetail(page.slug, "ja");
+
+		expect(result?.segments[0]?.translationText).toBe("オーナー推奨翻訳");
 	});
 });

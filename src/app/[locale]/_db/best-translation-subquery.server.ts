@@ -1,91 +1,37 @@
-import type { ExpressionBuilder } from "kysely";
+import type { Expression } from "kysely";
 import { db } from "@/db";
-import type { DB } from "@/db/types";
 
-type BestTranslationParams = {
+type BestTranslationTextParams = {
 	locale: string;
-	ownerUserId: string;
+	ownerId: Expression<string>;
+	segmentId: Expression<number>;
 };
 
-export function bestTranslationSubquery(
-	eb: ExpressionBuilder<DB, keyof DB>,
-	{ locale, ownerUserId }: BestTranslationParams,
-) {
-	const rankedQuery = eb
-		.selectFrom("segmentTranslations")
-		.leftJoin("translationVotes as ownerTv", (join) =>
-			join
-				.onRef("ownerTv.translationId", "=", "segmentTranslations.id")
-				.on("ownerTv.userId", "=", ownerUserId)
-				.on("ownerTv.isUpvote", "=", true),
-		)
-		.select([
-			"segmentTranslations.id",
-			"segmentTranslations.segmentId",
-			"segmentTranslations.text",
-		])
-		.select((eb) =>
-			eb.fn
-				.agg<number>("row_number")
-				.over((ob) =>
-					ob
-						.partitionBy("segmentTranslations.segmentId")
-						.orderBy("ownerTv.isUpvote", (ob) => ob.desc().nullsLast())
-						.orderBy("segmentTranslations.point", "desc")
-						.orderBy("segmentTranslations.createdAt", "desc"),
-				)
-				.as("rowNumber"),
-		)
-		.where("segmentTranslations.locale", "=", locale);
-
-	return eb
-		.selectFrom(rankedQuery.as("ranked"))
-		.select(["ranked.id", "ranked.segmentId", "ranked.text"])
-		.where("ranked.rowNumber", "=", 1)
-		.orderBy("ranked.segmentId");
-}
-
 /**
- * 複数ページ一括取得用のbest translation subquery (軽量版)
- * セグメントからページを辿り、各ページのオーナーのupvoteを優先する
+ * 対象セグメントの翻訳候補だけを順位付けし、最良の本文を返す。
+ *
+ * 順位はページオーナーのupvote、ポイント、作成日時の順。
+ * 呼び出し側から値または外側の列参照を渡せるため、単一ページと
+ * 複数ページのどちらでも同じ選択規則を使う。
  */
-export function bestTranslationByPagesSubquery(locale: string) {
-	const rankedQuery = db
-		.selectFrom("segmentTranslations")
-		.innerJoin(
-			"segments as transSeg",
-			"segmentTranslations.segmentId",
-			"transSeg.id",
-		)
-		.innerJoin("pages as ownerPage", "transSeg.contentId", "ownerPage.id")
-		.leftJoin("translationVotes as ownerTv", (join) =>
-			join
-				.onRef("ownerTv.translationId", "=", "segmentTranslations.id")
-				.onRef("ownerTv.userId", "=", "ownerPage.userId")
-				.on("ownerTv.isUpvote", "=", true),
-		)
-		.select([
-			"segmentTranslations.id",
-			"segmentTranslations.segmentId",
-			"segmentTranslations.text",
-		])
-		.select((eb) =>
-			eb.fn
-				.agg<number>("row_number")
-				.over((ob) =>
-					ob
-						.partitionBy("segmentTranslations.segmentId")
-						.orderBy("ownerTv.isUpvote", (ob) => ob.desc().nullsLast())
-						.orderBy("segmentTranslations.point", "desc")
-						.orderBy("segmentTranslations.createdAt", "desc"),
-				)
-				.as("rowNumber"),
-		)
-		.where("segmentTranslations.locale", "=", locale);
-
+export function bestTranslationTextSubquery({
+	locale,
+	ownerId,
+	segmentId,
+}: BestTranslationTextParams) {
 	return db
-		.selectFrom(rankedQuery.as("ranked"))
-		.select(["ranked.id", "ranked.segmentId", "ranked.text"])
-		.where("ranked.rowNumber", "=", 1)
-		.orderBy("ranked.segmentId");
+		.selectFrom("segmentTranslations as candidateTranslation")
+		.leftJoin("translationVotes as ownerVote", (join) =>
+			join
+				.onRef("ownerVote.translationId", "=", "candidateTranslation.id")
+				.on("ownerVote.userId", "=", ownerId)
+				.on("ownerVote.isUpvote", "=", true),
+		)
+		.select("candidateTranslation.text")
+		.where("candidateTranslation.segmentId", "=", segmentId)
+		.where("candidateTranslation.locale", "=", locale)
+		.orderBy("ownerVote.isUpvote", (ob) => ob.desc().nullsLast())
+		.orderBy("candidateTranslation.point", "desc")
+		.orderBy("candidateTranslation.createdAt", "desc")
+		.limit(1);
 }

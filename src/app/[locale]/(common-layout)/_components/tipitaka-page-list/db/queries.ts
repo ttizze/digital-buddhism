@@ -1,3 +1,4 @@
+import { bestTranslationTextSubquery } from "@/app/[locale]/_db/best-translation-subquery.server";
 import { db } from "@/db";
 import {
 	extractTipitakaPageTree,
@@ -40,20 +41,65 @@ export async function fetchTipitakaPageTree(
 	if (!rootPage) return [];
 
 	const rows = await db
-		.selectFrom("pages")
+		.withRecursive("tipitakaDescendants", (qb) =>
+			qb
+				.selectFrom("pages")
+				.select([
+					"pages.id",
+					"pages.slug",
+					"pages.parentId",
+					"pages.order",
+					"pages.publishedAt",
+					"pages.sourceLocale",
+					"pages.status",
+					"pages.userId",
+				])
+				.where("pages.parentId", "=", rootPage.id)
+				.where("pages.sourceLocale", "=", "pi")
+				.where((eb) =>
+					eb.or([
+						eb("pages.status", "=", "PUBLIC"),
+						eb.and([
+							eb("pages.status", "=", "ARCHIVE"),
+							eb("pages.publishedAt", "is not", null),
+						]),
+					]),
+				)
+				.unionAll(
+					qb
+						.selectFrom("pages")
+						.innerJoin(
+							"tipitakaDescendants",
+							"pages.parentId",
+							"tipitakaDescendants.id",
+						)
+						.select([
+							"pages.id",
+							"pages.slug",
+							"pages.parentId",
+							"pages.order",
+							"pages.publishedAt",
+							"pages.sourceLocale",
+							"pages.status",
+							"pages.userId",
+						])
+						.where("pages.sourceLocale", "=", "pi")
+						.where((eb) =>
+							eb.or([
+								eb("pages.status", "=", "PUBLIC"),
+								eb.and([
+									eb("pages.status", "=", "ARCHIVE"),
+									eb("pages.publishedAt", "is not", null),
+								]),
+							]),
+						),
+				),
+		)
+		.selectFrom("tipitakaDescendants as pages")
 		// SQLite が巨大な segments 全体を先に走査しないよう、pages を駆動表に固定する。
 		.crossJoin("segments")
 		.innerJoin("contents", "contents.id", "pages.id")
 		.innerJoin("users", "users.id", "pages.userId")
-		.where((eb) =>
-			eb.or([
-				eb("pages.status", "=", "PUBLIC"),
-				eb.and([
-					eb("pages.status", "=", "ARCHIVE"),
-					eb("pages.publishedAt", "is not", null),
-				]),
-			]),
-		)
 		.where("contents.kind", "=", "PAGE")
 		.whereRef("segments.contentId", "=", "pages.id")
 		.where("segments.number", "=", 0)
@@ -69,22 +115,11 @@ export async function fetchTipitakaPageTree(
 			"users.handle as userHandle",
 			"segments.id as titleSegmentId",
 			"segments.text as titleText",
-			eb
-				.selectFrom("segmentTranslations")
-				.leftJoin("translationVotes as ownerTv", (join) =>
-					join
-						.onRef("ownerTv.translationId", "=", "segmentTranslations.id")
-						.onRef("ownerTv.userId", "=", "pages.userId")
-						.on("ownerTv.isUpvote", "=", true),
-				)
-				.select("segmentTranslations.text")
-				.whereRef("segmentTranslations.segmentId", "=", "segments.id")
-				.where("segmentTranslations.locale", "=", locale)
-				.orderBy("ownerTv.isUpvote", (ob) => ob.desc().nullsLast())
-				.orderBy("segmentTranslations.point", "desc")
-				.orderBy("segmentTranslations.createdAt", "desc")
-				.limit(1)
-				.as("titleTranslationText"),
+			bestTranslationTextSubquery({
+				locale,
+				ownerId: eb.ref("pages.userId"),
+				segmentId: eb.ref("segments.id"),
+			}).as("titleTranslationText"),
 		])
 		.orderBy("pages.parentId")
 		.orderBy("pages.order")

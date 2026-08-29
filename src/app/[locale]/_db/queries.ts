@@ -6,7 +6,7 @@ import {
 	TIPITAKA_ROOT_SLUG,
 	TIPITAKA_SYSTEM_USER_HANDLE,
 } from "../_domain/tipitaka-page-visibility";
-import { bestTranslationSubquery } from "./best-translation-subquery.server";
+import { bestTranslationTextSubquery } from "./best-translation-subquery.server";
 
 type SegmentWithAnnotations = SegmentWithSegmentType & {
 	annotations: Array<{ annotationSegment: SegmentWithSegmentType }>;
@@ -139,7 +139,7 @@ export async function fetchPageCounts(pageId: number) {
 }
 
 /**
- * セグメントを取得（DISTINCT ONで最良の翻訳を1件のみ）
+ * セグメントと対象ページ内の最良翻訳を取得
  */
 async function fetchSegments(
 	pageId: number,
@@ -151,13 +151,6 @@ async function fetchSegments(
 	let query = db
 		.selectFrom("segments")
 		.innerJoin("segmentTypes", "segments.segmentTypeId", "segmentTypes.id")
-		.leftJoin(
-			(eb) =>
-				bestTranslationSubquery(eb, { locale, ownerUserId: pageOwnerId }).as(
-					"trans",
-				),
-			(join) => join.onRef("trans.segmentId", "=", "segments.id"),
-		)
 		.select([
 			"segments.id",
 			"segments.contentId",
@@ -165,8 +158,14 @@ async function fetchSegments(
 			"segments.text",
 			"segmentTypes.key as segmentTypeKey",
 			"segmentTypes.label as segmentTypeLabel",
-			"trans.text as translationText",
 		])
+		.select((eb) =>
+			bestTranslationTextSubquery({
+				locale,
+				ownerId: eb.val(pageOwnerId),
+				segmentId: eb.ref("segments.id"),
+			}).as("translationText"),
+		)
 		.where("segments.contentId", "=", pageId);
 
 	if (segmentTypeKey) {
@@ -256,13 +255,6 @@ async function fetchSegmentsByIds(
 	return db
 		.selectFrom("segments")
 		.innerJoin("segmentTypes", "segments.segmentTypeId", "segmentTypes.id")
-		.leftJoin(
-			(eb) =>
-				bestTranslationSubquery(eb, { locale, ownerUserId: pageOwnerId }).as(
-					"trans",
-				),
-			(join) => join.onRef("trans.segmentId", "=", "segments.id"),
-		)
 		.select([
 			"segments.id",
 			"segments.contentId",
@@ -270,8 +262,14 @@ async function fetchSegmentsByIds(
 			"segments.text",
 			"segmentTypes.key as segmentTypeKey",
 			"segmentTypes.label as segmentTypeLabel",
-			"trans.text as translationText",
 		])
+		.select((eb) =>
+			bestTranslationTextSubquery({
+				locale,
+				ownerId: eb.val(pageOwnerId),
+				segmentId: eb.ref("segments.id"),
+			}).as("translationText"),
+		)
 		.where("segments.id", "in", segmentIds)
 		.execute();
 }
@@ -288,9 +286,16 @@ export async function queryPageDetail(slug: string, locale: string) {
 		page.status === "ARCHIVE" ||
 		page.slug === TIPITAKA_ROOT_SLUG ||
 		page.parentId !== null;
-	const tipitakaVisibility = shouldCheckTipitakaVisibility
-		? await queryTipitakaVisibility(page.id)
-		: { isPubliclyReadable: false, isTipitakaPage: false };
+	const [tipitakaVisibility, tags, primarySegments] = await Promise.all([
+		shouldCheckTipitakaVisibility
+			? queryTipitakaVisibility(page.id)
+			: Promise.resolve({
+					isPubliclyReadable: false,
+					isTipitakaPage: false,
+				}),
+		fetchTags(page.id),
+		fetchSegments(page.id, locale, page.userId, "PRIMARY"),
+	]);
 	const { isTipitakaPage } = tipitakaVisibility;
 	if (
 		isTipitakaPage &&
@@ -303,10 +308,7 @@ export async function queryPageDetail(slug: string, locale: string) {
 		page.status === "ARCHIVE" && tipitakaVisibility.isPubliclyReadable;
 	if (page.status === "ARCHIVE" && !isPublishedTipitakaArchive) return null;
 
-	const tags = await fetchTags(page.id);
-
-	// 1. PRIMARYセグメントを取得
-	let segments = await fetchSegments(page.id, locale, page.userId, "PRIMARY");
+	let segments = primarySegments;
 
 	// 2. PRIMARYセグメントがない場合、COMMENTARYセグメントをフォールバック
 	if (segments.length === 0) {
