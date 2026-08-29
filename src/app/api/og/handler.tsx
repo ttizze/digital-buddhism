@@ -1,5 +1,5 @@
+import { env } from "cloudflare:workers";
 import { ImageResponse } from "@cloudflare/pages-plugin-vercel-og/api";
-import { useStorage as getNitroStorage } from "nitro/storage";
 import { fetchPageDetail } from "@/app/[locale]/_db/fetch-page-detail.server";
 
 const OG_CACHE_CONTROL =
@@ -7,24 +7,17 @@ const OG_CACHE_CONTROL =
 const OG_NOT_FOUND_CACHE_CONTROL =
 	"public, max-age=0, s-maxage=60, stale-while-revalidate=600";
 
-const ogAssets = getNitroStorage("assets/og");
-
-async function readOgAsset(assetName: string): Promise<ArrayBuffer> {
-	const asset = await ogAssets.getItemRaw<Uint8Array>(assetName);
-	if (asset == null) {
+async function readOgAsset(
+	request: Request,
+	assetName: string,
+): Promise<ArrayBuffer> {
+	const assetResponse = await env.ASSETS.fetch(
+		new URL(`/${assetName}`, request.url),
+	);
+	if (!assetResponse.ok) {
 		throw new Error(`Missing OG server asset: ${assetName}`);
 	}
-	if (asset instanceof ArrayBuffer) {
-		return asset;
-	}
-	if (ArrayBuffer.isView(asset)) {
-		return new Uint8Array(
-			asset.buffer,
-			asset.byteOffset,
-			asset.byteLength,
-		).slice().buffer;
-	}
-	throw new TypeError(`Invalid OG server asset: ${assetName}`);
+	return assetResponse.arrayBuffer();
 }
 
 export async function getOgImage(request: Request): Promise<Response> {
@@ -49,9 +42,9 @@ export async function getOgImage(request: Request): Promise<Response> {
 
 	const [interFontSemiBold, bizUDPGothicFontBold, logoData] = await Promise.all(
 		[
-			readOgAsset("inter-semi-bold.ttf"),
-			readOgAsset("BIZUDPGothic-Bold.ttf"),
-			readOgAsset("logo.png"),
+			readOgAsset(request, "inter-semi-bold.ttf"),
+			readOgAsset(request, "BIZUDPGothic-Bold.ttf"),
+			readOgAsset(request, "logo.png"),
 		],
 	);
 	const logoSrc = `data:image/png;base64,${Buffer.from(logoData).toString("base64")}`;

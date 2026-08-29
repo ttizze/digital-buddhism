@@ -9,17 +9,37 @@ import { getOgImage } from "./handler";
 
 await setupDbPerFile(import.meta.url);
 
-const { ogAssetStore, getItemRaw } = vi.hoisted(() => {
+const { ogAssetStore, fetchAsset } = vi.hoisted(() => {
 	const ogAssetStore = new Map<string, Uint8Array>();
-	const getItemRaw = vi.fn(async (assetName: string) => {
-		return ogAssetStore.get(assetName) ?? null;
+	const fetchAsset = vi.fn(async (input: RequestInfo | URL) => {
+		const url = input instanceof Request ? input.url : input.toString();
+		const assetName = new URL(url).pathname.slice(1);
+		const asset = ogAssetStore.get(assetName);
+		if (!asset) return new Response(null, { status: 404 });
+		const body = new ArrayBuffer(asset.byteLength);
+		new Uint8Array(body).set(asset);
+		return new Response(body, {
+			headers: { "Content-Type": "application/octet-stream" },
+		});
 	});
-	return { ogAssetStore, getItemRaw };
+	return { ogAssetStore, fetchAsset };
 });
 const ogAssetFixtures = new Map<string, Uint8Array>();
 
-vi.mock("nitro/storage", () => ({
-	useStorage: () => ({ getItemRaw }),
+vi.mock("cloudflare:workers", () => ({
+	env: {
+		ASSETS: { fetch: fetchAsset },
+	},
+}));
+
+vi.mock("@cloudflare/pages-plugin-vercel-og/api", () => ({
+	ImageResponse: class extends Response {
+		constructor() {
+			super(new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0]), {
+				headers: { "Content-Type": "image/png" },
+			});
+		}
+	},
 }));
 
 const assetPaths = {
@@ -44,7 +64,7 @@ beforeEach(async () => {
 	for (const [assetName, asset] of ogAssetFixtures) {
 		ogAssetStore.set(assetName, asset);
 	}
-	getItemRaw.mockClear();
+	fetchAsset.mockClear();
 });
 
 function expectPng(response: Response): Promise<void> {
@@ -69,7 +89,7 @@ describe("GET /api/og", () => {
 		expect(response.headers.get("cache-control")).toBe(
 			"public, max-age=0, s-maxage=60, stale-while-revalidate=600",
 		);
-		expect(getItemRaw).not.toHaveBeenCalled();
+		expect(fetchAsset).not.toHaveBeenCalled();
 	});
 
 	it("通常ページにはserver assetから取得したフォントとロゴを使ったPNG画像を返す", async () => {
@@ -99,10 +119,16 @@ describe("GET /api/og", () => {
 		expect(response.headers.get("cache-control")).toBe(
 			"public, max-age=0, s-maxage=86400, stale-while-revalidate=604800",
 		);
-		expect(getItemRaw).toHaveBeenCalledTimes(3);
-		expect(getItemRaw).toHaveBeenCalledWith("inter-semi-bold.ttf");
-		expect(getItemRaw).toHaveBeenCalledWith("BIZUDPGothic-Bold.ttf");
-		expect(getItemRaw).toHaveBeenCalledWith("logo.png");
+		expect(fetchAsset).toHaveBeenCalledTimes(3);
+		expect(fetchAsset).toHaveBeenCalledWith(
+			new URL("http://localhost/inter-semi-bold.ttf"),
+		);
+		expect(fetchAsset).toHaveBeenCalledWith(
+			new URL("http://localhost/BIZUDPGothic-Bold.ttf"),
+		);
+		expect(fetchAsset).toHaveBeenCalledWith(
+			new URL("http://localhost/logo.png"),
+		);
 	});
 
 	it("server assetが欠落している場合は欠落した名前を含むエラーを返す", async () => {
