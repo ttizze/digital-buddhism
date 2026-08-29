@@ -1,4 +1,4 @@
-import { ImageResponse } from "@vercel/og";
+import { ImageResponse } from "@cloudflare/pages-plugin-vercel-og/api";
 import { useStorage as getNitroStorage } from "nitro/storage";
 import { fetchPageDetail } from "@/app/[locale]/_db/fetch-page-detail.server";
 
