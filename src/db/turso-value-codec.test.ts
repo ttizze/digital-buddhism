@@ -1,13 +1,13 @@
 import { createClient } from "@libsql/client";
 import { LibsqlDialect } from "@libsql/kysely-libsql";
-import { CamelCasePlugin, Kysely } from "kysely";
+import { CamelCasePlugin, type ColumnType, Kysely } from "kysely";
 import { afterEach, describe, expect, it } from "vitest";
 import { TursoValueCodecPlugin } from "./turso-value-codec";
 
 type TestDatabase = {
 	pages: {
 		id: number;
-		createdAt: Date;
+		createdAt: ColumnType<Date, Date | string, Date | string>;
 		mdastJson: unknown;
 	};
 	segmentMetadata: {
@@ -23,6 +23,14 @@ type TestDatabase = {
 		id: number;
 		userId: string;
 		targetLocales: string[];
+	};
+	sessions: {
+		id: string;
+		userId: string;
+		token: string;
+		expiresAt: Date | string;
+		createdAt: Date | string;
+		updatedAt: Date | string;
 	};
 };
 
@@ -76,8 +84,12 @@ describe("Tursoの値codec", () => {
 		const raw = await client.execute(
 			"SELECT created_at, mdast_json FROM pages WHERE id = 1",
 		);
+		const rawUser = await client.execute(
+			"SELECT is_ai, email_verified FROM users WHERE id = 'u1'",
+		);
 		expect(typeof raw.rows[0]?.created_at).toBe("number");
 		expect(raw.rows[0]?.mdast_json).toBe(JSON.stringify(mdastJson));
+		expect(rawUser.rows[0]).toMatchObject({ is_ai: 1, email_verified: 0 });
 
 		const page = await db
 			.selectFrom("pages")
@@ -160,6 +172,70 @@ describe("Tursoの値codec", () => {
 				.where("id", "=", 1)
 				.executeTakeFirstOrThrow(),
 		).resolves.toEqual({ id: 1, userId: "u1", targetLocales: ["zh"] });
+
+		await db.destroy();
+	});
+
+	it("ISO文字列化された認証日時をepoch msで保存し既存epoch日時と比較する", async () => {
+		const client = createClient({ url: "file::memory:" });
+		clients.push(client);
+		await client.execute(
+			"CREATE TABLE sessions (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, token TEXT NOT NULL, expires_at INTEGER NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)",
+		);
+
+		const db = new Kysely<TestDatabase>({
+			dialect: new LibsqlDialect({
+				client:
+					client as unknown as import("@libsql/kysely-libsql").libsql.Client,
+			}),
+			plugins: [new CamelCasePlugin(), new TursoValueCodecPlugin()],
+		});
+		const now = new Date("2026-08-29T00:00:00.000Z");
+		const expiresAt = new Date("2026-08-30T00:00:00.123Z");
+
+		await db
+			.insertInto("sessions")
+			.values({
+				id: "new-session",
+				userId: "u1",
+				token: "new-token",
+				expiresAt: expiresAt.toISOString(),
+				createdAt: now.toISOString(),
+				updatedAt: now.toISOString(),
+			})
+			.execute();
+		await client.execute({
+			sql: "INSERT INTO sessions (id, user_id, token, expires_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+			args: [
+				"migrated-session",
+				"u1",
+				"migrated-token",
+				expiresAt.getTime(),
+				now.getTime(),
+				now.getTime(),
+			],
+		});
+
+		const raw = await client.execute(
+			"SELECT typeof(expires_at) AS expires_type, expires_at, typeof(created_at) AS created_type, typeof(updated_at) AS updated_type FROM sessions WHERE id = 'new-session'",
+		);
+		expect(raw.rows[0]).toMatchObject({
+			expires_type: "integer",
+			expires_at: expiresAt.getTime(),
+			created_type: "integer",
+			updated_type: "integer",
+		});
+
+		const activeSessions = await db
+			.selectFrom("sessions")
+			.select(["id", "expiresAt"])
+			.where("expiresAt", ">", now.toISOString())
+			.orderBy("id")
+			.execute();
+		expect(activeSessions).toEqual([
+			{ id: "migrated-session", expiresAt },
+			{ id: "new-session", expiresAt },
+		]);
 
 		await db.destroy();
 	});

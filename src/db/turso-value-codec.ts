@@ -1,4 +1,5 @@
 import type {
+	BinaryOperationNode,
 	ColumnUpdateNode,
 	InsertQueryNode,
 	KyselyPlugin,
@@ -15,17 +16,34 @@ import {
 	ColumnNode as ColumnNodeFactory,
 	OperationNodeTransformer,
 	PrimitiveValueListNode as PrimitiveValueListNodeFactory,
+	ReferenceNode as ReferenceNodeFactory,
 	ValueListNode as ValueListNodeFactory,
 	ValueNode as ValueNodeFactory,
 	ValuesNode as ValuesNodeFactory,
 } from "kysely";
 
-type JsonInputCodec = "json" | "stringArray";
-type ResultCodec = JsonInputCodec | "timestamp" | "boolean";
+type InputCodec = "json" | "stringArray" | "timestamp" | "boolean";
+type ResultCodec = InputCodec;
 
-const jsonInputColumns: Record<string, JsonInputCodec> = {
+const inputCodecs: Record<string, InputCodec> = {
 	mdast_json: "json",
 	target_locales: "stringArray",
+	access_token_expires_at: "timestamp",
+	archived_at: "timestamp",
+	created_at: "timestamp",
+	expires_at: "timestamp",
+	finished_at: "timestamp",
+	last_reply_at: "timestamp",
+	last_used_at: "timestamp",
+	published_at: "timestamp",
+	refresh_token_expires_at: "timestamp",
+	started_at: "timestamp",
+	updated_at: "timestamp",
+	email_verified: "boolean",
+	is_ai: "boolean",
+	is_deleted: "boolean",
+	is_upvote: "boolean",
+	read: "boolean",
 };
 
 const dateResultColumns = new Set([
@@ -70,11 +88,15 @@ const resultCodecs = new Map<string, ResultCodec>([
 function getColumnName(node: OperationNode | undefined): string | undefined {
 	if (!node) return undefined;
 	if (ColumnNodeFactory.is(node)) return node.column.name;
+	if (ReferenceNodeFactory.is(node)) return getColumnName(node.column);
 	if (AliasNodeFactory.is(node)) return getColumnName(node.node);
 	return undefined;
 }
 
-function encodeJsonValue(codec: JsonInputCodec, value: unknown): unknown {
+function encodeJsonValue(
+	codec: "json" | "stringArray",
+	value: unknown,
+): unknown {
 	if (codec === "stringArray") {
 		if (
 			!Array.isArray(value) ||
@@ -86,11 +108,30 @@ function encodeJsonValue(codec: JsonInputCodec, value: unknown): unknown {
 	return JSON.stringify(value);
 }
 
+function encodeInputValue(codec: InputCodec, value: unknown): unknown {
+	switch (codec) {
+		case "timestamp": {
+			if (value === null) return value;
+			const date = decodeTimestamp(value);
+			if (!(date instanceof Date)) {
+				throw new TypeError(`Invalid SQLite timestamp: ${String(value)}`);
+			}
+			return date.getTime();
+		}
+		case "boolean":
+			if (typeof value === "boolean") return value ? 1 : 0;
+			return value;
+		case "json":
+		case "stringArray":
+			return encodeJsonValue(codec, value);
+	}
+}
+
 function markValue(
 	value: OperationNode | undefined,
-	codec: JsonInputCodec | undefined,
-	nodeCodecs: WeakMap<object, JsonInputCodec>,
-	primitiveCodecs: WeakMap<object, ReadonlyMap<number, JsonInputCodec>>,
+	codec: InputCodec | undefined,
+	nodeCodecs: WeakMap<object, InputCodec>,
+	primitiveCodecs: WeakMap<object, ReadonlyMap<number, InputCodec>>,
 ): void {
 	if (!codec || !value) return;
 	if (ValueNodeFactory.is(value)) {
@@ -115,17 +156,15 @@ function markValue(
 
 function markInsertValues(
 	node: InsertQueryNode,
-	nodeCodecs: WeakMap<object, JsonInputCodec>,
-	primitiveCodecs: WeakMap<object, ReadonlyMap<number, JsonInputCodec>>,
+	nodeCodecs: WeakMap<object, InputCodec>,
+	primitiveCodecs: WeakMap<object, ReadonlyMap<number, InputCodec>>,
 ): void {
 	if (!node.values || !ValuesNodeFactory.is(node.values) || !node.columns)
 		return;
-	const codecs = node.columns.map(
-		(column) => jsonInputColumns[column.column.name],
-	);
+	const codecs = node.columns.map((column) => inputCodecs[column.column.name]);
 	for (const row of node.values.values) {
 		if (PrimitiveValueListNodeFactory.is(row)) {
-			const rowCodecs = new Map<number, JsonInputCodec>();
+			const rowCodecs = new Map<number, InputCodec>();
 			for (const [index, codec] of codecs.entries()) {
 				if (codec) rowCodecs.set(index, codec);
 			}
@@ -140,10 +179,10 @@ function markInsertValues(
 }
 
 class InputCodecTransformer extends OperationNodeTransformer {
-	private readonly nodeCodecs = new WeakMap<object, JsonInputCodec>();
+	private readonly nodeCodecs = new WeakMap<object, InputCodec>();
 	private readonly primitiveCodecs = new WeakMap<
 		object,
-		ReadonlyMap<number, JsonInputCodec>
+		ReadonlyMap<number, InputCodec>
 	>();
 
 	protected override transformInsertQuery(
@@ -158,15 +197,34 @@ class InputCodecTransformer extends OperationNodeTransformer {
 		node: ColumnUpdateNode,
 		queryId?: { readonly queryId: string },
 	): ColumnUpdateNode {
-		const codec = jsonInputColumns[getColumnName(node.column) ?? ""];
+		const codec = inputCodecs[getColumnName(node.column) ?? ""];
 		markValue(node.value, codec, this.nodeCodecs, this.primitiveCodecs);
 		return super.transformColumnUpdate(node, queryId);
+	}
+
+	protected override transformBinaryOperation(
+		node: BinaryOperationNode,
+		queryId?: { readonly queryId: string },
+	): BinaryOperationNode {
+		markValue(
+			node.rightOperand,
+			inputCodecs[getColumnName(node.leftOperand) ?? ""],
+			this.nodeCodecs,
+			this.primitiveCodecs,
+		);
+		markValue(
+			node.leftOperand,
+			inputCodecs[getColumnName(node.rightOperand) ?? ""],
+			this.nodeCodecs,
+			this.primitiveCodecs,
+		);
+		return super.transformBinaryOperation(node, queryId);
 	}
 
 	protected override transformValue(node: ValueNode): ValueNode {
 		const codec = this.nodeCodecs.get(node);
 		return codec
-			? ValueNodeFactory.create(encodeJsonValue(codec, node.value))
+			? ValueNodeFactory.create(encodeInputValue(codec, node.value))
 			: node;
 	}
 
@@ -178,7 +236,7 @@ class InputCodecTransformer extends OperationNodeTransformer {
 		return PrimitiveValueListNodeFactory.create(
 			node.values.map((value, index) => {
 				const codec = codecs.get(index);
-				return codec ? encodeJsonValue(codec, value) : value;
+				return codec ? encodeInputValue(codec, value) : value;
 			}),
 		);
 	}
