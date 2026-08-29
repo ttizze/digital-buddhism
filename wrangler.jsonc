@@ -4,6 +4,9 @@
 	"compatibility_date": "2026-08-29",
 	"compatibility_flags": ["nodejs_compat"],
 	"main": "src/server.ts",
+	"images": {
+		"binding": "IMAGES"
+	},
 	"observability": {
 		"enabled": true
 	}
