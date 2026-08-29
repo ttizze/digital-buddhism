@@ -25,7 +25,7 @@ describe("page detail navigation queries", () => {
 			parentId: root.id,
 		});
 		const titleSegment = await createSegment({
-			contentId: child.id,
+			pageId: child.id,
 			number: 0,
 			text: "Child",
 			textAndOccurrenceHash: "child-title",
