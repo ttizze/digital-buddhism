@@ -1,0 +1,32 @@
+name: Deploy Worker
+
+on:
+  push:
+    branches:
+      - main
+concurrency:
+  group: deploy-worker-production
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31
+
+      - name: Install dependencies
+        env:
+          TIPTAP_PRO_API_KEY: ${{ secrets.TIPTAP_PRO_API_KEY }}
+        run: nix develop --command bun install --frozen-lockfile
+
+      - name: Deploy Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: nix develop --command bun run deploy
