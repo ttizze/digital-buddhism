@@ -10,6 +10,9 @@
 	"images": {
 		"binding": "IMAGES"
 	},
+	"triggers": {
+		"crons": []
+	},
 	"observability": {
 		"enabled": true
 	}
