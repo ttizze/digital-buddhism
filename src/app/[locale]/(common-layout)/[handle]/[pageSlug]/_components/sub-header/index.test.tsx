@@ -8,12 +8,10 @@ import { SubHeader } from "./index";
 describe("SubHeader", () => {
 	const mockPageDetail = {
 		createdAt: new Date("2023-01-01T00:00:00.000Z"),
+		updatedAt: new Date("2023-01-01T00:00:00.000Z"),
 		slug: "test-page",
 		title: "Test Page",
-		userHandle: "testuser",
-		userName: "Test User",
-		userImage: "/test-image.jpg",
-	} as unknown as PageDetail;
+	} as PageDetail;
 	const tocItems = [
 		{
 			anchorId: "heading-1",
@@ -32,7 +30,7 @@ describe("SubHeader", () => {
 		vi.clearAllMocks();
 	});
 
-	test("ユーザー情報が表示される", () => {
+	test("Tipitakaと更新日が表示される", () => {
 		render(
 			<NuqsTestingAdapter>
 				<IntlProvider locale="en">
@@ -45,7 +43,7 @@ describe("SubHeader", () => {
 			</NuqsTestingAdapter>,
 		);
 
-		expect(screen.getByText("Test User")).toBeInTheDocument();
+		expect(screen.getByText("Tipitaka")).toBeInTheDocument();
 		expect(screen.getByText("1/1/2023")).toBeInTheDocument();
 	});
 

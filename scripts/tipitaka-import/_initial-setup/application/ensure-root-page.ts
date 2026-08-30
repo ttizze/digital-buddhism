@@ -3,11 +3,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { markdownToMdastWithSegments } from "@/app/[locale]/_domain/markdown-to-mdast-with-segments";
 import { db } from "@/db";
-import type { PageStatus } from "@/drizzle/types";
 import { upsertPageAndSegments } from "../../application/upsert-page-and-segments";
 import { ROOT_SLUG, ROOT_TITLE } from "../../utils/constants";
 
-export async function ensureRootPage(userId: string): Promise<number> {
+export async function ensureRootPage(): Promise<number> {
 	const currentDir = path.dirname(fileURLToPath(import.meta.url));
 	const readmePath = path.join(currentDir, "..", "..", "README.md");
 	const markdownContent = await fs.readFile(readmePath, "utf-8");
@@ -15,32 +14,28 @@ export async function ensureRootPage(userId: string): Promise<number> {
 	const parsed = await markdownToMdastWithSegments({
 		header: ROOT_TITLE,
 		markdown: markdownContent,
+		autoUploadImages: false,
 	});
 
 	await upsertPageAndSegments({
+		catalogKey: ROOT_SLUG,
 		pageSlug: ROOT_SLUG,
-		userId,
 		mdastJson: parsed.mdastJson,
-		sourceLocale: "en",
-		segments: parsed.segments,
-		segmentTypeId: null,
+		textLevel: null,
 		parentId: null,
-		order: 0,
-		anchorPageId: null,
-		status: "PUBLIC" as PageStatus,
+		position: 0,
+		importFileId: null,
+		segments: parsed.segments,
 	});
 
 	const page = await db
-		.selectFrom("pages")
+		.selectFrom("tipitakaPages")
 		.select("id")
 		.where("slug", "=", ROOT_SLUG)
-		.where("userId", "=", userId)
 		.executeTakeFirst();
 
 	if (!page) {
-		throw new Error(
-			`Page with slug ${ROOT_SLUG} and userId ${userId} not found`,
-		);
+		throw new Error(`Page with slug ${ROOT_SLUG} not found`);
 	}
 
 	return page.id;

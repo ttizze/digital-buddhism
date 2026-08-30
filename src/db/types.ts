@@ -5,9 +5,10 @@
 
 import type { ColumnType } from "kysely";
 import type {
+	ImportFileStatus,
+	ImportRunStatus,
 	JsonValue,
-	PageStatus,
-	SegmentTypeKey,
+	TipitakaTextLevel,
 	TranslationProofStatus,
 	TranslationStatus,
 } from "../drizzle/types";
@@ -40,20 +41,22 @@ export interface GeminiApiKeys {
 }
 
 export interface ImportFiles {
-	checksum: string;
-	createdAt: Generated<Date>;
+	checksum: string | null;
+	finishedAt: Date | null;
 	id: Generated<number>;
 	importRunId: number;
 	message: Generated<string>;
 	path: string;
-	status: Generated<string>;
+	startedAt: Generated<Date>;
+	status: Generated<ImportFileStatus>;
 }
 
 export interface ImportRuns {
 	finishedAt: Date | null;
 	id: Generated<number>;
+	message: Generated<string>;
 	startedAt: Generated<Date>;
-	status: Generated<string>;
+	status: Generated<ImportRunStatus>;
 }
 
 export interface Notifications {
@@ -72,34 +75,9 @@ export interface PageLocaleTranslationProofs {
 	translationProofStatus: Generated<TranslationProofStatus>;
 }
 
-export interface Pages {
-	archivedAt: Date | null;
-	createdAt: Generated<Date>;
-	id: Generated<number>;
-	mdastJson: JsonValue;
-	order: Generated<number>;
-	parentId: number | null;
-	publishedAt: Date | null;
-	slug: string;
-	sourceLocale: Generated<string>;
-	status: Generated<PageStatus>;
-	updatedAt: Generated<Date>;
-	userId: string;
-}
-
-export interface PersonalAccessTokens {
-	createdAt: Generated<Date>;
-	id: Generated<number>;
-	keyHash: string;
-	lastUsedAt: Date | null;
-	name: Generated<string>;
-	userId: string;
-}
-
 export interface SegmentAnnotationLinks {
 	annotationSegmentId: number;
-	createdAt: Generated<Date>;
-	mainSegmentId: number;
+	targetSegmentId: number;
 }
 
 export interface SegmentMetadata {
@@ -117,13 +95,16 @@ export interface SegmentMetadataTypes {
 }
 
 export interface Segments {
-	contentId: number;
 	createdAt: Generated<Date>;
 	id: Generated<number>;
 	number: number;
-	segmentTypeId: number;
+	sourceBookCode: string | null;
+	sourceChapterNumber: number | null;
+	sourceParagraphNumber: string | null;
+	sourceParagraphOccurrence: number | null;
 	text: string;
 	textAndOccurrenceHash: string;
+	tipitakaPageId: number;
 }
 
 export interface SegmentTranslations {
@@ -136,10 +117,12 @@ export interface SegmentTranslations {
 	userId: string;
 }
 
-export interface SegmentTypes {
-	id: Generated<number>;
-	key: SegmentTypeKey;
-	label: string;
+export interface SelectedSegmentTranslations {
+	locale: string;
+	segmentId: number;
+	selectedAt: Generated<Date>;
+	selectedByUserId: string | null;
+	translationId: number;
 }
 
 export interface Sessions {
@@ -153,13 +136,23 @@ export interface Sessions {
 	userId: string;
 }
 
-export interface TranslationContexts {
-	context: string;
+export interface TipitakaPageAnnotationTargets {
+	annotationPageId: number;
+	position: Generated<number>;
+	targetPageId: number;
+}
+
+export interface TipitakaPages {
+	catalogKey: string;
 	createdAt: Generated<Date>;
 	id: Generated<number>;
-	name: string;
+	importFileId: number | null;
+	mdastJson: JsonValue;
+	parentId: number | null;
+	position: Generated<number>;
+	slug: string;
+	textLevel: TipitakaTextLevel | null;
 	updatedAt: Generated<Date>;
-	userId: string;
 }
 
 export interface TranslationJobs {
@@ -224,16 +217,15 @@ export interface DB {
 	importRuns: ImportRuns;
 	notifications: Notifications;
 	pageLocaleTranslationProofs: PageLocaleTranslationProofs;
-	pages: Pages;
-	personalAccessTokens: PersonalAccessTokens;
 	segmentAnnotationLinks: SegmentAnnotationLinks;
 	segmentMetadata: SegmentMetadata;
 	segmentMetadataTypes: SegmentMetadataTypes;
 	segments: Segments;
 	segmentTranslations: SegmentTranslations;
-	segmentTypes: SegmentTypes;
+	selectedSegmentTranslations: SelectedSegmentTranslations;
 	sessions: Sessions;
-	translationContexts: TranslationContexts;
+	tipitakaPageAnnotationTargets: TipitakaPageAnnotationTargets;
+	tipitakaPages: TipitakaPages;
 	translationJobs: TranslationJobs;
 	translationVotes: TranslationVotes;
 	users: Users;

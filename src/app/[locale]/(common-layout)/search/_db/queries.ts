@@ -15,7 +15,6 @@ export type SearchResultsData = {
 	totalPages: number;
 };
 
-/** 検索結果を統合的に取得する */
 export async function fetchSearchResults({
 	query,
 	category,
@@ -28,77 +27,61 @@ export async function fetchSearchResults({
 	locale: string;
 }): Promise<SearchResultsData> {
 	if (!query || page < 1) {
-		return {
-			pageSummaries: [],
-			users: [],
-			totalPages: 0,
-		};
+		return { pageSummaries: [], users: [], totalPages: 0 };
 	}
 
 	const PAGE_SIZE = 10;
 	const skip = (page - 1) * PAGE_SIZE;
 	const take = PAGE_SIZE;
-
 	let pageSummaries: PageForList[] | undefined;
 	let users: SanitizedUser[] | undefined;
 	let totalCount = 0;
 
 	switch (category) {
 		case "title": {
-			const { pageForLists: resultPages, total } = await searchPagesByTitle(
+			const { pageForLists, total } = await searchPagesByTitle(
 				query,
 				skip,
 				take,
 				locale,
 			);
-			pageSummaries = resultPages;
+			pageSummaries = pageForLists;
 			totalCount = total;
 			break;
 		}
 		case "content": {
-			const { pageForLists: resultPages, total } = await searchPagesByContent(
+			const { pageForLists, total } = await searchPagesByContent(
 				query,
 				skip,
 				take,
 				locale,
 			);
-			pageSummaries = resultPages;
+			pageSummaries = pageForLists;
 			totalCount = total;
 			break;
 		}
 		case "user": {
-			const { users: resultUsers, totalCount: cnt } = await searchUsers(
-				query,
-				skip,
-				take,
-			);
-			users = resultUsers;
-			totalCount = cnt;
+			const result = await searchUsers(query, skip, take);
+			users = result.users;
+			totalCount = result.totalCount;
 			break;
 		}
-		default: {
+		default:
 			throw new Error("Invalid category");
-		}
 	}
-
-	const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
 	return {
 		pageSummaries,
 		users,
-		totalPages,
+		totalPages: Math.ceil(totalCount / PAGE_SIZE),
 	};
 }
 
-/** ユーザー検索 */
 async function searchUsers(
 	query: string,
 	skip: number,
 	take: number,
-): Promise<{
-	users: SanitizedUser[];
-	totalCount: number;
-}> {
+): Promise<{ users: SanitizedUser[]; totalCount: number }> {
 	const [userResults, countResult] = await Promise.all([
 		db
 			.selectFrom("users")
@@ -113,14 +96,8 @@ async function searchUsers(
 			.where("name", "like", `%${query}%`)
 			.executeTakeFirst(),
 	]);
-	const sanitizedUsers = userResults.map((user) =>
-		sanitizeUser({
-			...user,
-			isAi: user.isAi,
-		}),
-	);
 	return {
-		users: sanitizedUsers,
+		users: userResults.map(sanitizeUser),
 		totalCount: Number(countResult?.count ?? 0),
 	};
 }

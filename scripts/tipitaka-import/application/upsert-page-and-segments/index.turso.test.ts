@@ -25,31 +25,42 @@ let upsertPageAndSegments: typeof import("./index")["upsertPageAndSegments"];
 
 async function createImportTables() {
 	await setupClient.execute(`
-		CREATE TABLE pages (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			slug TEXT NOT NULL,
-			user_id TEXT NOT NULL,
-			mdast_json TEXT NOT NULL,
-			source_locale TEXT NOT NULL,
-			status TEXT NOT NULL,
-			parent_id INTEGER,
-			"order" INTEGER NOT NULL
+		CREATE TABLE import_runs (
+			id INTEGER PRIMARY KEY AUTOINCREMENT
 		)
 	`);
 	await setupClient.execute(`
-		CREATE TABLE segment_types (
-			id INTEGER PRIMARY KEY,
-			key TEXT NOT NULL
+		CREATE TABLE import_files (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			import_run_id INTEGER NOT NULL,
+			FOREIGN KEY (import_run_id) REFERENCES import_runs(id)
+		)
+	`);
+	await setupClient.execute(`
+		CREATE TABLE tipitaka_pages (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			parent_id INTEGER,
+			import_file_id INTEGER,
+			catalog_key TEXT NOT NULL UNIQUE,
+			slug TEXT NOT NULL UNIQUE,
+			text_level TEXT,
+			position INTEGER NOT NULL,
+			mdast_json TEXT NOT NULL,
+			FOREIGN KEY (import_file_id) REFERENCES import_files(id)
 		)
 	`);
 	await setupClient.execute(`
 		CREATE TABLE segments (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			content_id INTEGER NOT NULL,
+			tipitaka_page_id INTEGER NOT NULL,
 			number INTEGER NOT NULL,
 			text TEXT NOT NULL,
 			text_and_occurrence_hash TEXT NOT NULL,
-			segment_type_id INTEGER NOT NULL
+			source_book_code TEXT,
+			source_paragraph_number TEXT,
+			source_paragraph_occurrence INTEGER,
+			UNIQUE (tipitaka_page_id, number),
+			UNIQUE (tipitaka_page_id, text_and_occurrence_hash)
 		)
 	`);
 	await setupClient.execute(`
@@ -68,7 +79,7 @@ async function createImportTables() {
 	`);
 	await setupClient.execute(`
 		CREATE TABLE segment_annotation_links (
-			main_segment_id INTEGER NOT NULL,
+			target_segment_id INTEGER NOT NULL,
 			annotation_segment_id INTEGER NOT NULL
 		)
 	`);
@@ -88,12 +99,10 @@ describe("upsertPageAndSegments の libSQL トランザクション", () => {
 		await setupClient.execute("DROP TABLE IF EXISTS segment_metadata");
 		await setupClient.execute("DROP TABLE IF EXISTS segment_metadata_types");
 		await setupClient.execute("DROP TABLE IF EXISTS segments");
-		await setupClient.execute("DROP TABLE IF EXISTS segment_types");
-		await setupClient.execute("DROP TABLE IF EXISTS pages");
+		await setupClient.execute("DROP TABLE IF EXISTS tipitaka_pages");
+		await setupClient.execute("DROP TABLE IF EXISTS import_files");
+		await setupClient.execute("DROP TABLE IF EXISTS import_runs");
 		await createImportTables();
-		await setupClient.execute(
-			"INSERT INTO segment_types (id, key) VALUES (1, 'PRIMARY')",
-		);
 	});
 
 	afterEach(async () => {
@@ -104,34 +113,52 @@ describe("upsertPageAndSegments の libSQL トランザクション", () => {
 	});
 
 	const params = {
+		catalogKey: "tipitaka-page",
 		pageSlug: "tipitaka-page",
-		userId: "user-1",
 		mdastJson: JSON.stringify({ type: "root", children: [] }) as JsonValue,
-		sourceLocale: "ja",
-		segments: [],
-		segmentTypeId: null,
+		textLevel: "MULA" as const,
 		parentId: null,
-		order: 0,
-		anchorPageId: null,
-		status: "DRAFT" as const,
+		position: 0,
+		importFileId: null,
+		segments: [],
 	};
 
-	it("pagesを作成し後続処理までcommitする", async () => {
-		const result = await upsertPageAndSegments(params);
+	it("Tipitakaページを作成し後続処理までcommitする", async () => {
+		await setupClient.execute("INSERT INTO import_runs DEFAULT VALUES");
+		await setupClient.execute(
+			"INSERT INTO import_files (import_run_id) VALUES (1)",
+		);
+		const result = await upsertPageAndSegments({
+			...params,
+			importFileId: 1,
+		});
 
 		expect(result.slug).toBe("tipitaka-page");
-		const pages = await setupClient.execute("SELECT slug, status FROM pages");
-		expect(pages.rows).toEqual([{ slug: "tipitaka-page", status: "DRAFT" }]);
+		const pages = await setupClient.execute(
+			"SELECT catalog_key, slug, text_level, import_file_id FROM tipitaka_pages",
+		);
+		expect(pages.rows).toEqual([
+			{
+				catalog_key: "tipitaka-page",
+				slug: "tipitaka-page",
+				text_level: "MULA",
+				import_file_id: 1,
+			},
+		]);
 	});
 
-	it("segments同期の開始前に失敗したらpagesをrollbackする", async () => {
-		await setupClient.execute("DELETE FROM segment_types");
+	it("セグメント同期が失敗したらTipitakaページをrollbackする", async () => {
+		await expect(
+			upsertPageAndSegments({
+				...params,
+				segments: [
+					{ number: 0, text: "A", textAndOccurrenceHash: "hash-a" },
+					{ number: 0, text: "B", textAndOccurrenceHash: "hash-b" },
+				],
+			}),
+		).rejects.toThrow();
 
-		await expect(upsertPageAndSegments(params)).rejects.toThrow(
-			"Primary segment type not found",
-		);
-
-		const pages = await setupClient.execute("SELECT id FROM pages");
+		const pages = await setupClient.execute("SELECT id FROM tipitaka_pages");
 		expect(pages.rows).toEqual([]);
 	});
 });

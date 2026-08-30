@@ -18,8 +18,7 @@ function makeDetailSegment(
 ): SegmentForDetail {
 	return {
 		...makeListSegment(),
-		segmentTypeKey: "Primary",
-		segmentTypeLabel: "Primary",
+		textLevel: "MULA",
 		annotations: [],
 		...overrides,
 	} as SegmentForDetail;
@@ -74,8 +73,7 @@ describe("SegmentElement", () => {
 								id: 200,
 								number: 200,
 								text: "ann-src",
-								segmentTypeKey: "Atthakatha",
-								segmentTypeLabel: "Atthakatha",
+								textLevel: "ATTHAKATHA",
 								translationText: "ann-tr",
 							}),
 						},

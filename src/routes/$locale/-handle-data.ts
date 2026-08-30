@@ -32,7 +32,6 @@ export const getHandleData = createServerFn({ method: "GET" })
 		return fetchProfilePage({
 			currentUser: currentUser ? { handle: currentUser.handle } : null,
 			handle: data.handle,
-			locale: data.locale,
 			page: data.page,
 		});
 	});

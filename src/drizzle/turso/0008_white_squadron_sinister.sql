@@ -1,0 +1,1 @@
+ALTER TABLE `segments` ADD `source_chapter_number` integer;

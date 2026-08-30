@@ -10,11 +10,14 @@ import {
 	uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
-export const pageStatus = {
-	enumValues: ["DRAFT", "PUBLIC", "ARCHIVE"],
+export const importFileStatus = {
+	enumValues: ["PENDING", "COMPLETED", "FAILED"],
 } as const;
-export const segmentTypeKey = {
-	enumValues: ["PRIMARY", "COMMENTARY"],
+export const importRunStatus = {
+	enumValues: ["RUNNING", "COMPLETED", "FAILED"],
+} as const;
+export const tipitakaTextLevel = {
+	enumValues: ["MULA", "ATTHAKATHA", "TIKA", "OTHER"],
 } as const;
 export const translationProofStatus = {
 	enumValues: ["MACHINE_DRAFT", "HUMAN_TOUCHED", "PROOFREAD", "VALIDATED"],
@@ -63,45 +66,32 @@ export const accounts = sqliteTable(
 	],
 );
 
-export const personalAccessTokens = sqliteTable(
-	"personal_access_tokens",
-	{
-		id: integer().primaryKey({ autoIncrement: true }).notNull(),
-		keyHash: text("key_hash").notNull(),
-		userId: text("user_id").notNull(),
-		name: text().default("").notNull(),
-		createdAt: integer("created_at", { mode: "timestamp_ms" })
-			.defaultNow()
-			.notNull(),
-		lastUsedAt: integer("last_used_at", { mode: "timestamp_ms" }),
-	},
-	(table) => [
-		uniqueIndex("personal_access_tokens_key_hash_key").on(table.keyHash),
-		index("personal_access_tokens_user_id_idx").on(table.userId),
-		foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "personal_access_tokens_user_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-	],
-);
-
 export const importFiles = sqliteTable(
 	"import_files",
 	{
 		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		importRunId: integer("import_run_id").notNull(),
 		path: text().notNull(),
-		checksum: text().notNull(),
-		status: text().default("PENDING").notNull(),
+		checksum: text(),
+		status: text("status", { enum: importFileStatus.enumValues })
+			.default("PENDING")
+			.notNull(),
 		message: text().default("").notNull(),
-		createdAt: integer("created_at", { mode: "timestamp_ms" })
+		startedAt: integer("started_at", { mode: "timestamp_ms" })
 			.defaultNow()
 			.notNull(),
+		finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
 	},
 	(table) => [
+		check(
+			"import_files_status_check",
+			sql`${table.status} IN ('PENDING', 'COMPLETED', 'FAILED')`,
+		),
+		uniqueIndex("import_files_import_run_id_path_key").on(
+			table.importRunId,
+			table.path,
+		),
+		index("import_files_path_idx").on(table.path),
 		foreignKey({
 			columns: [table.importRunId],
 			foreignColumns: [importRuns.id],
@@ -132,14 +122,26 @@ export const geminiApiKeys = sqliteTable(
 	],
 );
 
-export const importRuns = sqliteTable("import_runs", {
-	id: integer().primaryKey({ autoIncrement: true }).notNull(),
-	startedAt: integer("started_at", { mode: "timestamp_ms" })
-		.defaultNow()
-		.notNull(),
-	finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
-	status: text().default("RUNNING").notNull(),
-});
+export const importRuns = sqliteTable(
+	"import_runs",
+	{
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
+		startedAt: integer("started_at", { mode: "timestamp_ms" })
+			.defaultNow()
+			.notNull(),
+		finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
+		status: text("status", { enum: importRunStatus.enumValues })
+			.default("RUNNING")
+			.notNull(),
+		message: text().default("").notNull(),
+	},
+	(table) => [
+		check(
+			"import_runs_status_check",
+			sql`${table.status} IN ('RUNNING', 'COMPLETED', 'FAILED')`,
+		),
+	],
+);
 
 export const notifications = sqliteTable(
 	"notifications",
@@ -180,24 +182,6 @@ export const notifications = sqliteTable(
 	],
 );
 
-export const segmentTypes = sqliteTable(
-	"segment_types",
-	{
-		id: integer().primaryKey({ autoIncrement: true }).notNull(),
-		label: text().notNull(),
-		key: text("key", { enum: segmentTypeKey.enumValues }).notNull(),
-	},
-	(table) => [
-		check(
-			"segment_types_key_check",
-			sql`${table.key} IN ('PRIMARY', 'COMMENTARY')`,
-		),
-		index("segment_types_key_idx").on(table.key),
-		uniqueIndex("segment_types_key_label_key").on(table.key, table.label),
-		index("segment_types_label_idx").on(table.label),
-	],
-);
-
 export const translationJobs = sqliteTable(
 	"translation_jobs",
 	{
@@ -226,7 +210,7 @@ export const translationJobs = sqliteTable(
 		index("translation_jobs_userId_idx").on(table.userId),
 		foreignKey({
 			columns: [table.pageId],
-			foreignColumns: [pages.id],
+			foreignColumns: [tipitakaPages.id],
 			name: "translation_jobs_pageId_fkey",
 		})
 			.onUpdate("cascade")
@@ -259,6 +243,11 @@ export const segmentTranslations = sqliteTable(
 			table.segmentId,
 			table.locale,
 		),
+		uniqueIndex("segment_translations_id_segment_id_locale_key").on(
+			table.id,
+			table.segmentId,
+			table.locale,
+		),
 		index("segment_translations_user_id_idx").on(table.userId),
 		foreignKey({
 			columns: [table.segmentId],
@@ -274,6 +263,46 @@ export const segmentTranslations = sqliteTable(
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
+	],
+);
+
+export const selectedSegmentTranslations = sqliteTable(
+	"selected_segment_translations",
+	{
+		segmentId: integer("segment_id").notNull(),
+		locale: text().notNull(),
+		translationId: integer("translation_id").notNull(),
+		selectedByUserId: text("selected_by_user_id"),
+		selectedAt: integer("selected_at", { mode: "timestamp_ms" })
+			.defaultNow()
+			.notNull(),
+	},
+	(table) => [
+		primaryKey({
+			columns: [table.segmentId, table.locale],
+			name: "selected_segment_translations_segment_id_locale_pk",
+		}),
+		uniqueIndex("selected_segment_translations_translation_id_key").on(
+			table.translationId,
+		),
+		foreignKey({
+			columns: [table.translationId, table.segmentId, table.locale],
+			foreignColumns: [
+				segmentTranslations.id,
+				segmentTranslations.segmentId,
+				segmentTranslations.locale,
+			],
+			name: "selected_segment_translations_translation_segment_locale_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("cascade"),
+		foreignKey({
+			columns: [table.selectedByUserId],
+			foreignColumns: [users.id],
+			name: "selected_segment_translations_selected_by_user_id_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("set null"),
 	],
 );
 
@@ -331,7 +360,7 @@ export const pageLocaleTranslationProofs = sqliteTable(
 		),
 		foreignKey({
 			columns: [table.pageId],
-			foreignColumns: [pages.id],
+			foreignColumns: [tipitakaPages.id],
 			name: "page_locale_translation_proofs_page_id_fkey",
 		})
 			.onUpdate("cascade")
@@ -347,32 +376,6 @@ export const segmentMetadataTypes = sqliteTable(
 		label: text().notNull(),
 	},
 	(table) => [uniqueIndex("segment_metadata_types_key_key").on(table.key)],
-);
-
-export const translationContexts = sqliteTable(
-	"translation_contexts",
-	{
-		id: integer().primaryKey({ autoIncrement: true }).notNull(),
-		userId: text("user_id").notNull(),
-		name: text().notNull(),
-		context: text().notNull(),
-		createdAt: integer("created_at", { mode: "timestamp_ms" })
-			.defaultNow()
-			.notNull(),
-		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-			.defaultNow()
-			.notNull(),
-	},
-	(table) => [
-		index("translation_contexts_user_id_idx").on(table.userId),
-		foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "translation_contexts_user_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-	],
 );
 
 export const translationVotes = sqliteTable(
@@ -412,56 +415,99 @@ export const translationVotes = sqliteTable(
 	],
 );
 
-export const pages = sqliteTable(
-	"pages",
+export const tipitakaPages = sqliteTable(
+	"tipitaka_pages",
 	{
-		id: integer().primaryKey().notNull(),
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
+		parentId: integer("parent_id"),
+		importFileId: integer("import_file_id"),
+		catalogKey: text("catalog_key").notNull(),
 		slug: text().notNull(),
+		textLevel: text("text_level", {
+			enum: tipitakaTextLevel.enumValues,
+		}),
+		position: integer().default(0).notNull(),
+		mdastJson: text("mdast_json", { mode: "json" }).notNull(),
 		createdAt: integer("created_at", { mode: "timestamp_ms" })
 			.defaultNow()
 			.notNull(),
-		sourceLocale: text("source_locale").default("unknown").notNull(),
 		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
 			.defaultNow()
 			.notNull(),
-		status: text("status", { enum: pageStatus.enumValues })
-			.default("DRAFT")
-			.notNull(),
-		userId: text("user_id").notNull(),
-		mdastJson: text("mdast_json", { mode: "json" }).notNull(),
-		order: integer().default(0).notNull(),
-		parentId: integer("parent_id"),
-		publishedAt: integer("published_at", { mode: "timestamp_ms" }),
-		archivedAt: integer("archived_at", { mode: "timestamp_ms" }),
 	},
 	(table) => [
 		check(
-			"pages_status_check",
-			sql`${table.status} IN ('DRAFT', 'PUBLIC', 'ARCHIVE')`,
+			"tipitaka_pages_text_level_check",
+			sql`${table.textLevel} IS NULL OR ${table.textLevel} IN ('MULA', 'ATTHAKATHA', 'TIKA', 'OTHER')`,
 		),
-		index("pages_created_at_idx").on(table.createdAt),
-		index("pages_parent_id_idx").on(table.parentId),
-		index("pages_parent_id_order_idx").on(table.parentId, table.order),
-		index("pages_slug_idx").on(table.slug),
-		uniqueIndex("pages_slug_key").on(table.slug),
-		index("pages_status_created_at_idx").on(table.status, table.createdAt),
-		index("pages_status_parent_id_created_at_idx").on(
-			table.status,
+		check(
+			"tipitaka_pages_root_text_level_check",
+			sql`${table.parentId} IS NOT NULL OR ${table.textLevel} IS NULL`,
+		),
+		check("tipitaka_pages_position_check", sql`${table.position} >= 0`),
+		index("tipitaka_pages_parent_id_idx").on(table.parentId),
+		index("tipitaka_pages_import_file_id_idx").on(table.importFileId),
+		index("tipitaka_pages_parent_position_id_idx").on(
 			table.parentId,
-			table.createdAt,
+			table.position,
+			table.id,
 		),
-		index("pages_user_id_idx").on(table.userId),
+		uniqueIndex("tipitaka_pages_catalog_key_key").on(table.catalogKey),
+		uniqueIndex("tipitaka_pages_slug_key").on(table.slug),
+		uniqueIndex("tipitaka_pages_single_root_key")
+			.on(sql.raw("1"))
+			.where(sql`${table.parentId} IS NULL`),
 		foreignKey({
 			columns: [table.parentId],
 			foreignColumns: [table.id],
-			name: "pages_parent_id_fkey",
+			name: "tipitaka_pages_parent_id_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("restrict"),
+		foreignKey({
+			columns: [table.importFileId],
+			foreignColumns: [importFiles.id],
+			name: "tipitaka_pages_import_file_id_fkey",
 		})
 			.onUpdate("cascade")
 			.onDelete("set null"),
+	],
+);
+
+export const tipitakaPageAnnotationTargets = sqliteTable(
+	"tipitaka_page_annotation_targets",
+	{
+		annotationPageId: integer("annotation_page_id").notNull(),
+		targetPageId: integer("target_page_id").notNull(),
+		position: integer().default(0).notNull(),
+	},
+	(table) => [
+		primaryKey({
+			columns: [table.annotationPageId, table.targetPageId],
+			name: "tipitaka_page_annotation_targets_pkey",
+		}),
+		check(
+			"tipitaka_page_annotation_targets_distinct_pages_check",
+			sql`${table.annotationPageId} <> ${table.targetPageId}`,
+		),
+		check(
+			"tipitaka_page_annotation_targets_position_check",
+			sql`${table.position} >= 0`,
+		),
+		index("tipitaka_page_annotation_targets_target_page_id_idx").on(
+			table.targetPageId,
+		),
 		foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "pages_user_id_fkey",
+			columns: [table.annotationPageId],
+			foreignColumns: [tipitakaPages.id],
+			name: "tipitaka_page_annotation_targets_annotation_page_id_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("cascade"),
+		foreignKey({
+			columns: [table.targetPageId],
+			foreignColumns: [tipitakaPages.id],
+			name: "tipitaka_page_annotation_targets_target_page_id_fkey",
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
@@ -472,22 +518,36 @@ export const segments = sqliteTable(
 	"segments",
 	{
 		id: integer().primaryKey({ autoIncrement: true }).notNull(),
-		pageId: integer("content_id").notNull(),
+		pageId: integer("tipitaka_page_id").notNull(),
 		number: integer().notNull(),
 		text: text().notNull(),
 		textAndOccurrenceHash: text("text_and_occurrence_hash").notNull(),
+		sourceBookCode: text("source_book_code"),
+		sourceChapterNumber: integer("source_chapter_number"),
+		sourceParagraphNumber: text("source_paragraph_number"),
+		sourceParagraphOccurrence: integer("source_paragraph_occurrence"),
 		createdAt: integer("created_at", { mode: "timestamp_ms" })
 			.defaultNow()
 			.notNull(),
-		segmentTypeId: integer("segment_type_id").notNull(),
 	},
 	(table) => [
-		index("segments_content_id_idx").on(table.pageId),
-		uniqueIndex("segments_content_id_number_key").on(
+		check(
+			"segments_source_paragraph_locator_check",
+			sql`(${table.sourceParagraphNumber} IS NULL AND ${table.sourceParagraphOccurrence} IS NULL) OR (${table.sourceParagraphNumber} IS NOT NULL AND ${table.sourceParagraphOccurrence} >= 1)`,
+		),
+		index("segments_tipitaka_page_id_idx").on(table.pageId),
+		index("segments_source_locator_idx").on(
+			table.pageId,
+			table.sourceBookCode,
+			table.sourceParagraphNumber,
+			table.sourceParagraphOccurrence,
+			table.number,
+		),
+		uniqueIndex("segments_tipitaka_page_id_number_key").on(
 			table.pageId,
 			table.number,
 		),
-		uniqueIndex("segments_content_id_text_and_occurrence_hash_key").on(
+		uniqueIndex("segments_tipitaka_page_id_text_occurrence_hash_key").on(
 			table.pageId,
 			table.textAndOccurrenceHash,
 		),
@@ -496,18 +556,11 @@ export const segments = sqliteTable(
 		),
 		foreignKey({
 			columns: [table.pageId],
-			foreignColumns: [pages.id],
-			name: "segments_page_id_fkey",
+			foreignColumns: [tipitakaPages.id],
+			name: "segments_tipitaka_page_id_fkey",
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
-		foreignKey({
-			columns: [table.segmentTypeId],
-			foreignColumns: [segmentTypes.id],
-			name: "segments_segment_type_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("restrict"),
 	],
 );
 
@@ -615,18 +668,20 @@ export const userSettings = sqliteTable(
 export const segmentAnnotationLinks = sqliteTable(
 	"segment_annotation_links",
 	{
-		mainSegmentId: integer("main_segment_id").notNull(),
+		targetSegmentId: integer("target_segment_id").notNull(),
 		annotationSegmentId: integer("annotation_segment_id").notNull(),
-		createdAt: integer("created_at", { mode: "timestamp_ms" })
-			.defaultNow()
-			.notNull(),
 	},
 	(table) => [
+		primaryKey({
+			columns: [table.targetSegmentId, table.annotationSegmentId],
+			name: "segment_annotation_links_pkey",
+		}),
+		check(
+			"segment_annotation_links_distinct_segments_check",
+			sql`${table.targetSegmentId} <> ${table.annotationSegmentId}`,
+		),
 		index("segment_annotation_links_annotation_segment_id_idx").on(
 			table.annotationSegmentId,
-		),
-		index("segment_annotation_links_main_segment_id_idx").on(
-			table.mainSegmentId,
 		),
 		foreignKey({
 			columns: [table.annotationSegmentId],
@@ -636,15 +691,11 @@ export const segmentAnnotationLinks = sqliteTable(
 			.onUpdate("cascade")
 			.onDelete("cascade"),
 		foreignKey({
-			columns: [table.mainSegmentId],
+			columns: [table.targetSegmentId],
 			foreignColumns: [segments.id],
-			name: "segment_annotation_links_main_segment_id_fkey",
+			name: "segment_annotation_links_target_segment_id_fkey",
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
-		primaryKey({
-			columns: [table.mainSegmentId, table.annotationSegmentId],
-			name: "segment_annotation_links_pkey",
-		}),
 	],
 );

@@ -1,28 +1,14 @@
 import { db } from "@/db";
 
-/**
- * 本文ページにリンクされた別ページの注釈ページIDを返す。
- */
+/** Returns every official annotation page targeting the requested page. */
 export async function fetchAnnotationPageIdsForPage(
 	pageId: number,
 ): Promise<number[]> {
 	const result = await db
-		.selectFrom("segmentAnnotationLinks")
-		.innerJoin(
-			"segments as mainSegment",
-			"segmentAnnotationLinks.mainSegmentId",
-			"mainSegment.id",
-		)
-		.innerJoin(
-			"segments as annotationSegment",
-			"segmentAnnotationLinks.annotationSegmentId",
-			"annotationSegment.id",
-		)
-		.select("annotationSegment.contentId as pageId")
-		.distinct()
-		.where("mainSegment.contentId", "=", pageId)
-		.where("annotationSegment.contentId", "!=", pageId)
+		.selectFrom("tipitakaPageAnnotationTargets")
+		.select("annotationPageId")
+		.where("targetPageId", "=", pageId)
+		.orderBy("position")
 		.execute();
-
-	return result.map((row) => row.pageId);
+	return result.map((row) => row.annotationPageId);
 }

@@ -23,18 +23,18 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			const migrations = await client.execute(
 				"SELECT hash, created_at FROM __drizzle_migrations ORDER BY created_at",
 			);
-			expect(migrations.rows).toHaveLength(5);
+			expect(migrations.rows).toHaveLength(9);
 			expect(String(migrations.rows[0]?.hash)).toMatch(/^[0-9a-f]{64}$/);
-			expect(Number(migrations.rows[4]?.created_at)).toBe(1788018212905);
+			expect(Number(migrations.rows[8]?.created_at)).toBe(1788063256486);
 		} finally {
 			client.close();
 			await database.cleanup();
 		}
 	});
 
-	it("既存ページとセグメントを保持してcontents依存を外す", async () => {
+	it("Tipitakaを正規化schemaへ移し翻訳選定と参照整合性を保持する", async () => {
 		const directory = await mkdtemp(
-			join(tmpdir(), "digital-buddshim-content-cutover-"),
+			join(tmpdir(), "digital-buddshim-tipitaka-cutover-"),
 		);
 		const databaseUrl = pathToFileURL(
 			join(directory, "database.sqlite"),
@@ -65,13 +65,28 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			});
 			await client.batch(
 				[
-					"INSERT INTO users (id, handle, email) VALUES ('migration-user', 'migration-user', 'migration@example.com')",
-					"INSERT INTO contents (id, kind) VALUES (100, 'PAGE')",
-					"INSERT INTO pages (id, slug, user_id, mdast_json) VALUES (100, 'migration-page', 'migration-user', '{}')",
-					"INSERT INTO segment_types (id, label, key) VALUES (100, 'Title', 'PRIMARY')",
-					"INSERT INTO segments (id, content_id, number, text, text_and_occurrence_hash, segment_type_id) VALUES (100, 100, 0, 'Title', 'migration-title', 100)",
-					"INSERT INTO segment_translations (id, segment_id, locale, text, user_id) VALUES (100, 100, 'en', 'Translated title', 'migration-user')",
-					"INSERT INTO notifications (id, user_id, type, actor_id, segment_translation_id) VALUES (100, 'migration-user', 'PAGE_SEGMENT_TRANSLATION_VOTE', 'migration-user', 100)",
+					"INSERT INTO users (id, handle, email) VALUES ('evame-user', 'evame', 'evame@example.com')",
+					"INSERT INTO users (id, handle, email) VALUES ('translator', 'translator', 'translator@example.com')",
+					"INSERT INTO contents (id, kind) VALUES (100, 'PAGE'), (101, 'PAGE'), (200, 'PAGE')",
+					"INSERT INTO pages (id, slug, user_id, mdast_json, status, parent_id, \"order\") VALUES (100, 'tipitaka', 'evame-user', '{}', 'PUBLIC', NULL, 0)",
+					"INSERT INTO pages (id, slug, user_id, mdast_json, status, parent_id, \"order\") VALUES (101, 'vinaya-pitaka', 'evame-user', '{}', 'PUBLIC', 100, 1)",
+					"INSERT INTO pages (id, slug, user_id, mdast_json, status, parent_id, \"order\") VALUES (200, 'about', 'translator', '{}', 'PUBLIC', NULL, 0)",
+					"INSERT INTO segment_types (id, label, key) VALUES (100, 'Primary', 'PRIMARY')",
+					"INSERT INTO segments (id, content_id, number, text, text_and_occurrence_hash, segment_type_id) VALUES (100, 100, 0, 'Tipitaka', 'tipitaka-title', 100)",
+					"INSERT INTO segments (id, content_id, number, text, text_and_occurrence_hash, segment_type_id) VALUES (101, 101, 0, 'Vinaya', 'vinaya-title', 100)",
+					"INSERT INTO segments (id, content_id, number, text, text_and_occurrence_hash, segment_type_id) VALUES (200, 200, 0, 'About', 'about-title', 100)",
+					"INSERT INTO segment_translations (id, segment_id, locale, text, point, user_id) VALUES (101, 101, 'ja', '採用訳', 1, 'translator')",
+					"INSERT INTO segment_translations (id, segment_id, locale, text, point, user_id) VALUES (102, 101, 'ja', '高得点訳', 100, 'translator')",
+					"INSERT INTO segment_translations (id, segment_id, locale, text, point, user_id) VALUES (200, 200, 'ja', 'About訳', 1, 'translator')",
+					"INSERT INTO translation_votes (translation_id, user_id, is_upvote) VALUES (101, 'evame-user', 1)",
+					"INSERT INTO notifications (id, user_id, type, actor_id, segment_translation_id) VALUES (101, 'translator', 'PAGE_SEGMENT_TRANSLATION_VOTE', 'evame-user', 101)",
+					"INSERT INTO notifications (id, user_id, type, actor_id, segment_translation_id) VALUES (200, 'translator', 'PAGE_SEGMENT_TRANSLATION_VOTE', 'evame-user', 200)",
+					"INSERT INTO translation_jobs (id, page_id, user_id, locale, ai_model) VALUES (101, 101, 'translator', 'ja', 'test-model')",
+					"INSERT INTO translation_jobs (id, page_id, user_id, locale, ai_model) VALUES (200, 200, 'translator', 'ja', 'test-model')",
+					"INSERT INTO page_locale_translation_proofs (id, page_id, locale) VALUES (101, 101, 'ja')",
+					"INSERT INTO page_locale_translation_proofs (id, page_id, locale) VALUES (200, 200, 'ja')",
+					"INSERT INTO personal_access_tokens (id, key_hash, user_id) VALUES (1, 'obsolete-token', 'translator')",
+					"INSERT INTO translation_contexts (id, user_id, name, context) VALUES (1, 'translator', 'obsolete', 'unused')",
 				],
 				"write",
 			);
@@ -85,31 +100,64 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			client = createClient({ url: databaseUrl });
 			const preserved = await client.execute(`
 				SELECT
-					pages.id AS page_id,
-					segments.content_id AS segment_page_id,
+					tipitaka_pages.id AS page_id,
+					tipitaka_pages.catalog_key,
+					tipitaka_pages.text_level,
+					segments.tipitaka_page_id AS segment_page_id,
+					segments.source_paragraph_number,
 					segment_translations.id AS translation_id,
 					notifications.id AS notification_id
-				FROM pages
-				JOIN segments ON segments.content_id = pages.id
+				FROM tipitaka_pages
+				JOIN segments ON segments.tipitaka_page_id = tipitaka_pages.id
 				JOIN segment_translations ON segment_translations.segment_id = segments.id
 				JOIN notifications
 					ON notifications.segment_translation_id = segment_translations.id
+				WHERE tipitaka_pages.id = 101
 			`);
 			expect(preserved.rows).toEqual([
 				expect.objectContaining({
-					notification_id: 100,
-					page_id: 100,
-					segment_page_id: 100,
-					translation_id: 100,
+					catalog_key: "vinaya-pitaka",
+					text_level: "MULA",
+					notification_id: 101,
+					page_id: 101,
+					segment_page_id: 101,
+					source_paragraph_number: null,
+					translation_id: 101,
 				}),
 			]);
+
+			const selection = await client.execute(
+				"SELECT segment_id, locale, translation_id, selected_by_user_id FROM selected_segment_translations",
+			);
+			expect(selection.rows).toEqual([
+				{
+					locale: "ja",
+					segment_id: 101,
+					selected_by_user_id: "evame-user",
+					translation_id: 101,
+				},
+			]);
+
+			for (const table of [
+				"tipitaka_pages",
+				"segments",
+				"segment_translations",
+				"notifications",
+				"translation_jobs",
+				"page_locale_translation_proofs",
+			]) {
+				const result = await client.execute(
+					`SELECT count(*) AS count FROM ${table} WHERE id = 200`,
+				);
+				expect(Number(result.rows[0]?.count)).toBe(0);
+			}
 
 			const segmentForeignKeys = await client.execute(
 				"PRAGMA foreign_key_list(segments)",
 			);
-			expect(segmentForeignKeys.rows.some((row) => row.table === "pages")).toBe(
-				true,
-			);
+			expect(
+				segmentForeignKeys.rows.some((row) => row.table === "tipitaka_pages"),
+			).toBe(true);
 			expect((await client.execute("PRAGMA foreign_key_check")).rows).toEqual(
 				[],
 			);
@@ -124,8 +172,12 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 						'like_pages',
 						'page_comments',
 						'page_views',
+						'pages',
+						'personal_access_tokens',
 						'tag_pages',
-						'tags'
+						'tags',
+						'translation_contexts',
+						'segment_types'
 					)
 			`);
 			expect(removedTables.rows).toEqual([]);
@@ -152,9 +204,9 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			const first = await client.execute(
 				"SELECT hash, created_at FROM __drizzle_migrations ORDER BY created_at",
 			);
-			expect(first.rows).toHaveLength(5);
+			expect(first.rows).toHaveLength(9);
 			expect(String(first.rows[0]?.hash)).toMatch(/^[0-9a-f]{64}$/);
-			expect(Number(first.rows[4]?.created_at)).toBe(1788018212905);
+			expect(Number(first.rows[8]?.created_at)).toBe(1788063256486);
 
 			await execFileAsync("bun", ["run", "db:prod:migrate"], {
 				cwd: join(import.meta.dirname, ".."),

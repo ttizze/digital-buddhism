@@ -29,10 +29,19 @@ import { generateHashForText } from "../_utils/generate-hash-for-text";
 
 export type SegmentDraft = Omit<
 	Segment,
-	"id" | "contentId" | "createdAt" | "segmentTypeId"
+	| "id"
+	| "tipitakaPageId"
+	| "createdAt"
+	| "sourceBookCode"
+	| "sourceChapterNumber"
+	| "sourceParagraphNumber"
+	| "sourceParagraphOccurrence"
 > & {
 	metadata?: { items: Array<{ typeKey: string; value: string }> };
-	paragraphNumber?: string;
+	sourceBookCode?: string;
+	sourceChapterNumber?: number;
+	sourceParagraphNumber?: string;
+	sourceParagraphOccurrence?: number;
 };
 
 /* mdast で「1 ブロック」とみなすノード型 */
@@ -47,6 +56,7 @@ const BLOCK_TYPES: ReadonlyArray<BlockNode["type"]> = [
 ] as const;
 
 const PARA_NOTATION_REGEX = /^\{para:([^}]+)\}\s*/;
+const BOOK_MARKER_REGEX = /^<!--\s*book:([A-Za-z0-9._-]+)\s*-->$/;
 
 const canonicalize = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
@@ -179,43 +189,54 @@ function extractParagraphNumber(
 
 /**
  * ブロックノードからセグメント情報を抽出してセグメントドラフトを作成する
- * @returns セグメントドラフトと更新された段落番号のタプル
  */
 function createSegmentFromBlockNode(
 	node: BlockNode,
 	number: number,
+	currentBookCode: string | null,
+	currentChapterNumber: number | null,
 	currentParagraphNumber: string | null,
-	occurrenceMap: Map<string, number>,
-	chapterIndex: number | null,
-): { segment: SegmentDraft | null; updatedParagraphNumber: string | null } {
-	// ネストしたブロック要素は除外
+	currentParagraphOccurrence: number | null,
+	textOccurrenceMap: Map<string, number>,
+	paragraphOccurrenceMap: Map<string, number>,
+): {
+	segment: SegmentDraft | null;
+	updatedParagraphNumber: string | null;
+	updatedParagraphOccurrence: number | null;
+} {
 	if (hasNestedBlock(node)) {
-		return { segment: null, updatedParagraphNumber: currentParagraphNumber };
+		return {
+			segment: null,
+			updatedParagraphNumber: currentParagraphNumber,
+			updatedParagraphOccurrence: currentParagraphOccurrence,
+		};
 	}
 
-	// テキスト抽出
 	let text = extractText(node);
 	if (!text) {
-		return { segment: null, updatedParagraphNumber: currentParagraphNumber };
+		return {
+			segment: null,
+			updatedParagraphNumber: currentParagraphNumber,
+			updatedParagraphOccurrence: currentParagraphOccurrence,
+		};
 	}
 
-	// 段落番号とページブレークを抽出
 	const metadata: Array<{ typeKey: string; value: string }> = [];
 	const isHeading = "depth" in node;
-
-	// 段落番号の抽出と更新
 	const { paragraphNumber: paragraphNumberFromBlock, cleanedText } =
 		extractParagraphNumber(text, node);
-	const updatedParagraphNumber = paragraphNumberFromBlock
-		? appendChapterSuffix(paragraphNumberFromBlock, chapterIndex)
-		: currentParagraphNumber;
-	const effectiveParagraphNumber = updatedParagraphNumber;
 
-	// ページブレークの抽出
-	const pageBreaks = extractPageBreaksFromNode(node);
-	metadata.push(...pageBreaks);
+	let updatedParagraphNumber = currentParagraphNumber;
+	let updatedParagraphOccurrence = currentParagraphOccurrence;
+	if (paragraphNumberFromBlock) {
+		updatedParagraphNumber = paragraphNumberFromBlock;
+		const occurrenceKey = `${currentBookCode ?? ""}\u0000${paragraphNumberFromBlock}`;
+		updatedParagraphOccurrence =
+			(paragraphOccurrenceMap.get(occurrenceKey) ?? 0) + 1;
+		paragraphOccurrenceMap.set(occurrenceKey, updatedParagraphOccurrence);
+	}
 
-	// メタデータ記法をテキストから削除
+	metadata.push(...extractPageBreaksFromNode(node));
 	text = cleanedText
 		.replace(PARA_NOTATION_REGEX, "")
 		.replace(/\{pb:[^}]+\}/g, "")
@@ -225,24 +246,16 @@ function createSegmentFromBlockNode(
 	if (!text) {
 		return {
 			segment: null,
-			updatedParagraphNumber: updatedParagraphNumber,
+			updatedParagraphNumber,
+			updatedParagraphOccurrence,
 		};
 	}
 
-	// ハッシュ生成と出現回数を追跡
 	const textAndOccurrenceHash = generateHashAndTrackOccurrence(
 		text,
-		occurrenceMap,
+		textOccurrenceMap,
 	);
-
-	// HTML 変換時用の data-number-id を付与
 	setNodeDataNumber(node, number);
-
-	// ヘッダー（見出し）の場合は段落番号を付けない
-	const paragraphNumber =
-		!isHeading && effectiveParagraphNumber !== null
-			? effectiveParagraphNumber
-			: undefined;
 
 	return {
 		segment: {
@@ -250,9 +263,19 @@ function createSegmentFromBlockNode(
 			text,
 			number,
 			metadata: metadata.length > 0 ? { items: metadata } : undefined,
-			paragraphNumber,
+			sourceBookCode: currentBookCode ?? undefined,
+			sourceChapterNumber: currentChapterNumber ?? undefined,
+			sourceParagraphNumber:
+				!isHeading && updatedParagraphNumber !== null
+					? updatedParagraphNumber
+					: undefined,
+			sourceParagraphOccurrence:
+				!isHeading && updatedParagraphOccurrence !== null
+					? updatedParagraphOccurrence
+					: undefined,
 		},
-		updatedParagraphNumber: updatedParagraphNumber,
+		updatedParagraphNumber,
+		updatedParagraphOccurrence,
 	};
 }
 
@@ -262,14 +285,13 @@ export const remarkHashAndSegments =
 	(header?: string): Plugin<[], Root> =>
 	() =>
 	(tree: Root, file: VFile) => {
-		/* data.segments を型安全に初期化 */
 		const f = file as typeof file & { data: SegmentData };
 		f.data.segments ??= [];
 
-		const occurrenceMap = new Map<string, number>();
-		let number = 1; // 0 はタイトル用、本文は 1 から
+		const textOccurrenceMap = new Map<string, number>();
+		const paragraphOccurrenceMap = new Map<string, number>();
+		let number = 1;
 
-		/* ── 0. タイトル ─────────────────── */
 		if (header?.trim()) {
 			const textAndOccurrenceHash = generateHashForText(header, 0);
 			f.data.segments.push({
@@ -277,40 +299,49 @@ export const remarkHashAndSegments =
 				text: header,
 				number: 0,
 			});
-			occurrenceMap.set(canonicalize(header), 0);
+			textOccurrenceMap.set(canonicalize(header), 0);
 		}
 
-		/* ── 1. 本文ブロック ─────────────── */
-		// 段落番号に基づいてセグメントをグループ化するため、現在の段落番号を追跡
+		let currentBookCode: string | null = null;
+		let currentChapterNumber: number | null = null;
 		let currentParagraphNumber: string | null = null;
-		let currentChapterIndex: number | null = null;
+		let currentParagraphOccurrence: number | null = null;
 
-		visit(tree, isBlockNode, (node: BlockNode) => {
+		visit(tree, (node: Node) => {
+			if (node.type === "html") {
+				const marker = (node as Html).value.trim().match(BOOK_MARKER_REGEX);
+				if (marker) {
+					currentBookCode = marker[1] ?? null;
+					currentChapterNumber = null;
+					currentParagraphNumber = null;
+					currentParagraphOccurrence = null;
+				}
+				return;
+			}
+			if (!isBlockNode(node)) return;
+
 			if (node.type === "heading" && node.depth === 3) {
-				currentChapterIndex = (currentChapterIndex ?? 0) + 1;
+				currentChapterNumber = (currentChapterNumber ?? 0) + 1;
 				currentParagraphNumber = null;
+				currentParagraphOccurrence = null;
 			}
 
-			const { segment, updatedParagraphNumber } = createSegmentFromBlockNode(
-				node,
-				number,
-				currentParagraphNumber,
-				occurrenceMap,
-				currentChapterIndex,
-			);
+			const { segment, updatedParagraphNumber, updatedParagraphOccurrence } =
+				createSegmentFromBlockNode(
+					node,
+					number,
+					currentBookCode,
+					currentChapterNumber,
+					currentParagraphNumber,
+					currentParagraphOccurrence,
+					textOccurrenceMap,
+					paragraphOccurrenceMap,
+				);
 			if (!segment) return;
 
 			currentParagraphNumber = updatedParagraphNumber;
+			currentParagraphOccurrence = updatedParagraphOccurrence;
 			f.data.segments.push(segment);
 			number += 1;
 		});
 	};
-
-function appendChapterSuffix(
-	paragraphNumber: string,
-	chapterIndex: number | null,
-): string {
-	return chapterIndex
-		? `${paragraphNumber}__ch${chapterIndex}`
-		: paragraphNumber;
-}

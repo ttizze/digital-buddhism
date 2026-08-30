@@ -30,8 +30,7 @@ const createSegment = (
 		number,
 		text,
 		translationText: translatedText,
-		segmentTypeKey: "Primary",
-		segmentTypeLabel: "Primary",
+		textLevel: "MULA",
 		annotations: [],
 	}) as SegmentForDetail;
 

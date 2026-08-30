@@ -12,6 +12,7 @@ export const segmentTranslationSchema = z.object({
 	userName: z.string(),
 	userHandle: z.string(),
 	currentUserVoteIsUpvote: z.boolean().nullable(),
+	isSelected: z.boolean(),
 });
 
 export type SegmentTranslation = z.infer<typeof segmentTranslationSchema>;

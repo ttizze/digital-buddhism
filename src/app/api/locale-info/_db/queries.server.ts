@@ -1,28 +1,25 @@
+import { TIPITAKA_SOURCE_LOCALE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { db } from "@/db";
 
 /**
- * pageSlugからページのロケール情報を取得
- * - sourceLocale
- * - translationJobs (status = "COMPLETED" のみ)
- * - pageLocaleTranslationProofs (locale と translationProofStatus のみ)
+ * pageSlugからTipitakaページの翻訳ロケール情報を取得する。
  */
 export async function fetchLocaleInfoByPageSlug(pageSlug: string) {
 	// 1回のクエリで全て取得（LEFT JOIN を使用）
 	const rows = await db
-		.selectFrom("pages")
+		.selectFrom("tipitakaPages")
 		.leftJoin("translationJobs", (join) =>
 			join
-				.onRef("translationJobs.pageId", "=", "pages.id")
+				.onRef("translationJobs.pageId", "=", "tipitakaPages.id")
 				.on("translationJobs.status", "=", "COMPLETED"),
 		)
 		.leftJoin(
 			"pageLocaleTranslationProofs",
 			"pageLocaleTranslationProofs.pageId",
-			"pages.id",
+			"tipitakaPages.id",
 		)
 		.select([
-			"pages.id as pageId",
-			"pages.sourceLocale",
+			"tipitakaPages.id as pageId",
 			"translationJobs.id as translationJobId",
 			"translationJobs.pageId as translationJobPageId",
 			"translationJobs.userId as translationJobUserId",
@@ -36,7 +33,7 @@ export async function fetchLocaleInfoByPageSlug(pageSlug: string) {
 			"pageLocaleTranslationProofs.locale as proofLocale",
 			"pageLocaleTranslationProofs.translationProofStatus",
 		])
-		.where("pages.slug", "=", pageSlug)
+		.where("tipitakaPages.slug", "=", pageSlug)
 		.execute();
 
 	if (rows.length === 0) {
@@ -86,7 +83,7 @@ export async function fetchLocaleInfoByPageSlug(pageSlug: string) {
 	}
 
 	return {
-		sourceLocale: firstRow.sourceLocale,
+		sourceLocale: TIPITAKA_SOURCE_LOCALE,
 		translationJobs: Array.from(translationJobsSet.values()),
 		translationProofs: Array.from(translationProofsSet.values()),
 	};

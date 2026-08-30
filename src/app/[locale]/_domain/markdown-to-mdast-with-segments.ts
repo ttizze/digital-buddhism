@@ -3,7 +3,6 @@ import { unified } from "unified";
 import { removePosition } from "unist-util-remove-position";
 import { VFile } from "vfile";
 import type { JsonValue } from "@/drizzle/types";
-import { remarkAutoUploadImages } from "./remark-auto-upload-images";
 import { remarkCustomBlocks } from "./remark-custom-blocks";
 import type { SegmentDraft } from "./remark-hash-and-segments";
 import { remarkHashAndSegments } from "./remark-hash-and-segments";
@@ -36,6 +35,9 @@ export async function markdownToMdastWithSegments({
 		.use(remarkHashAndSegments(header)); // ハッシュ + Segment 生成
 
 	if (autoUploadImages) {
+		const { remarkAutoUploadImages } = await import(
+			"./remark-auto-upload-images"
+		);
 		processor.use(remarkAutoUploadImages); // 画像の自動アップロード
 	}
 

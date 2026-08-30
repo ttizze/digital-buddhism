@@ -12,15 +12,11 @@ describe("page detail navigation queries", () => {
 		await resetDatabase();
 	});
 
-	it("子ページのタイトルにページオーナー推奨の翻訳を使う", async () => {
-		const pageOwner = await createUser({ handle: "owner" });
+	it("子ページのタイトルに明示的な採用訳を使う", async () => {
+		const curator = await createUser({ handle: "evame" });
 		const translator = await createUser({ handle: "translator" });
-		const root = await createPage({
-			userId: pageOwner.id,
-			slug: "root",
-		});
+		const root = await createPage({ slug: "tipitaka", textLevel: null });
 		const child = await createPage({
-			userId: pageOwner.id,
 			slug: "child",
 			parentId: root.id,
 		});
@@ -29,9 +25,7 @@ describe("page detail navigation queries", () => {
 			number: 0,
 			text: "Child",
 			textAndOccurrenceHash: "child-title",
-			segmentTypeKey: "PRIMARY",
 		});
-
 		await db
 			.insertInto("segmentTranslations")
 			.values({
@@ -42,28 +36,59 @@ describe("page detail navigation queries", () => {
 				userId: translator.id,
 			})
 			.execute();
-		const ownerTranslation = await db
+		const selected = await db
 			.insertInto("segmentTranslations")
 			.values({
 				segmentId: titleSegment.id,
 				locale: "ja",
-				text: "オーナー推奨翻訳",
+				text: "採用訳",
 				point: 1,
 				userId: translator.id,
 			})
-			.returning("id")
+			.returningAll()
 			.executeTakeFirstOrThrow();
 		await db
-			.insertInto("translationVotes")
+			.insertInto("selectedSegmentTranslations")
 			.values({
-				translationId: ownerTranslation.id,
-				userId: pageOwner.id,
-				isUpvote: true,
+				segmentId: selected.segmentId,
+				locale: selected.locale,
+				translationId: selected.id,
+				selectedByUserId: curator.id,
 			})
 			.execute();
 
-		const tree = await queryChildPagesTree(root.id, "ja", false);
+		const tree = await queryChildPagesTree(root.id, "ja");
+		expect(tree[0]?.titleTranslationText).toBe("採用訳");
+	});
 
-		expect(tree[0]?.titleTranslationText).toBe("オーナー推奨翻訳");
+	it("保存済みの子ページを表示順で含める", async () => {
+		const root = await createPage({ slug: "tipitaka", textLevel: null });
+		const firstPage = await createPage({
+			slug: "first",
+			parentId: root.id,
+			position: 0,
+		});
+		const secondPage = await createPage({
+			slug: "second",
+			parentId: root.id,
+			position: 1,
+		});
+		await Promise.all([
+			createSegment({
+				pageId: firstPage.id,
+				number: 0,
+				text: "First",
+				textAndOccurrenceHash: "first-title",
+			}),
+			createSegment({
+				pageId: secondPage.id,
+				number: 0,
+				text: "Second",
+				textAndOccurrenceHash: "second-title",
+			}),
+		]);
+
+		const tree = await queryChildPagesTree(root.id, "ja");
+		expect(tree.map((page) => page.slug)).toEqual(["first", "second"]);
 	});
 });

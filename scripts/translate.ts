@@ -13,7 +13,7 @@ type NumberedElement = { number: number; text: string };
  */
 async function getDescendantPageIds(parentId: number): Promise<number[]> {
 	const children = await db
-		.selectFrom("pages")
+		.selectFrom("tipitakaPages")
 		.select("id")
 		.where("parentId", "=", parentId)
 		.execute();
@@ -58,7 +58,7 @@ async function createTranslationJob(params: CreateTranslationJobParams) {
 
 async function fetchPageIdBySlug(slug: string) {
 	const page = await db
-		.selectFrom("pages")
+		.selectFrom("tipitakaPages")
 		.select("id")
 		.where("slug", "=", slug)
 		.executeTakeFirst();
@@ -67,7 +67,7 @@ async function fetchPageIdBySlug(slug: string) {
 
 async function fetchPageWithPageSegments(pageId: number) {
 	const page = await db
-		.selectFrom("pages")
+		.selectFrom("tipitakaPages")
 		.select("slug")
 		.where("id", "=", pageId)
 		.executeTakeFirst();
@@ -76,7 +76,7 @@ async function fetchPageWithPageSegments(pageId: number) {
 	const pageSegments = await db
 		.selectFrom("segments")
 		.select(["number", "text"])
-		.where("contentId", "=", pageId)
+		.where("tipitakaPageId", "=", pageId)
 		.orderBy("number", "asc")
 		.execute();
 

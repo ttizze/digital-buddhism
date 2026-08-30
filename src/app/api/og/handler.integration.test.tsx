@@ -3,7 +3,7 @@
 import { readFile } from "node:fs/promises";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetDatabase } from "@/tests/db-helpers";
-import { createPageWithSegments, createUser } from "@/tests/factories";
+import { createPageWithSegments } from "@/tests/factories";
 import { setupDbPerFile } from "@/tests/test-db-manager";
 import { getOgImage } from "./handler";
 
@@ -93,20 +93,13 @@ describe("GET /api/og", () => {
 	});
 
 	it("通常ページにはserver assetから取得したフォントとロゴを使ったPNG画像を返す", async () => {
-		const user = await createUser({
-			name: "OG User",
-			image:
-				"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
-		});
 		await createPageWithSegments({
-			userId: user.id,
 			slug: "og-page",
 			segments: [
 				{
 					number: 0,
 					text: "OG title",
 					textAndOccurrenceHash: "og-title",
-					segmentTypeKey: "PRIMARY",
 				},
 			],
 		});
@@ -133,19 +126,13 @@ describe("GET /api/og", () => {
 
 	it("server assetが欠落している場合は欠落した名前を含むエラーを返す", async () => {
 		ogAssetStore.delete("logo.png");
-		const user = await createUser({
-			image:
-				"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
-		});
 		await createPageWithSegments({
-			userId: user.id,
 			slug: "asset-error-page",
 			segments: [
 				{
 					number: 0,
 					text: "Asset error",
 					textAndOccurrenceHash: "asset-error-title",
-					segmentTypeKey: "PRIMARY",
 				},
 			],
 		});

@@ -17,7 +17,7 @@ afterEach(async () => {
 });
 
 describe("ローカルSQLiteテストDB", () => {
-	it("--seed付きの開発コマンドは同じ一時DBにPRIMARYを用意してから起動する", () => {
+	it("--seed付きの開発コマンドは同じ一時DBにシステムユーザーを用意してから起動する", () => {
 		const result = spawnSync(
 			"bun",
 			[
@@ -28,7 +28,7 @@ describe("ローカルSQLiteテストDB", () => {
 				"--",
 				"bun",
 				"-e",
-				'const client = (await import("@libsql/client")).createClient({ url: process.env.TURSO_DATABASE_URL }); const result = await client.execute("SELECT key FROM segment_types WHERE key = \'PRIMARY\'"); client.close(); if (result.rows.length !== 1) process.exit(1);',
+				'import { createClient } from "@libsql/client"; const client = createClient({ url: process.env.TURSO_DATABASE_URL }); const result = await client.execute("SELECT id FROM users WHERE handle = \'evame\'"); client.close(); if (result.rows.length !== 1) process.exit(1);',
 			],
 			{ encoding: "utf8" },
 		);

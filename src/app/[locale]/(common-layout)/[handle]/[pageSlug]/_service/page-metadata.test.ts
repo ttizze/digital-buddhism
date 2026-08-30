@@ -1,23 +1,34 @@
 import { describe, expect, it } from "vitest";
+import { BASE_URL } from "@/app/_constants/base-url";
 import type { PageDetail } from "@/app/[locale]/types";
 import { buildPageMetadata } from "./page-metadata";
 
+const pageDetail: PageDetail = {
+	id: 1,
+	slug: "vinaya-pitaka",
+	title: "Vinayapiṭaka",
+	textLevel: "MULA",
+	parentId: 0,
+	position: 1,
+	mdastJson: { type: "root", children: [] },
+	segments: [],
+	createdAt: new Date("2026-01-01T00:00:00.000Z"),
+	updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+};
+
 describe("buildPageMetadata", () => {
-	it("公開日時があるTipiṭakaのARCHIVEページを下書き扱いしない", () => {
+	it("Tipitakaの固定ハンドルと表示ロケールでcanonical URLを作る", () => {
 		const metadata = buildPageMetadata({
 			completedTranslationLocales: [],
 			description: "Tipiṭaka",
-			pageDetail: {
-				isPublishedTipitakaArchive: true,
-				slug: "vinaya-pitaka",
-				sourceLocale: "pi",
-				status: "ARCHIVE",
-				title: "Vinayapiṭaka",
-				userHandle: "evame",
-			} as PageDetail,
+			locale: "ja",
+			pageDetail,
 		});
 
-		expect(metadata.isDraft).toBe(false);
 		expect(metadata.title).toBe("Vinayapiṭaka");
+		expect(metadata.canonicalUrl).toBe(`${BASE_URL}/ja/evame/vinaya-pitaka`);
+		expect(metadata.openGraph.images[0]?.url).toBe(
+			`${BASE_URL}/api/og?locale=ja&slug=vinaya-pitaka`,
+		);
 	});
 });

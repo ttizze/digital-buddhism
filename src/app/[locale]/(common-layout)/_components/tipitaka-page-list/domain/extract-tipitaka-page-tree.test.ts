@@ -2,25 +2,43 @@ import { describe, expect, it } from "vitest";
 import { extractTipitakaPageTree } from "./extract-tipitaka-page-tree";
 
 describe("extractTipitakaPageTree", () => {
-	it("公開日時があるARCHIVEのパーリ語ページをTipiṭaka一覧に含める", () => {
+	it("DB行を親子関係とpositionに従ってTipiṭakaツリーにする", () => {
 		const rows = [
 			{
-				id: 2,
-				order: 1,
+				id: 3,
+				position: 2,
 				parentId: 1,
-				publishedAt: new Date("2026-01-01T00:00:00.000Z"),
+				slug: "sutta-pitaka",
+				titleSegmentId: 30,
+				titleText: "Suttapiṭaka",
+				titleTranslationText: null,
+			},
+			{
+				id: 4,
+				position: 1,
+				parentId: 2,
+				slug: "parajika",
+				titleSegmentId: 40,
+				titleText: "Pārājika",
+				titleTranslationText: null,
+			},
+			{
+				id: 2,
+				position: 1,
+				parentId: 1,
 				slug: "vinaya-pitaka",
-				sourceLocale: "pi",
-				status: "ARCHIVE" as const,
 				titleSegmentId: 20,
 				titleText: "Vinayapiṭaka",
 				titleTranslationText: null,
-				userHandle: "evame",
 			},
 		];
 
 		expect(extractTipitakaPageTree(rows, 1)).toMatchObject([
-			{ id: 2, slug: "vinaya-pitaka" },
+			{
+				id: 2,
+				children: [{ id: 4 }],
+			},
+			{ id: 3, children: [] },
 		]);
 	});
 });

@@ -14,10 +14,10 @@ export type User = Selectable<DB["users"]>;
 export type NewUser = Insertable<DB["users"]>;
 export type UserUpdate = Updateable<DB["users"]>;
 
-// Page
-export type Page = Selectable<DB["pages"]>;
-export type NewPage = Insertable<DB["pages"]>;
-export type PageUpdate = Updateable<DB["pages"]>;
+// TipitakaPage
+export type TipitakaPage = Selectable<DB["tipitakaPages"]>;
+export type NewTipitakaPage = Insertable<DB["tipitakaPages"]>;
+export type TipitakaPageUpdate = Updateable<DB["tipitakaPages"]>;
 
 // Segment
 export type Segment = Selectable<DB["segments"]>;
@@ -28,6 +28,14 @@ export type SegmentUpdate = Updateable<DB["segments"]>;
 export type SegmentTranslation = Selectable<DB["segmentTranslations"]>;
 export type NewSegmentTranslation = Insertable<DB["segmentTranslations"]>;
 export type SegmentTranslationUpdate = Updateable<DB["segmentTranslations"]>;
+
+// SelectedSegmentTranslation
+export type SelectedSegmentTranslation = Selectable<
+	DB["selectedSegmentTranslations"]
+>;
+export type NewSelectedSegmentTranslation = Insertable<
+	DB["selectedSegmentTranslations"]
+>;
 
 // TranslationVote
 export type TranslationVote = Selectable<DB["translationVotes"]>;

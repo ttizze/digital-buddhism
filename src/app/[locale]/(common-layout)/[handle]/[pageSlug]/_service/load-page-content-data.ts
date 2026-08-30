@@ -11,8 +11,8 @@ export async function loadPageContentData(
 	locale: string,
 ) {
 	const [navigationData, childPages, locales, description] = await Promise.all([
-		queryPageNavigationData(pageDetail.id, locale, pageDetail.isTipitakaPage),
-		queryChildPagesTree(pageDetail.id, locale, pageDetail.isTipitakaPage),
+		queryPageNavigationData(pageDetail.id, locale),
+		queryChildPagesTree(pageDetail.id, locale),
 		queryCompletedTranslationLocales(pageDetail.id),
 		mdastToText(pageDetail.mdastJson).then((text) => text.slice(0, 200)),
 	]);

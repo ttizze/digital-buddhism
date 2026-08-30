@@ -1,7 +1,4 @@
-/** タイトルと本文でページを検索するクエリ。 */
-
 import { db } from "@/db";
-import type { PageStatus } from "@/drizzle/types";
 import type { PageForList } from "../types";
 import { buildPageListQuery, toPageForList } from "./page-list.server";
 
@@ -10,9 +7,6 @@ type SearchResult = {
 	total: number;
 };
 
-/**
- * 指定IDのページリストを取得（検索結果用）
- */
 async function fetchPagesByIds(
 	pageIds: number[],
 	locale: string,
@@ -20,95 +14,63 @@ async function fetchPagesByIds(
 	if (pageIds.length === 0) return [];
 
 	const rows = await buildPageListQuery(locale)
-		.where("pages.id", "in", pageIds)
+		.where("tipitakaPages.id", "in", pageIds)
 		.execute();
-
-	// 元の順序を保持
-	const rowMap = new Map(rows.map((r) => [r.id, r]));
-	return pageIds
-		.map((id) => {
-			const row = rowMap.get(id);
-			if (!row) return null;
-			return toPageForList(row);
-		})
-		.filter((p): p is PageForList => p !== null);
+	const rowById = new Map(rows.map((row) => [row.id, row]));
+	return pageIds.flatMap((id) => {
+		const row = rowById.get(id);
+		return row ? [toPageForList(row)] : [];
+	});
 }
 
-// ============================================
-// タイトル検索
-// ============================================
-
-/**
- * タイトル（セグメント number: 0）でページIDを検索
- */
-async function searchPageIdsByTitle(
+async function searchPageIds(
 	query: string,
-	status: PageStatus = "PUBLIC",
+	titleOnly: boolean,
 ): Promise<number[]> {
-	const result = await db
+	let resultQuery = db
 		.selectFrom("segments")
-		.innerJoin("pages", "segments.contentId", "pages.id")
-		.select("segments.contentId as pageId")
+		.innerJoin("tipitakaPages", "tipitakaPages.id", "segments.tipitakaPageId")
+		.select("tipitakaPages.id as pageId")
 		.distinct()
-		.where("segments.number", "=", 0)
-		.where("segments.text", "like", `%${query}%`)
-		.where("pages.status", "=", status)
-		.execute();
+		.where("segments.text", "like", `%${query}%`);
 
-	return result.map((r) => r.pageId);
+	if (titleOnly) {
+		resultQuery = resultQuery.where("segments.number", "=", 0);
+	}
+
+	const rows = await resultQuery.orderBy("tipitakaPages.id").execute();
+	return rows.map((row) => row.pageId);
 }
 
-/**
- * タイトルでページを検索
- */
+async function searchPages(
+	query: string,
+	skip: number,
+	take: number,
+	locale: string,
+	titleOnly: boolean,
+): Promise<SearchResult> {
+	const allPageIds = await searchPageIds(query, titleOnly);
+	const pageIds = allPageIds.slice(skip, skip + take);
+	return {
+		pageForLists: await fetchPagesByIds(pageIds, locale),
+		total: allPageIds.length,
+	};
+}
+
 export async function searchPagesByTitle(
 	query: string,
 	skip: number,
 	take: number,
 	locale: string,
 ): Promise<SearchResult> {
-	const allPageIds = await searchPageIdsByTitle(query, "PUBLIC");
-	const total = allPageIds.length;
-	const pageIds = allPageIds.slice(skip, skip + take);
-
-	if (pageIds.length === 0) {
-		return { pageForLists: [], total };
-	}
-
-	const pageForLists = await fetchPagesByIds(pageIds, locale);
-	return { pageForLists, total };
+	return searchPages(query, skip, take, locale, true);
 }
 
-// ============================================
-// コンテンツ検索
-// ============================================
-
-/**
- * コンテンツ（全セグメント）でページを検索
- */
 export async function searchPagesByContent(
 	query: string,
 	skip: number,
 	take: number,
 	locale: string,
 ): Promise<SearchResult> {
-	const result = await db
-		.selectFrom("segments")
-		.innerJoin("pages", "segments.contentId", "pages.id")
-		.select("segments.contentId as pageId")
-		.distinct()
-		.where("pages.status", "=", "PUBLIC")
-		.where("segments.text", "like", `%${query}%`)
-		.execute();
-
-	const allPageIds = result.map((r) => r.pageId);
-	const total = allPageIds.length;
-	const pageIds = allPageIds.slice(skip, skip + take);
-
-	if (pageIds.length === 0) {
-		return { pageForLists: [], total };
-	}
-
-	const pageForLists = await fetchPagesByIds(pageIds, locale);
-	return { pageForLists, total };
+	return searchPages(query, skip, take, locale, false);
 }

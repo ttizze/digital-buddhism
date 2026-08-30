@@ -36,6 +36,34 @@
       "when": 1788018212905,
       "tag": "0004_remove_obsolete_content_features",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1788044085966,
+      "tag": "0005_tipitaka-schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1788053008729,
+      "tag": "0006_import-provenance",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1788057673246,
+      "tag": "0007_flat_bushwacker",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1788063256486,
+      "tag": "0008_white_squadron_sinister",
+      "breakpoints": true
     }
   ]
 }

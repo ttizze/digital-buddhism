@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
+import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
 import type { PageForList } from "@/app/[locale]/types";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type PageListProps = {
 	PageForList: PageForList;
@@ -34,7 +34,7 @@ export function PageList({ PageForList, index, locale }: PageListProps) {
 					<Link
 						className="block overflow-hidden"
 						params={{
-							handle: PageForList.userHandle,
+							handle: TIPITAKA_SYSTEM_USER_HANDLE,
 							locale,
 							pageSlug: PageForList.slug,
 						}}
@@ -49,26 +49,9 @@ export function PageList({ PageForList, index, locale }: PageListProps) {
 					</Link>
 				</div>
 
-				{/* ユーザー情報 */}
-				<div className="flex items-center gap-2">
-					<Link
-						className="flex items-center gap-1 min-w-0"
-						params={{ handle: PageForList.userHandle, locale }}
-						to="/$locale/$handle"
-					>
-						<Avatar className="w-5 h-5 shrink-0">
-							<AvatarImage alt="" src={PageForList.userImage} />
-							<AvatarFallback>
-								{PageForList.userHandle.charAt(0).toUpperCase()}
-							</AvatarFallback>
-						</Avatar>
-						<span className="text-xs text-gray-600 truncate">
-							{PageForList.userName}
-						</span>
-					</Link>
-					<time className="text-xs text-muted-foreground whitespace-nowrap">
-						{PageForList.createdAt.toLocaleDateString(locale)}
-					</time>
+				<div className="flex items-center gap-2 text-xs text-muted-foreground">
+					<span>{(PageForList.textLevel ?? "category").toLowerCase()}</span>
+					<time>{PageForList.createdAt.toLocaleDateString(locale)}</time>
 				</div>
 			</div>
 		</article>

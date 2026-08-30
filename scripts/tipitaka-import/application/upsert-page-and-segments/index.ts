@@ -2,81 +2,41 @@ import { createServerLogger } from "@/app/_service/logger.server";
 import type { SegmentDraft } from "@/app/[locale]/_domain/remark-hash-and-segments";
 import { syncSegments } from "@/app/[locale]/_service/sync-segments";
 import { db } from "@/db";
-import type { JsonValue, PageStatus } from "@/drizzle/types";
+import type { JsonValue, TipitakaTextLevel } from "@/drizzle/types";
 import { upsertPage } from "./db/mutations.server";
-import { syncSegmentMetadataAndAnnotationLinks } from "./sync-segment-metadata-and-annotation-links";
-/**
- * ページとセグメントをupsertする（ユースケースフロー）
- *
- * 処理の流れ:
- * 1. ページをupsert
- * 2. セグメントを同期
- * 3. メタデータとアノテーションリンクを同期
- */
+import { syncPageSegmentMetadata } from "./sync-segment-metadata-and-annotation-links";
+
+/** Atomically upserts one page, its segments, and their source metadata. */
 export async function upsertPageAndSegments(p: {
+	catalogKey: string;
 	pageSlug: string;
-	userId: string;
 	mdastJson: JsonValue;
-	sourceLocale: string;
-	segments: SegmentDraft[];
-	segmentTypeId: number | null;
+	textLevel: TipitakaTextLevel | null;
 	parentId: number | null;
-	order: number;
-	anchorPageId: number | null;
-	status: PageStatus;
+	position: number;
+	importFileId: number | null;
+	segments: SegmentDraft[];
 }) {
 	const logger = createServerLogger("upsert-page-and-segments", {
-		userId: p.userId,
+		catalogKey: p.catalogKey,
 		pageSlug: p.pageSlug,
 	});
 
-	logger.debug(
-		{
-			segmentCount: p.segments.length,
-			segmentTypeId: p.segmentTypeId,
-			status: p.status,
-		},
-		"Starting transaction to upsert page and segments",
-	);
-
 	try {
 		const result = await db.transaction().execute(async (tx) => {
-			// db操作: ページをupsert
-			const page = await upsertPage(tx, {
-				pageSlug: p.pageSlug,
-				userId: p.userId,
-				mdastJson: p.mdastJson,
-				sourceLocale: p.sourceLocale,
-				parentId: p.parentId,
-				order: p.order,
-				status: p.status,
-			});
-
-			// db操作: セグメントを同期
-			const hashToSegmentId = await syncSegments(
-				tx,
-				page.id,
-				p.segments,
-				p.segmentTypeId,
-			);
-
-			// application: メタデータとアノテーションリンクを同期
-			await syncSegmentMetadataAndAnnotationLinks(
-				tx,
-				hashToSegmentId,
-				p.segments,
-				page.id,
-				p.anchorPageId,
-			);
-
+			const page = await upsertPage(tx, p);
+			const hashToSegmentId = await syncSegments(tx, page.id, p.segments);
+			await syncPageSegmentMetadata(tx, hashToSegmentId, p.segments);
 			return page;
 		});
 
-		logger.debug({ pageId: result.id }, "Transaction completed successfully");
-
+		logger.debug(
+			{ pageId: result.id, segmentCount: p.segments.length },
+			"Page transaction completed",
+		);
 		return result;
 	} catch (error) {
-		logger.error({ err: error }, "Transaction failed");
+		logger.error({ err: error }, "Page transaction failed");
 		throw error;
 	}
 }

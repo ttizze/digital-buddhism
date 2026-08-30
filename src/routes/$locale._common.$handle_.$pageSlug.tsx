@@ -1,4 +1,5 @@
 import { ClientOnly, createFileRoute, notFound } from "@tanstack/react-router";
+import { TIPITAKA_SOURCE_LOCALE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { FloatingControls } from "@/app/[locale]/(common-layout)/_components/floating-controls/floating-controls.client";
 import {
 	collectAnnotationTypes,
@@ -13,13 +14,14 @@ export const Route = createFileRoute("/$locale/_common/$handle_/$pageSlug")({
 		if (!data) throw notFound();
 		return data;
 	},
-	head: ({ loaderData }) => {
+	head: ({ loaderData, params }) => {
 		if (!loaderData) return {};
 
 		const metadata = buildPageMetadata({
 			completedTranslationLocales: loaderData.completedTranslationLocales,
 			description: loaderData.description,
 			pageDetail: loaderData.pageDetail,
+			locale: params.locale,
 		});
 
 		return {
@@ -43,9 +45,6 @@ export const Route = createFileRoute("/$locale/_common/$handle_/$pageSlug")({
 					name: "twitter:image",
 					content: metadata.twitter.images[0],
 				},
-				...(metadata.isDraft
-					? [{ name: "robots", content: "noindex, nofollow" }]
-					: []),
 			],
 			links: [
 				{ rel: "canonical", href: metadata.canonicalUrl },
@@ -71,7 +70,7 @@ function PageDetailRoute() {
 				<ClientOnly fallback={null}>
 					<FloatingControls
 						annotationTypes={annotationTypes}
-						sourceLocale={data.pageDetail.sourceLocale}
+						sourceLocale={TIPITAKA_SOURCE_LOCALE}
 						userLocale={locale}
 					/>
 				</ClientOnly>

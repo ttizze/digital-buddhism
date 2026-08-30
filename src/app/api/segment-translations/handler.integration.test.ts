@@ -40,14 +40,12 @@ describe("/api/segment-translations GET", () => {
 		const otherUser = await createUser({ handle: "other", name: "Other User" });
 
 		const page = await createPageWithSegments({
-			userId: bestUser.id,
 			slug: "test-page",
 			segments: [
 				{
 					number: 0,
 					text: "Hello",
 					textAndOccurrenceHash: "hash0",
-					segmentTypeKey: "PRIMARY",
 				},
 			],
 		});
@@ -56,7 +54,7 @@ describe("/api/segment-translations GET", () => {
 		const segment = await db
 			.selectFrom("segments")
 			.selectAll()
-			.where("contentId", "=", page.id)
+			.where("tipitakaPageId", "=", page.id)
 			.where("number", "=", 0)
 			.executeTakeFirstOrThrow();
 
@@ -117,34 +115,27 @@ describe("/api/segment-translations GET", () => {
 		expect(body[1].currentUserVoteIsUpvote).toBeNull();
 	});
 
-	it("ページのセグメントでページオーナーのupvoteを優先する", async () => {
-		// Arrange
-		const currentUser = await createUser();
-		const pageOwner = await createUser({ handle: "page-owner" });
+	it("明示的に選択された翻訳をポイントより優先する", async () => {
+		const currentUser = await createUser({ handle: "current-user" });
 		const translator1 = await createUser({ handle: "translator1" });
 		const translator2 = await createUser({ handle: "translator2" });
-
 		const page = await createPageWithSegments({
-			userId: pageOwner.id,
 			slug: "test-page",
 			segments: [
 				{
 					number: 0,
 					text: "Hello",
 					textAndOccurrenceHash: "hash0",
-					segmentTypeKey: "PRIMARY",
 				},
 			],
 		});
-
 		const segment = await db
 			.selectFrom("segments")
 			.selectAll()
-			.where("contentId", "=", page.id)
+			.where("tipitakaPageId", "=", page.id)
 			.where("number", "=", 0)
 			.executeTakeFirstOrThrow();
 
-		// 高ポイントの翻訳
 		const highPointTranslation = await db
 			.insertInto("segmentTranslations")
 			.values({
@@ -156,46 +147,37 @@ describe("/api/segment-translations GET", () => {
 			})
 			.returningAll()
 			.executeTakeFirstOrThrow();
-
-		// 低ポイントだがページオーナーがupvoteした翻訳
-		const ownerUpvotedTranslation = await db
+		const selectedTranslation = await db
 			.insertInto("segmentTranslations")
 			.values({
 				segmentId: segment.id,
 				locale: "ja",
-				text: "ページオーナー推奨",
+				text: "明示的に選択された翻訳",
 				point: 1,
 				userId: translator2.id,
 			})
 			.returningAll()
 			.executeTakeFirstOrThrow();
-
-		// ページオーナーが低ポイント翻訳にupvote
 		await db
-			.insertInto("translationVotes")
+			.insertInto("selectedSegmentTranslations")
 			.values({
-				translationId: ownerUpvotedTranslation.id,
-				userId: pageOwner.id,
-				isUpvote: true,
+				segmentId: segment.id,
+				locale: "ja",
+				translationId: selectedTranslation.id,
 			})
 			.execute();
-
 		getCurrentUser.mockResolvedValue({ id: currentUser.id });
 
-		// Act
-		const req = new Request(
+		const request = new Request(
 			`http://localhost/api/segment-translations?segmentId=${segment.id}&userLocale=ja`,
 		);
-		const res = await getSegmentTranslations(req);
-
-		// Assert
-		expect(res.status).toBe(200);
-
-		const body = await res.json();
+		const response = await getSegmentTranslations(request);
+		expect(response.status).toBe(200);
+		const body = await response.json();
 		expect(body).toHaveLength(2);
-		// ページオーナーのupvoteが優先される
-		expect(body[0].id).toBe(ownerUpvotedTranslation.id);
-		expect(body[0].text).toBe("ページオーナー推奨");
+		expect(body[0].id).toBe(selectedTranslation.id);
+		expect(body[0].text).toBe("明示的に選択された翻訳");
+		expect(body[0].isSelected).toBe(true);
 		expect(body[1].id).toBe(highPointTranslation.id);
 	});
 });

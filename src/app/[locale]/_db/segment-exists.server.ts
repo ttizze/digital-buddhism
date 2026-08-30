@@ -1,12 +1,10 @@
 import { db } from "@/db";
 
 export async function hasSegmentsForPageId(pageId: number): Promise<boolean> {
-	const result = await db
+	const segment = await db
 		.selectFrom("segments")
 		.select("id")
-		.where("contentId", "=", pageId)
-		.limit(1)
+		.where("tipitakaPageId", "=", pageId)
 		.executeTakeFirst();
-
-	return !!result;
+	return Boolean(segment);
 }

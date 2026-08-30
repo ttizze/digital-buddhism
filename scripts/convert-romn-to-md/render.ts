@@ -101,7 +101,12 @@ function renderParagraph(node: Element): string[] {
 function renderDiv(node: Element): string[] {
 	const children = getChildElements(node);
 	const results: string[] = [];
+	const type = (node.getAttribute("type") ?? "").toLowerCase();
+	const bookCode = node.getAttribute("id") ?? node.getAttribute("n");
 
+	if (type === "book" && bookCode && /^[A-Za-z0-9._-]+$/.test(bookCode)) {
+		results.push(`<!--book:${bookCode}-->`);
+	}
 	for (const child of children) {
 		results.push(...renderBlockElement(child));
 	}

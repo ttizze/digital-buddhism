@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
 import type { TipitakaPageTreeNode } from "./domain/extract-tipitaka-page-tree";
 
@@ -36,7 +37,7 @@ function TipitakaTreeList({
 					<Link
 						className="block rounded-md px-2 py-1 hover:bg-muted"
 						params={{
-							handle: node.userHandle,
+							handle: TIPITAKA_SYSTEM_USER_HANDLE,
 							locale,
 							pageSlug: node.slug,
 						}}

@@ -4,8 +4,6 @@ import * as path from "node:path";
 interface BookData {
 	level: "Mula" | "Atthakatha" | "Tika" | "Other";
 	dirSegments: string[];
-	mulaFileName: string | null;
-	mulaFileNames: string[];
 	chapterListTypes?: string[];
 }
 
