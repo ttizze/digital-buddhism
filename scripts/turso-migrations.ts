@@ -1,26 +1,46 @@
 import { join } from "node:path";
-import { type Client, createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
-import { migrate } from "drizzle-orm/libsql/migrator";
+import { type Client, createClient, type InStatement } from "@libsql/client";
+import { readMigrationFiles } from "drizzle-orm/migrator";
 
 const migrationDirectory = join(import.meta.dirname, "../src/drizzle/turso");
 
-/** Drizzle Kitと同じlibSQL migratorでschemaとmigration journalを同期した接続を返す。 */
+/**
+ * Drizzleのmigration journalを使い、各migrationを独立したTurso migrationとして
+ * 適用する。大規模DBでも再実行時は最後に完了したmigrationから再開できる。
+ */
 export async function openMigratedTursoDatabase(
 	databaseUrl: string,
 	authToken?: string,
 ): Promise<Client> {
 	const client = createClient({ url: databaseUrl, authToken });
 	try {
-		// Drizzle's SQLite table rebuilds run inside a transaction, where its
-		// migration-level PRAGMA statements cannot change foreign key enforcement.
-		await client.execute("PRAGMA foreign_keys = OFF");
-		await migrate(drizzle(client), { migrationsFolder: migrationDirectory });
-		await client.execute("PRAGMA foreign_keys = ON");
+		await client.execute(`
+			CREATE TABLE IF NOT EXISTS __drizzle_migrations (
+				id SERIAL PRIMARY KEY,
+				hash text NOT NULL,
+				created_at numeric
+			)
+		`);
+		const applied = await client.execute(
+			"SELECT created_at FROM __drizzle_migrations ORDER BY created_at DESC LIMIT 1",
+		);
+		const lastAppliedAt = Number(applied.rows[0]?.created_at ?? 0);
+		const migrations = readMigrationFiles({
+			migrationsFolder: migrationDirectory,
+		});
 
-		const foreignKeys = await client.execute("PRAGMA foreign_keys");
-		if (Number(foreignKeys.rows[0]?.foreign_keys) !== 1) {
-			throw new Error("SQLite foreign key enforcement could not be enabled");
+		for (const migration of migrations) {
+			if (migration.folderMillis <= lastAppliedAt) continue;
+
+			const statements: InStatement[] = migration.sql.map((sql) => ({
+				sql,
+				args: [],
+			}));
+			statements.push({
+				sql: "INSERT INTO __drizzle_migrations (hash, created_at) VALUES (?, ?)",
+				args: [migration.hash, migration.folderMillis],
+			});
+			await client.migrate(statements);
 		}
 
 		const violations = await client.execute("PRAGMA foreign_key_check");

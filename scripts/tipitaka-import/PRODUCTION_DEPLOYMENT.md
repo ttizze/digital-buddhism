@@ -18,6 +18,11 @@ Tipitakaインポートスクリプトは冪等性を持ちます。同じスク
    bun run db:prod:migrate
    ```
 
+   このコマンドはDrizzleのmigration journalを読み、未適用のmigrationを一件ずつ
+   Tursoのmigration transactionで適用します。
+   各migrationとjournal更新は同じtransactionで確定するため、失敗時は最後に
+   完了したmigrationから再開します。
+
 2. **システムユーザー**: `evame` というハンドルのユーザーが存在することを
    確認します。初期セットアップ時は、シードを本番DBへ明示的に実行します。
 
