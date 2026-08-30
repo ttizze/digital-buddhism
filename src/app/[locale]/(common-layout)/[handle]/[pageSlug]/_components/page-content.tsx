@@ -1,28 +1,26 @@
 import type { ReactNode } from "react";
 import { BASE_URL } from "@/app/_constants/base-url";
+import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import type { PageDetail } from "@/app/[locale]/types";
 import { ArticleJsonLd, BreadcrumbJsonLd } from "@/components/seo/json-ld";
 import type { NavigationData, PageTitleTree } from "../_db/queries";
 import { ChildPages } from "./child-pages";
 import { ContentWithTranslations } from "./content-with-translations";
 import { PageNavigation } from "./page-navigation";
-import { PreviewBanner } from "./preview-banner";
 
 export function collectAnnotationTypes(segments: PageDetail["segments"]) {
-	const typeMap = new Map<string, { key: string; label: string }>();
+	const typeByLabel = new Map<string, { key: string; label: string }>();
 	for (const segment of segments) {
 		for (const link of segment.annotations ?? []) {
-			const { segmentTypeKey, segmentTypeLabel } = link.annotationSegment ?? {};
-			if (segmentTypeKey && segmentTypeLabel) {
-				typeMap.set(segmentTypeLabel, {
-					key: segmentTypeKey,
-					label: segmentTypeLabel,
-				});
-			}
+			const { segmentTypeKey, segmentTypeLabel } = link.annotationSegment;
+			typeByLabel.set(segmentTypeLabel, {
+				key: segmentTypeKey,
+				label: segmentTypeLabel,
+			});
 		}
 	}
-	return Array.from(typeMap.values()).sort((a, b) =>
-		a.label.localeCompare(b.label),
+	return Array.from(typeByLabel.values()).sort((left, right) =>
+		left.label.localeCompare(right.label),
 	);
 }
 
@@ -41,37 +39,29 @@ export function PageContent({
 	description: string;
 	floatingControls: ReactNode;
 }) {
-	const isDraft =
-		pageDetail.status !== "PUBLIC" && !pageDetail.isPublishedTipitakaArchive;
-
-	const articleUrl = `${BASE_URL}/${pageDetail.sourceLocale}/${pageDetail.userHandle}/${pageDetail.slug}`;
-	const authorUrl = `${BASE_URL}/${pageDetail.sourceLocale}/${pageDetail.userHandle}`;
+	const articleUrl = `${BASE_URL}/${locale}/${TIPITAKA_SYSTEM_USER_HANDLE}/${pageDetail.slug}`;
+	const authorUrl = `${BASE_URL}/${locale}`;
 
 	return (
 		<article className="w-full prose dark:prose-invert prose-a:underline lg:prose-lg mx-auto mb-20">
-			{!isDraft && (
-				<>
-					<ArticleJsonLd
-						authorName={pageDetail.userName}
-						authorUrl={authorUrl}
-						dateModified={new Date(pageDetail.updatedAt).toISOString()}
-						datePublished={new Date(pageDetail.createdAt).toISOString()}
-						description={description}
-						headline={pageDetail.title}
-						image={`${BASE_URL}/api/og?locale=${pageDetail.sourceLocale}&slug=${pageDetail.slug}`}
-						inLanguage={pageDetail.sourceLocale}
-						url={articleUrl}
-					/>
-					<BreadcrumbJsonLd
-						items={[
-							{ name: "Home", url: `${BASE_URL}/${locale}` },
-							{ name: pageDetail.userName, url: authorUrl },
-							{ name: pageDetail.title, url: articleUrl },
-						]}
-					/>
-				</>
-			)}
-			{isDraft && <PreviewBanner />}
+			<ArticleJsonLd
+				authorName="Tipitaka"
+				authorUrl={authorUrl}
+				dateModified={pageDetail.updatedAt.toISOString()}
+				datePublished={pageDetail.createdAt.toISOString()}
+				description={description}
+				headline={pageDetail.title}
+				image={`${BASE_URL}/api/og?locale=${locale}&slug=${pageDetail.slug}`}
+				inLanguage={locale}
+				url={articleUrl}
+			/>
+			<BreadcrumbJsonLd
+				items={[
+					{ name: "Home", url: `${BASE_URL}/${locale}` },
+					{ name: "Tipitaka", url: authorUrl },
+					{ name: pageDetail.title, url: articleUrl },
+				]}
+			/>
 			<PageNavigation
 				data={navigationData}
 				locale={locale}

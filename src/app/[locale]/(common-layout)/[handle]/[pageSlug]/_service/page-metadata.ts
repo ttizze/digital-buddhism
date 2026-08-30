@@ -1,4 +1,5 @@
 import { BASE_URL } from "@/app/_constants/base-url";
+import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import type { PageDetail } from "@/app/[locale]/types";
 import { buildAlternateLocales } from "../_domain/build-alternate-locales";
 
@@ -6,20 +7,19 @@ export function buildPageMetadata({
 	pageDetail,
 	description,
 	completedTranslationLocales,
+	locale,
 }: {
 	pageDetail: PageDetail;
 	description: string;
 	completedTranslationLocales: string[];
+	locale: string;
 }) {
-	const isDraft =
-		pageDetail.status !== "PUBLIC" && !pageDetail.isPublishedTipitakaArchive;
-	const ogImageUrl = `${BASE_URL}/api/og?locale=${pageDetail.sourceLocale}&slug=${pageDetail.slug}`;
-	const canonicalUrl = `${BASE_URL}/${pageDetail.sourceLocale}/${pageDetail.userHandle}/${pageDetail.slug}`;
+	const ogImageUrl = `${BASE_URL}/api/og?locale=${locale}&slug=${pageDetail.slug}`;
+	const canonicalUrl = `${BASE_URL}/${locale}/${TIPITAKA_SYSTEM_USER_HANDLE}/${pageDetail.slug}`;
 
 	return {
-		title: isDraft ? `${pageDetail.title} (Draft)` : pageDetail.title,
+		title: pageDetail.title,
 		description,
-		isDraft,
 		openGraph: {
 			type: "article" as const,
 			title: pageDetail.title,

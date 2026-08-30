@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { UserInfo } from "./_components/user-info";
-import { UserPageList } from "./_components/user-page-list";
+import { UserTranslationList } from "./_components/user-translation-list";
 import type { ProfilePageData } from "./_service/profile";
 
 export function ProfilePagePresentation({
@@ -17,11 +17,11 @@ export function ProfilePagePresentation({
 	return (
 		<>
 			<UserInfo data={data} locale={locale} />
-			<UserPageList
+			<UserTranslationList
+				contributions={data.contributions}
 				isOwner={data.isOwner}
 				locale={locale}
 				page={page}
-				pageForLists={data.pageForLists}
 				totalPages={data.totalPages}
 			/>
 			{floatingControls}

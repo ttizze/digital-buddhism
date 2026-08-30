@@ -1,3 +1,4 @@
+import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import type {
 	TranslationJobForToast,
 	TranslationJobStatus,
@@ -10,30 +11,28 @@ export async function fetchTranslationJobsByIds(
 ): Promise<TranslationJobForToast[]> {
 	const rows = await db
 		.selectFrom("translationJobs")
-		.innerJoin("pages", "translationJobs.pageId", "pages.id")
-		.innerJoin("users", "pages.userId", "users.id")
+		.innerJoin("tipitakaPages", "translationJobs.pageId", "tipitakaPages.id")
 		.select([
 			"translationJobs.id",
 			"translationJobs.locale",
 			"translationJobs.status",
 			"translationJobs.progress",
 			"translationJobs.error",
-			"pages.slug as pageSlug",
-			"users.handle as userHandle",
+			"tipitakaPages.slug as pageSlug",
 		])
 		.where("translationJobs.id", "in", ids)
 		.execute();
 
 	const rowsTyped: TranslationJobForToast[] = rows.map((row) => ({
-		id: row.id as number,
-		locale: row.locale as string,
+		id: row.id,
+		locale: row.locale,
 		status: row.status as TranslationJobStatus,
-		progress: row.progress as number,
-		error: row.error as string,
+		progress: row.progress,
+		error: row.error,
 		page: {
-			slug: row.pageSlug as string,
+			slug: row.pageSlug,
 			user: {
-				handle: row.userHandle as string,
+				handle: TIPITAKA_SYSTEM_USER_HANDLE,
 			},
 		},
 	}));

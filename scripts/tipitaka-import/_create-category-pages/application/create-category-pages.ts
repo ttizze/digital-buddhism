@@ -21,13 +21,11 @@ import { createCategoryPage } from "./create-category-page";
  *
  * @param tipitakaFileMetas - Tipitakaファイルのメタデータ配列
  * @param rootPageId - ルートページのID
- * @param userId - ページを作成するユーザーのID
  * @returns カテゴリページのパス → ページIDのルックアップマップ
  */
 export async function createCategoryPages(
 	tipitakaFileMetas: TipitakaFileMeta[],
 	rootPageId: number,
-	userId: string,
 ): Promise<Map<string, number>> {
 	// すべてのユニークなパスを抽出（子ノードがある場合のみ）
 	const pathSet = extractUniqueCategoryPaths(tipitakaFileMetas);
@@ -47,15 +45,14 @@ export async function createCategoryPages(
 		const parentId = categoryPageLookup.get(parentPath) ?? rootPageId;
 
 		// 最後のセグメントからタイトルと順序を抽出（ディレクトリ名の先頭数字が順序）
-		const { title, order } = parseDirSegment(lastSegment);
+		const { title, order: position } = parseDirSegment(lastSegment);
 
 		// カテゴリページを作成
 		const pageId = await createCategoryPage({
 			title,
 			dirPath,
 			parentId,
-			userId,
-			order,
+			position,
 		});
 
 		categoryPageLookup.set(dirPath, pageId);

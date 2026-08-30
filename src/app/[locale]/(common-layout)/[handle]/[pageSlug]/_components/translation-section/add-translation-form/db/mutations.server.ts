@@ -8,12 +8,7 @@ export async function addUserTranslation(
 ) {
 	await db
 		.insertInto("segmentTranslations")
-		.values({
-			segmentId,
-			locale,
-			text,
-			userId,
-		})
+		.values({ segmentId, locale, text, userId })
 		.execute();
 	return { success: true };
 }

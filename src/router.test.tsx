@@ -27,22 +27,10 @@ describe("TanStack StartのAPIルート登録", () => {
 	it("/api/translate/chunk が実際のルートツリーでマッチする", () => {
 		expectRouteToMatch("/api/translate/chunk", "/api/translate/chunk");
 	});
-
-	it("/api/sync/push が実際のルートツリーでマッチする", () => {
-		expectRouteToMatch("/api/sync/push", "/api/sync/push");
-	});
-
-	it("/api/sync/pull が実際のルートツリーでマッチする", () => {
-		expectRouteToMatch("/api/sync/pull", "/api/sync/pull");
-	});
-
-	it("/api/sync/cli-login が実際のルートツリーでマッチする", () => {
-		expectRouteToMatch("/api/sync/cli-login", "/api/sync/cli-login");
-	});
 });
 
-describe("TanStack Startの互換ルート登録", () => {
-	it("/auth/login がCLIログイン用にマッチする", () => {
+describe("TanStack Startの認証ルート登録", () => {
+	it("/auth/login がマッチする", () => {
 		expectRouteToMatch("/auth/login", "/auth/login");
 	});
 });

@@ -10,12 +10,6 @@ export function Footer() {
 				<div className="flex justify-center items-center text-sm text-gray-600 dark:text-gray-300 gap-4">
 					<a
 						className="hover:text-gray-900 dark:hover:text-white"
-						href={`/${locale}/about`}
-					>
-						{t("about")}
-					</a>
-					<a
-						className="hover:text-gray-900 dark:hover:text-white"
 						href={`/${locale}/privacy`}
 					>
 						{t("privacyPolicy")}

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
+import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { parseFormData } from "@/app/[locale]/_utils/parse-form-data";
 import { findPageIdBySegmentTranslationId } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-section/_db/queries.server";
 import { addTranslationService } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-section/add-translation-form/service/add-translation.server";
@@ -32,6 +33,9 @@ const patchSchema = z.object({
 	isUpvote: z.string().transform((val) => val === "true"),
 });
 
+const selectSchema = z.object({
+	translationId: z.coerce.number().int(),
+});
 const deleteSchema = z.object({
 	translationId: z.coerce.number(),
 });
@@ -54,18 +58,17 @@ export async function getSegmentTranslations(
 		const translations = await db
 			.selectFrom("segmentTranslations as st")
 			.innerJoin("segments as s", "st.segmentId", "s.id")
-			.leftJoin("pages as p", "s.contentId", "p.id")
 			.innerJoin("users as u", "st.userId", "u.id")
 			.leftJoin("translationVotes as tv", (join) =>
 				join
 					.onRef("tv.translationId", "=", "st.id")
 					.on("tv.userId", "=", currentUser?.id ?? ""),
 			)
-			.leftJoin("translationVotes as pageOwnerTv", (join) =>
+			.leftJoin("selectedSegmentTranslations as selected", (join) =>
 				join
-					.onRef("pageOwnerTv.translationId", "=", "st.id")
-					.onRef("pageOwnerTv.userId", "=", "p.userId")
-					.on("pageOwnerTv.isUpvote", "=", true),
+					.onRef("selected.translationId", "=", "st.id")
+					.onRef("selected.segmentId", "=", "st.segmentId")
+					.onRef("selected.locale", "=", "st.locale"),
 			)
 			.select([
 				"st.id",
@@ -77,16 +80,21 @@ export async function getSegmentTranslations(
 				"u.name as userName",
 				"u.handle as userHandle",
 				"tv.isUpvote as currentUserVoteIsUpvote",
-				"pageOwnerTv.isUpvote as ownerUpvote",
+				"selected.translationId as selectedTranslationId",
 			])
 			.where("st.segmentId", "=", segmentId)
 			.where("st.locale", "=", userLocale)
-			.orderBy("ownerUpvote", (ob) => ob.desc().nullsLast())
+			.orderBy("selected.translationId", (ob) => ob.desc().nullsLast())
 			.orderBy("st.point", "desc")
 			.orderBy("st.createdAt", "desc")
 			.execute();
 
-		const response = segmentTranslationSchema.array().parse(translations);
+		const response = segmentTranslationSchema.array().parse(
+			translations.map(({ selectedTranslationId, ...translation }) => ({
+				...translation,
+				isSelected: selectedTranslationId !== null,
+			})),
+		);
 		return Response.json(response);
 	} catch (error) {
 		console.error("Error fetching translations:", error);
@@ -212,6 +220,83 @@ export async function patchSegmentTranslationVote(request: Request) {
 	return {
 		response: Response.json({ success: true, data: result.data }),
 		pageId,
+	};
+}
+
+export async function putSelectedSegmentTranslation(request: Request) {
+	if (!isSameOriginRequest(request)) {
+		return {
+			response: Response.json({ error: "Forbidden" }, { status: 403 }),
+		};
+	}
+
+	const currentUser = await getCurrentUserFromHeaders(request.headers);
+	if (!currentUser || currentUser.handle !== TIPITAKA_SYSTEM_USER_HANDLE) {
+		return {
+			response: Response.json({ error: "Forbidden" }, { status: 403 }),
+		};
+	}
+
+	let formData: FormData;
+	try {
+		formData = await request.formData();
+	} catch {
+		return {
+			response: Response.json({ error: "Invalid form data" }, { status: 400 }),
+		};
+	}
+
+	const parsed = await parseFormData(selectSchema, formData);
+	if (!parsed.success) {
+		return {
+			response: Response.json(
+				{ error: "Invalid translation" },
+				{ status: 400 },
+			),
+		};
+	}
+
+	const translation = await db
+		.selectFrom("segmentTranslations")
+		.innerJoin("segments", "segments.id", "segmentTranslations.segmentId")
+		.select([
+			"segmentTranslations.id",
+			"segmentTranslations.segmentId",
+			"segmentTranslations.locale",
+			"segments.tipitakaPageId as pageId",
+		])
+		.where("segmentTranslations.id", "=", parsed.data.translationId)
+		.executeTakeFirst();
+	if (!translation) {
+		return {
+			response: Response.json(
+				{ error: "Translation not found" },
+				{ status: 404 },
+			),
+		};
+	}
+
+	await db
+		.insertInto("selectedSegmentTranslations")
+		.values({
+			segmentId: translation.segmentId,
+			locale: translation.locale,
+			translationId: translation.id,
+			selectedByUserId: currentUser.id,
+			selectedAt: new Date(),
+		})
+		.onConflict((conflict) =>
+			conflict.columns(["segmentId", "locale"]).doUpdateSet({
+				translationId: translation.id,
+				selectedByUserId: currentUser.id,
+				selectedAt: new Date(),
+			}),
+		)
+		.execute();
+
+	return {
+		response: Response.json({ success: true }),
+		pageId: translation.pageId,
 	};
 }
 

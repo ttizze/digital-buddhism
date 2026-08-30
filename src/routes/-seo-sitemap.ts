@@ -1,8 +1,12 @@
 import { BASE_URL } from "@/app/_constants/base-url";
 import {
 	countPublicPages,
-	fetchPagesWithUserAndTranslationChunk,
+	fetchTipitakaPagesWithTranslationsChunk,
 } from "@/app/_db/sitemap-queries.server";
+import {
+	TIPITAKA_SOURCE_LOCALE,
+	TIPITAKA_SYSTEM_USER_HANDLE,
+} from "@/app/[locale]/_domain/tipitaka-page-visibility";
 
 const CHUNK = 1_000;
 
@@ -14,7 +18,7 @@ export async function getSitemapChunkCount() {
 }
 
 export async function generateSitemapEntries(id: number) {
-	const pages = await fetchPagesWithUserAndTranslationChunk({
+	const pages = await fetchTipitakaPagesWithTranslationsChunk({
 		limit: CHUNK,
 		offset: id * CHUNK,
 	});
@@ -22,7 +26,7 @@ export async function generateSitemapEntries(id: number) {
 	const supportedLocales = ["en", "ja", "zh", "ko", "es"] as const;
 	const defaultLocale = "en";
 
-	const staticPaths = ["/", "/search", "/about"];
+	const staticPaths = ["/", "/search"];
 	const staticRoutes = staticPaths.map((route) => ({
 		url: `${BASE_URL}/${defaultLocale}${route === "/" ? "" : route}`,
 		lastModified: new Date(),
@@ -39,15 +43,15 @@ export async function generateSitemapEntries(id: number) {
 	}));
 
 	const pageRoutes = pages.map((page) => ({
-		url: `${BASE_URL}/${page.sourceLocale}/${page.user.handle}/${page.slug}`,
-		lastModified: new Date(page.updatedAt),
+		url: `${BASE_URL}/${TIPITAKA_SOURCE_LOCALE}/${TIPITAKA_SYSTEM_USER_HANDLE}/${page.slug}`,
+		lastModified: page.updatedAt,
 		changeFrequency: "daily" as const,
 		priority: 0.7,
 		alternates: {
 			languages: Object.fromEntries(
-				page.translationJobs.map((job) => [
-					job.locale,
-					`${BASE_URL}/${job.locale}/${page.user.handle}/${page.slug}`,
+				[TIPITAKA_SOURCE_LOCALE, ...page.translationLocales].map((locale) => [
+					locale,
+					`${BASE_URL}/${locale}/${TIPITAKA_SYSTEM_USER_HANDLE}/${page.slug}`,
 				]),
 			),
 		},

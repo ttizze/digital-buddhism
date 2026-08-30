@@ -12,16 +12,13 @@ describe("page detail navigation queries", () => {
 		await resetDatabase();
 	});
 
-	it("子ページのタイトルにページオーナー推奨の翻訳を使う", async () => {
-		const pageOwner = await createUser({ handle: "owner" });
+	it("子ページのタイトルに明示的な採用訳を使う", async () => {
+		const curator = await createUser({ handle: "evame" });
 		const translator = await createUser({ handle: "translator" });
-		const root = await createPage({
-			userId: pageOwner.id,
-			slug: "root",
-		});
+		const root = await createPage({ slug: "tipitaka", kind: "ROOT" });
 		const child = await createPage({
-			userId: pageOwner.id,
 			slug: "child",
+			kind: "TEXT",
 			parentId: root.id,
 		});
 		const titleSegment = await createSegment({
@@ -29,9 +26,7 @@ describe("page detail navigation queries", () => {
 			number: 0,
 			text: "Child",
 			textAndOccurrenceHash: "child-title",
-			segmentTypeKey: "PRIMARY",
 		});
-
 		await db
 			.insertInto("segmentTranslations")
 			.values({
@@ -42,28 +37,59 @@ describe("page detail navigation queries", () => {
 				userId: translator.id,
 			})
 			.execute();
-		const ownerTranslation = await db
+		const selected = await db
 			.insertInto("segmentTranslations")
 			.values({
 				segmentId: titleSegment.id,
 				locale: "ja",
-				text: "オーナー推奨翻訳",
+				text: "採用訳",
 				point: 1,
 				userId: translator.id,
 			})
-			.returning("id")
+			.returningAll()
 			.executeTakeFirstOrThrow();
 		await db
-			.insertInto("translationVotes")
+			.insertInto("selectedSegmentTranslations")
 			.values({
-				translationId: ownerTranslation.id,
-				userId: pageOwner.id,
-				isUpvote: true,
+				segmentId: selected.segmentId,
+				locale: selected.locale,
+				translationId: selected.id,
+				selectedByUserId: curator.id,
 			})
 			.execute();
 
-		const tree = await queryChildPagesTree(root.id, "ja", false);
+		const tree = await queryChildPagesTree(root.id, "ja");
+		expect(tree[0]?.titleTranslationText).toBe("採用訳");
+	});
 
-		expect(tree[0]?.titleTranslationText).toBe("オーナー推奨翻訳");
+	it("表示ページを含み非表示ページを除外する", async () => {
+		const root = await createPage({ slug: "tipitaka", kind: "ROOT" });
+		const visiblePage = await createPage({
+			slug: "visible",
+			parentId: root.id,
+			isVisible: true,
+		});
+		const hiddenPage = await createPage({
+			slug: "hidden",
+			parentId: root.id,
+			isVisible: false,
+		});
+		await Promise.all([
+			createSegment({
+				pageId: visiblePage.id,
+				number: 0,
+				text: "Visible",
+				textAndOccurrenceHash: "visible-title",
+			}),
+			createSegment({
+				pageId: hiddenPage.id,
+				number: 0,
+				text: "Hidden",
+				textAndOccurrenceHash: "hidden-title",
+			}),
+		]);
+
+		const tree = await queryChildPagesTree(root.id, "ja");
+		expect(tree.map((page) => page.slug)).toEqual(["visible"]);
 	});
 });

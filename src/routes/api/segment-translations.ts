@@ -4,6 +4,7 @@ import {
 	getSegmentTranslations,
 	patchSegmentTranslationVote,
 	postSegmentTranslation,
+	putSelectedSegmentTranslation,
 } from "@/app/api/segment-translations/handler";
 
 export const Route = createFileRoute("/api/segment-translations")({
@@ -16,6 +17,10 @@ export const Route = createFileRoute("/api/segment-translations")({
 			},
 			PATCH: async ({ request }) => {
 				const result = await patchSegmentTranslationVote(request);
+				return result.response;
+			},
+			PUT: async ({ request }) => {
+				const result = await putSelectedSegmentTranslation(request);
 				return result.response;
 			},
 			DELETE: async ({ request }) => {

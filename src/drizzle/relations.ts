@@ -6,16 +6,15 @@ import {
 	importRuns,
 	notifications,
 	pageLocaleTranslationProofs,
-	pages,
-	personalAccessTokens,
 	segmentAnnotationLinks,
 	segmentMetadata,
 	segmentMetadataTypes,
 	segments,
 	segmentTranslations,
 	segmentTypes,
+	selectedSegmentTranslations,
 	sessions,
-	translationContexts,
+	tipitakaPages,
 	translationJobs,
 	translationVotes,
 	userSettings,
@@ -31,20 +30,18 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 
 export const usersRelations = relations(users, ({ many }) => ({
 	accounts: many(accounts),
-	personalAccessTokens: many(personalAccessTokens),
 	geminiApiKeys: many(geminiApiKeys),
-	notifications_actorId: many(notifications, {
+	notificationsAsActor: many(notifications, {
 		relationName: "notifications_actorId_users_id",
 	}),
-	notifications_userId: many(notifications, {
+	notificationsAsRecipient: many(notifications, {
 		relationName: "notifications_userId_users_id",
 	}),
-	translationJobs: many(translationJobs),
 	segmentTranslations: many(segmentTranslations),
+	selectedSegmentTranslations: many(selectedSegmentTranslations),
 	sessions: many(sessions),
-	translationContexts: many(translationContexts),
+	translationJobs: many(translationJobs),
 	translationVotes: many(translationVotes),
-	pages: many(pages),
 	userSettings: many(userSettings),
 }));
 
@@ -54,16 +51,6 @@ export const importFilesRelations = relations(importFiles, ({ one }) => ({
 		references: [importRuns.id],
 	}),
 }));
-
-export const personalAccessTokensRelations = relations(
-	personalAccessTokens,
-	({ one }) => ({
-		user: one(users, {
-			fields: [personalAccessTokens.userId],
-			references: [users.id],
-		}),
-	}),
-);
 
 export const importRunsRelations = relations(importRuns, ({ many }) => ({
 	importFiles: many(importFiles),
@@ -76,45 +63,43 @@ export const geminiApiKeysRelations = relations(geminiApiKeys, ({ one }) => ({
 	}),
 }));
 
-export const pagesRelations = relations(pages, ({ one, many }) => ({
-	translationJobs: many(translationJobs),
-	pageLocaleTranslationProofs: many(pageLocaleTranslationProofs),
-	segments: many(segments),
-	page: one(pages, {
-		fields: [pages.parentId],
-		references: [pages.id],
-		relationName: "pages_parentId_pages_id",
+export const tipitakaPagesRelations = relations(
+	tipitakaPages,
+	({ one, many }) => ({
+		parent: one(tipitakaPages, {
+			fields: [tipitakaPages.parentId],
+			references: [tipitakaPages.id],
+			relationName: "tipitaka_pages_parent_id",
+		}),
+		children: many(tipitakaPages, {
+			relationName: "tipitaka_pages_parent_id",
+		}),
+		segments: many(segments),
+		translationJobs: many(translationJobs),
+		translationProofs: many(pageLocaleTranslationProofs),
 	}),
-	pages: many(pages, {
-		relationName: "pages_parentId_pages_id",
-	}),
-	user: one(users, {
-		fields: [pages.userId],
-		references: [users.id],
-	}),
-}));
+);
 
 export const notificationsRelations = relations(notifications, ({ one }) => ({
-	user_actorId: one(users, {
+	actor: one(users, {
 		fields: [notifications.actorId],
 		references: [users.id],
 		relationName: "notifications_actorId_users_id",
 	}),
-	segmentTranslation: one(segmentTranslations, {
-		fields: [notifications.segmentTranslationId],
-		references: [segmentTranslations.id],
-	}),
-	user_userId: one(users, {
+	recipient: one(users, {
 		fields: [notifications.userId],
 		references: [users.id],
 		relationName: "notifications_userId_users_id",
+	}),
+	segmentTranslation: one(segmentTranslations, {
+		fields: [notifications.segmentTranslationId],
+		references: [segmentTranslations.id],
 	}),
 }));
 
 export const segmentTranslationsRelations = relations(
 	segmentTranslations,
 	({ one, many }) => ({
-		notifications: many(notifications),
 		segment: one(segments, {
 			fields: [segmentTranslations.segmentId],
 			references: [segments.id],
@@ -123,16 +108,42 @@ export const segmentTranslationsRelations = relations(
 			fields: [segmentTranslations.userId],
 			references: [users.id],
 		}),
+		notifications: many(notifications),
 		translationVotes: many(translationVotes),
+	}),
+);
+export const segmentTypesRelations = relations(segmentTypes, ({ many }) => ({
+	segments: many(segments),
+}));
+
+export const selectedSegmentTranslationsRelations = relations(
+	selectedSegmentTranslations,
+	({ one }) => ({
+		translation: one(segmentTranslations, {
+			fields: [
+				selectedSegmentTranslations.translationId,
+				selectedSegmentTranslations.segmentId,
+				selectedSegmentTranslations.locale,
+			],
+			references: [
+				segmentTranslations.id,
+				segmentTranslations.segmentId,
+				segmentTranslations.locale,
+			],
+		}),
+		selectedBy: one(users, {
+			fields: [selectedSegmentTranslations.selectedByUserId],
+			references: [users.id],
+		}),
 	}),
 );
 
 export const translationJobsRelations = relations(
 	translationJobs,
 	({ one }) => ({
-		page: one(pages, {
+		page: one(tipitakaPages, {
 			fields: [translationJobs.pageId],
-			references: [pages.id],
+			references: [tipitakaPages.id],
 		}),
 		user: one(users, {
 			fields: [translationJobs.userId],
@@ -142,20 +153,20 @@ export const translationJobsRelations = relations(
 );
 
 export const segmentsRelations = relations(segments, ({ one, many }) => ({
-	segmentTranslations: many(segmentTranslations),
-	page: one(pages, {
+	page: one(tipitakaPages, {
 		fields: [segments.pageId],
-		references: [pages.id],
+		references: [tipitakaPages.id],
 	}),
 	segmentType: one(segmentTypes, {
 		fields: [segments.segmentTypeId],
 		references: [segmentTypes.id],
 	}),
+	segmentTranslations: many(segmentTranslations),
 	segmentMetadata: many(segmentMetadata),
-	segmentAnnotationLinks_annotationSegmentId: many(segmentAnnotationLinks, {
+	annotationLinks: many(segmentAnnotationLinks, {
 		relationName: "segmentAnnotationLinks_annotationSegmentId_segments_id",
 	}),
-	segmentAnnotationLinks_mainSegmentId: many(segmentAnnotationLinks, {
+	mainLinks: many(segmentAnnotationLinks, {
 		relationName: "segmentAnnotationLinks_mainSegmentId_segments_id",
 	}),
 }));
@@ -170,19 +181,9 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 export const pageLocaleTranslationProofsRelations = relations(
 	pageLocaleTranslationProofs,
 	({ one }) => ({
-		page: one(pages, {
+		page: one(tipitakaPages, {
 			fields: [pageLocaleTranslationProofs.pageId],
-			references: [pages.id],
-		}),
-	}),
-);
-
-export const translationContextsRelations = relations(
-	translationContexts,
-	({ one }) => ({
-		user: one(users, {
-			fields: [translationContexts.userId],
-			references: [users.id],
+			references: [tipitakaPages.id],
 		}),
 	}),
 );
@@ -200,10 +201,6 @@ export const translationVotesRelations = relations(
 		}),
 	}),
 );
-
-export const segmentTypesRelations = relations(segmentTypes, ({ many }) => ({
-	segments: many(segments),
-}));
 
 export const segmentMetadataRelations = relations(
 	segmentMetadata,
@@ -236,12 +233,12 @@ export const userSettingsRelations = relations(userSettings, ({ one }) => ({
 export const segmentAnnotationLinksRelations = relations(
 	segmentAnnotationLinks,
 	({ one }) => ({
-		segment_annotationSegmentId: one(segments, {
+		annotationSegment: one(segments, {
 			fields: [segmentAnnotationLinks.annotationSegmentId],
 			references: [segments.id],
 			relationName: "segmentAnnotationLinks_annotationSegmentId_segments_id",
 		}),
-		segment_mainSegmentId: one(segments, {
+		mainSegment: one(segments, {
 			fields: [segmentAnnotationLinks.mainSegmentId],
 			references: [segments.id],
 			relationName: "segmentAnnotationLinks_mainSegmentId_segments_id",

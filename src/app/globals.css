@@ -98,11 +98,6 @@
 		contain: layout paint style;
 	}
 
-	.about-section .seg-cv {
-		content-visibility: visible;
-		contain-intrinsic-size: auto;
-		contain: none;
-	}
 
 	.tipitaka-tree .seg-cv {
 		content-visibility: visible;

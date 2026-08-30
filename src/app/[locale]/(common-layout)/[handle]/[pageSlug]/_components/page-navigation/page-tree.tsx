@@ -1,4 +1,5 @@
 import { ListTree } from "lucide-react";
+import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
 import type { PageForTree } from "@/app/[locale]/types";
 import type { PageTreeNode } from "../../_db/queries";
@@ -18,7 +19,7 @@ export function PageLink({
 	return (
 		<a
 			className="hover:underline"
-			href={`/${locale}/${node.userHandle}/${node.slug}`}
+			href={`/${locale}/${TIPITAKA_SYSTEM_USER_HANDLE}/${node.slug}`}
 		>
 			<SegmentElement
 				className="line-clamp-1 break-all overflow-wrap-anywhere"

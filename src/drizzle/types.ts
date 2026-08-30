@@ -18,11 +18,13 @@ export type TransactionClient = Parameters<
 export type User = InferSelectModel<typeof schema.users>;
 export type UserInsert = InferInsertModel<typeof schema.users>;
 
-export type Page = InferSelectModel<typeof schema.pages>;
-export type PageInsert = InferInsertModel<typeof schema.pages>;
+export type TipitakaPage = InferSelectModel<typeof schema.tipitakaPages>;
+export type TipitakaPageInsert = InferInsertModel<typeof schema.tipitakaPages>;
 
 export type Segment = InferSelectModel<typeof schema.segments>;
 export type SegmentInsert = InferInsertModel<typeof schema.segments>;
+export type SegmentType = InferSelectModel<typeof schema.segmentTypes>;
+export type SegmentTypeInsert = InferInsertModel<typeof schema.segmentTypes>;
 
 export type SegmentTranslation = InferSelectModel<
 	typeof schema.segmentTranslations
@@ -63,8 +65,12 @@ export type UserSettingInsert = InferInsertModel<typeof schema.userSettings>;
 export type GeminiApiKey = InferSelectModel<typeof schema.geminiApiKeys>;
 export type GeminiApiKeyInsert = InferInsertModel<typeof schema.geminiApiKeys>;
 
-export type SegmentType = InferSelectModel<typeof schema.segmentTypes>;
-export type SegmentTypeInsert = InferInsertModel<typeof schema.segmentTypes>;
+export type SelectedSegmentTranslation = InferSelectModel<
+	typeof schema.selectedSegmentTranslations
+>;
+export type SelectedSegmentTranslationInsert = InferInsertModel<
+	typeof schema.selectedSegmentTranslations
+>;
 
 export type SegmentMetadata = InferSelectModel<typeof schema.segmentMetadata>;
 export type SegmentMetadataInsert = InferInsertModel<
@@ -95,7 +101,8 @@ export type Verification = InferSelectModel<typeof schema.verifications>;
 export type VerificationInsert = InferInsertModel<typeof schema.verifications>;
 
 // Enum型のエクスポート
-export type PageStatus = (typeof schema.pageStatus.enumValues)[number];
+export type TipitakaPageKind =
+	(typeof schema.tipitakaPageKind.enumValues)[number];
 export type SegmentTypeKey = (typeof schema.segmentTypeKey.enumValues)[number];
 export type TranslationProofStatus =
 	(typeof schema.translationProofStatus.enumValues)[number];

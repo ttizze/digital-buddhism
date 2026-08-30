@@ -13,7 +13,7 @@ export async function deleteAnnotationLinksByPageId(
 			tx
 				.selectFrom("segments")
 				.select("id")
-				.where("contentId", "=", annotationPageId),
+				.where("tipitakaPageId", "=", annotationPageId),
 		)
 		.execute();
 }

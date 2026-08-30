@@ -16,10 +16,8 @@ export async function fetchPrimarySegmentsWithParagraphNumbers(
 	// セグメントを取得
 	const segmentRows = await tx
 		.selectFrom("segments")
-		.innerJoin("segmentTypes", "segmentTypes.id", "segments.segmentTypeId")
 		.select(["segments.id", "segments.number"])
-		.where("segments.contentId", "=", anchorPageId)
-		.where("segmentTypes.key", "=", "PRIMARY")
+		.where("segments.tipitakaPageId", "=", anchorPageId)
 		.orderBy("segments.number")
 		.execute();
 
@@ -83,11 +81,9 @@ export async function fetchLastSegmentBeforeFirstParagraphId(
 
 	const firstParagraph = await tx
 		.selectFrom("segments")
-		.innerJoin("segmentTypes", "segmentTypes.id", "segments.segmentTypeId")
 		.innerJoin("segmentMetadata", "segmentMetadata.segmentId", "segments.id")
 		.select(["segments.id", "segments.number"])
-		.where("segments.contentId", "=", anchorPageId)
-		.where("segmentTypes.key", "=", "PRIMARY")
+		.where("segments.tipitakaPageId", "=", anchorPageId)
 		.where("segmentMetadata.metadataTypeId", "=", paragraphNumberType.id)
 		.orderBy("segments.number")
 		.executeTakeFirst();
@@ -98,10 +94,8 @@ export async function fetchLastSegmentBeforeFirstParagraphId(
 
 	const row = await tx
 		.selectFrom("segments")
-		.innerJoin("segmentTypes", "segmentTypes.id", "segments.segmentTypeId")
 		.select("segments.id")
-		.where("segments.contentId", "=", anchorPageId)
-		.where("segmentTypes.key", "=", "PRIMARY")
+		.where("segments.tipitakaPageId", "=", anchorPageId)
 		.where("segments.number", "<", firstParagraph.number)
 		.orderBy("segments.number", "desc")
 		.executeTakeFirst();

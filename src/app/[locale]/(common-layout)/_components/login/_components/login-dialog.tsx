@@ -46,11 +46,8 @@ export function LoginDialog({
 			<DialogContent className="max-w-md ">
 				<DialogTitle className="text-center font-bold text-2xl">
 					Login to Evame
-					<DialogDescription className="mt-2 flex flex-col items-center">
-						Evame is multilingual blog platform.
-						<a className="underline" href={`/${locale}/about`}>
-							Learn more
-						</a>
+					<DialogDescription className="mt-2">
+						Read and translate the Tipitaka.
 					</DialogDescription>
 				</DialogTitle>
 				<GoogleForm redirectTo={redirectTo} />

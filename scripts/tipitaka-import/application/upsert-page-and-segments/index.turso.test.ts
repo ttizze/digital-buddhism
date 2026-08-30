@@ -25,31 +25,36 @@ let upsertPageAndSegments: typeof import("./index")["upsertPageAndSegments"];
 
 async function createImportTables() {
 	await setupClient.execute(`
-		CREATE TABLE pages (
+		CREATE TABLE tipitaka_pages (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			slug TEXT NOT NULL,
-			user_id TEXT NOT NULL,
-			mdast_json TEXT NOT NULL,
-			source_locale TEXT NOT NULL,
-			status TEXT NOT NULL,
 			parent_id INTEGER,
-			"order" INTEGER NOT NULL
+			slug TEXT NOT NULL UNIQUE,
+			kind TEXT NOT NULL,
+			position INTEGER NOT NULL,
+			mdast_json TEXT NOT NULL,
+			is_visible INTEGER NOT NULL
 		)
 	`);
 	await setupClient.execute(`
 		CREATE TABLE segment_types (
-			id INTEGER PRIMARY KEY,
-			key TEXT NOT NULL
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			key TEXT NOT NULL,
+			label TEXT NOT NULL
 		)
 	`);
+	await setupClient.execute(
+		"INSERT INTO segment_types (id, key, label) VALUES (1, 'PRIMARY', 'Primary')",
+	);
 	await setupClient.execute(`
 		CREATE TABLE segments (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			content_id INTEGER NOT NULL,
+			tipitaka_page_id INTEGER NOT NULL,
 			number INTEGER NOT NULL,
 			text TEXT NOT NULL,
 			text_and_occurrence_hash TEXT NOT NULL,
-			segment_type_id INTEGER NOT NULL
+			segment_type_id INTEGER NOT NULL,
+			UNIQUE (tipitaka_page_id, number),
+			UNIQUE (tipitaka_page_id, text_and_occurrence_hash)
 		)
 	`);
 	await setupClient.execute(`
@@ -89,11 +94,8 @@ describe("upsertPageAndSegments の libSQL トランザクション", () => {
 		await setupClient.execute("DROP TABLE IF EXISTS segment_metadata_types");
 		await setupClient.execute("DROP TABLE IF EXISTS segments");
 		await setupClient.execute("DROP TABLE IF EXISTS segment_types");
-		await setupClient.execute("DROP TABLE IF EXISTS pages");
+		await setupClient.execute("DROP TABLE IF EXISTS tipitaka_pages");
 		await createImportTables();
-		await setupClient.execute(
-			"INSERT INTO segment_types (id, key) VALUES (1, 'PRIMARY')",
-		);
 	});
 
 	afterEach(async () => {
@@ -105,33 +107,40 @@ describe("upsertPageAndSegments の libSQL トランザクション", () => {
 
 	const params = {
 		pageSlug: "tipitaka-page",
-		userId: "user-1",
 		mdastJson: JSON.stringify({ type: "root", children: [] }) as JsonValue,
-		sourceLocale: "ja",
+		kind: "TEXT" as const,
+		parentId: null,
+		position: 0,
+		isVisible: true,
 		segments: [],
 		segmentTypeId: null,
-		parentId: null,
-		order: 0,
 		anchorPageId: null,
-		status: "DRAFT" as const,
 	};
 
-	it("pagesを作成し後続処理までcommitする", async () => {
+	it("Tipitakaページを作成し後続処理までcommitする", async () => {
 		const result = await upsertPageAndSegments(params);
 
 		expect(result.slug).toBe("tipitaka-page");
-		const pages = await setupClient.execute("SELECT slug, status FROM pages");
-		expect(pages.rows).toEqual([{ slug: "tipitaka-page", status: "DRAFT" }]);
+		const pages = await setupClient.execute(
+			"SELECT slug, kind, is_visible FROM tipitaka_pages",
+		);
+		expect(pages.rows).toEqual([
+			{ slug: "tipitaka-page", kind: "TEXT", is_visible: 1 },
+		]);
 	});
 
-	it("segments同期の開始前に失敗したらpagesをrollbackする", async () => {
-		await setupClient.execute("DELETE FROM segment_types");
+	it("セグメント同期が失敗したらTipitakaページをrollbackする", async () => {
+		await expect(
+			upsertPageAndSegments({
+				...params,
+				segments: [
+					{ number: 0, text: "A", textAndOccurrenceHash: "hash-a" },
+					{ number: 0, text: "B", textAndOccurrenceHash: "hash-b" },
+				],
+			}),
+		).rejects.toThrow();
 
-		await expect(upsertPageAndSegments(params)).rejects.toThrow(
-			"Primary segment type not found",
-		);
-
-		const pages = await setupClient.execute("SELECT id FROM pages");
+		const pages = await setupClient.execute("SELECT id FROM tipitaka_pages");
 		expect(pages.rows).toEqual([]);
 	});
 });

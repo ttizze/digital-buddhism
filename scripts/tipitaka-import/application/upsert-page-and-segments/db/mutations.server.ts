@@ -1,5 +1,5 @@
 import type { TransactionClient } from "@/app/[locale]/_service/sync-segments";
-import type { JsonValue, PageStatus } from "@/drizzle/types";
+import type { JsonValue, TipitakaPageKind } from "@/drizzle/types";
 
 /**
  * Kysely版に移行済み。
@@ -9,46 +9,32 @@ export async function upsertPage(
 	tx: TransactionClient,
 	p: {
 		pageSlug: string;
-		userId: string;
 		mdastJson: JsonValue;
-		sourceLocale: string;
+		kind: TipitakaPageKind;
 		parentId: number | null;
-		order: number | null;
-		status: PageStatus | null;
+		position: number;
+		isVisible: boolean;
 	},
 ) {
 	// 既存ページのidを取得（1回のクエリ）
 	const existing = await tx
-		.selectFrom("pages")
+		.selectFrom("tipitakaPages")
 		.select("id")
 		.where("slug", "=", p.pageSlug)
 		.executeTakeFirst();
 
 	if (existing) {
 		// 既存の場合はUPDATEで更新（PRIMARY KEY制約違反を避けるため）
-		const updateData: {
-			mdastJson: JsonValue;
-			sourceLocale: string;
-			parentId?: number | null;
-			order?: number;
-			status?: PageStatus;
-		} = {
+		const updateData = {
 			mdastJson: p.mdastJson,
-			sourceLocale: p.sourceLocale,
+			kind: p.kind,
+			parentId: p.parentId,
+			position: p.position,
+			isVisible: p.isVisible,
 		};
 
-		if (p.parentId !== null) {
-			updateData.parentId = p.parentId;
-		}
-		if (p.order !== null) {
-			updateData.order = p.order;
-		}
-		if (p.status !== null) {
-			updateData.status = p.status;
-		}
-
 		const updated = await tx
-			.updateTable("pages")
+			.updateTable("tipitakaPages")
 			.set(updateData)
 			.where("slug", "=", p.pageSlug)
 			.returningAll()
@@ -62,15 +48,14 @@ export async function upsertPage(
 	}
 
 	const page = await tx
-		.insertInto("pages")
+		.insertInto("tipitakaPages")
 		.values({
 			slug: p.pageSlug,
-			userId: p.userId,
 			mdastJson: p.mdastJson,
-			sourceLocale: p.sourceLocale,
+			kind: p.kind,
 			parentId: p.parentId,
-			order: p.order ?? 0,
-			status: p.status ?? "DRAFT",
+			position: p.position,
+			isVisible: p.isVisible,
 		})
 		.returningAll()
 		.executeTakeFirstOrThrow();

@@ -12,51 +12,31 @@ describe("fetchTipitakaPageTree", () => {
 		await resetDatabase();
 	});
 
-	it("公開中のTipitaka子孫だけを順序どおりに取得し、ページオーナーが選んだタイトル翻訳を返す", async () => {
-		const owner = await createUser({ handle: "evame" });
+	it("表示中の子孫だけをposition順に取得し採用済みタイトル訳を返す", async () => {
+		const curator = await createUser({ handle: "evame" });
 		const translator = await createUser({ handle: "translator" });
-		const root = await createPage({
-			userId: owner.id,
-			slug: "tipitaka",
-			status: "ARCHIVE",
-			sourceLocale: "pi",
-			publishedAt: new Date("2026-01-01T00:00:00.000Z"),
-		});
+		const root = await createPage({ slug: "tipitaka", kind: "ROOT" });
 		const second = await createPage({
-			userId: owner.id,
 			slug: "second",
 			parentId: root.id,
-			sourceLocale: "pi",
+			position: 2,
 		});
 		const first = await createPage({
-			userId: owner.id,
 			slug: "first",
 			parentId: root.id,
-			sourceLocale: "pi",
+			position: 1,
 		});
 		const hiddenParent = await createPage({
-			userId: owner.id,
 			slug: "hidden-parent",
+			kind: "CATEGORY",
 			parentId: root.id,
-			sourceLocale: "pi",
-			status: "DRAFT",
+			isVisible: false,
 		});
 		await createPage({
-			userId: owner.id,
 			slug: "hidden-child",
 			parentId: hiddenParent.id,
-			sourceLocale: "pi",
+			isVisible: true,
 		});
-		await db
-			.updateTable("pages")
-			.set({ order: 2 })
-			.where("id", "=", second.id)
-			.execute();
-		await db
-			.updateTable("pages")
-			.set({ order: 1 })
-			.where("id", "=", first.id)
-			.execute();
 
 		const firstTitle = await createSegment({
 			pageId: first.id,
@@ -72,7 +52,7 @@ describe("fetchTipitakaPageTree", () => {
 			textAndOccurrenceHash: "second-title",
 			segmentTypeKey: "PRIMARY",
 		});
-		const ownerTranslation = await db
+		const selected = await db
 			.insertInto("segmentTranslations")
 			.values({
 				segmentId: firstTitle.id,
@@ -81,7 +61,7 @@ describe("fetchTipitakaPageTree", () => {
 				point: 0,
 				userId: translator.id,
 			})
-			.returning("id")
+			.returningAll()
 			.executeTakeFirstOrThrow();
 		await db
 			.insertInto("segmentTranslations")
@@ -94,16 +74,16 @@ describe("fetchTipitakaPageTree", () => {
 			})
 			.execute();
 		await db
-			.insertInto("translationVotes")
+			.insertInto("selectedSegmentTranslations")
 			.values({
-				translationId: ownerTranslation.id,
-				userId: owner.id,
-				isUpvote: true,
+				segmentId: selected.segmentId,
+				locale: selected.locale,
+				translationId: selected.id,
+				selectedByUserId: curator.id,
 			})
 			.execute();
 
 		const tree = await fetchTipitakaPageTree("ja");
-
 		expect(tree.map((page) => page.slug)).toEqual(["first", "second"]);
 		expect(tree[0]?.titleTranslationText).toBe("第一");
 		expect(tree.some((page) => page.slug === "hidden-parent")).toBe(false);

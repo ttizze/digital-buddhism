@@ -32,14 +32,11 @@ describe("loadPageContentData", () => {
 			.mockRejectedValue(new Error("unexpected external request"));
 		const pageDetail = {
 			id: 1,
-			isTipitakaPage: false,
-			isPublishedTipitakaArchive: false,
 			slug: "article",
 			title: "Article",
-			status: "PUBLIC",
-			sourceLocale: "en",
+			kind: "TEXT",
 			parentId: null,
-			order: 0,
+			position: 0,
 			mdastJson: {
 				type: "root",
 				children: [
@@ -58,10 +55,6 @@ describe("loadPageContentData", () => {
 			segments: [],
 			createdAt: new Date("2026-01-01T00:00:00.000Z"),
 			updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-			userId: "user-1",
-			userName: "Author",
-			userHandle: "author",
-			userImage: "",
 		} satisfies PageDetail;
 
 		try {

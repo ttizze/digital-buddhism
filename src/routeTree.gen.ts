@@ -27,12 +27,8 @@ import { Route as ApiTranslationJobsRouteImport } from './routes/api/translation
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as LocaleCommonIndexRouteImport } from './routes/$locale._common.index'
 import { Route as LocaleCommonHandleRouteImport } from './routes/$locale._common.$handle'
-import { Route as LocaleCommonAboutRouteImport } from './routes/$locale._common.about'
 import { Route as LocaleCommonSearchRouteImport } from './routes/$locale._common.search'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as ApiSyncCliLoginRouteImport } from './routes/api/sync/cli-login'
-import { Route as ApiSyncPullRouteImport } from './routes/api/sync/pull'
-import { Route as ApiSyncPushRouteImport } from './routes/api/sync/push'
 import { Route as ApiTranslateChunkRouteImport } from './routes/api/translate/chunk'
 import { Route as SitemapSitemapChar123idChar125DotxmlRouteImport } from './routes/sitemap/sitemap/{$id}[.]xml'
 import { Route as LocaleCommonHandleEditRouteImport } from './routes/$locale._common.$handle.edit'
@@ -128,11 +124,6 @@ const LocaleCommonHandleRoute = LocaleCommonHandleRouteImport.update({
   path: '/$handle',
   getParentRoute: () => LocaleCommonRoute,
 } as any)
-const LocaleCommonAboutRoute = LocaleCommonAboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => LocaleCommonRoute,
-} as any)
 const LocaleCommonSearchRoute = LocaleCommonSearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -141,21 +132,6 @@ const LocaleCommonSearchRoute = LocaleCommonSearchRouteImport.update({
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiSyncCliLoginRoute = ApiSyncCliLoginRouteImport.update({
-  id: '/api/sync/cli-login',
-  path: '/api/sync/cli-login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiSyncPullRoute = ApiSyncPullRouteImport.update({
-  id: '/api/sync/pull',
-  path: '/api/sync/pull',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiSyncPushRoute = ApiSyncPushRouteImport.update({
-  id: '/api/sync/push',
-  path: '/api/sync/push',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTranslateChunkRoute = ApiTranslateChunkRouteImport.update({
@@ -203,12 +179,8 @@ export interface FileRoutesByFullPath {
   '/api/translation-jobs': typeof ApiTranslationJobsRoute
   '/auth/login': typeof AuthLoginRoute
   '/$locale/$handle': typeof LocaleCommonHandleRouteWithChildren
-  '/$locale/about': typeof LocaleCommonAboutRoute
   '/$locale/search': typeof LocaleCommonSearchRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/sync/cli-login': typeof ApiSyncCliLoginRoute
-  '/api/sync/pull': typeof ApiSyncPullRoute
-  '/api/sync/push': typeof ApiSyncPushRoute
   '/api/translate/chunk': typeof ApiTranslateChunkRoute
   '/sitemap/sitemap/{$id}.xml': typeof SitemapSitemapChar123idChar125DotxmlRoute
   '/$locale/': typeof LocaleCommonIndexRoute
@@ -233,12 +205,8 @@ export interface FileRoutesByTo {
   '/api/translation-jobs': typeof ApiTranslationJobsRoute
   '/auth/login': typeof AuthLoginRoute
   '/$locale/$handle': typeof LocaleCommonHandleRouteWithChildren
-  '/$locale/about': typeof LocaleCommonAboutRoute
   '/$locale/search': typeof LocaleCommonSearchRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/sync/cli-login': typeof ApiSyncCliLoginRoute
-  '/api/sync/pull': typeof ApiSyncPullRoute
-  '/api/sync/push': typeof ApiSyncPushRoute
   '/api/translate/chunk': typeof ApiTranslateChunkRoute
   '/sitemap/sitemap/{$id}.xml': typeof SitemapSitemapChar123idChar125DotxmlRoute
   '/$locale/$handle/edit': typeof LocaleCommonHandleEditRoute
@@ -264,12 +232,8 @@ export interface FileRoutesById {
   '/api/translation-jobs': typeof ApiTranslationJobsRoute
   '/auth/login': typeof AuthLoginRoute
   '/$locale/_common/$handle': typeof LocaleCommonHandleRouteWithChildren
-  '/$locale/_common/about': typeof LocaleCommonAboutRoute
   '/$locale/_common/search': typeof LocaleCommonSearchRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/sync/cli-login': typeof ApiSyncCliLoginRoute
-  '/api/sync/pull': typeof ApiSyncPullRoute
-  '/api/sync/push': typeof ApiSyncPushRoute
   '/api/translate/chunk': typeof ApiTranslateChunkRoute
   '/sitemap/sitemap/{$id}.xml': typeof SitemapSitemapChar123idChar125DotxmlRoute
   '/$locale/_common/': typeof LocaleCommonIndexRoute
@@ -296,12 +260,8 @@ export interface FileRouteTypes {
     | '/api/translation-jobs'
     | '/auth/login'
     | '/$locale/$handle'
-    | '/$locale/about'
     | '/$locale/search'
     | '/api/auth/$'
-    | '/api/sync/cli-login'
-    | '/api/sync/pull'
-    | '/api/sync/push'
     | '/api/translate/chunk'
     | '/sitemap/sitemap/{$id}.xml'
     | '/$locale/'
@@ -326,12 +286,8 @@ export interface FileRouteTypes {
     | '/api/translation-jobs'
     | '/auth/login'
     | '/$locale/$handle'
-    | '/$locale/about'
     | '/$locale/search'
     | '/api/auth/$'
-    | '/api/sync/cli-login'
-    | '/api/sync/pull'
-    | '/api/sync/push'
     | '/api/translate/chunk'
     | '/sitemap/sitemap/{$id}.xml'
     | '/$locale/$handle/edit'
@@ -356,12 +312,8 @@ export interface FileRouteTypes {
     | '/api/translation-jobs'
     | '/auth/login'
     | '/$locale/_common/$handle'
-    | '/$locale/_common/about'
     | '/$locale/_common/search'
     | '/api/auth/$'
-    | '/api/sync/cli-login'
-    | '/api/sync/pull'
-    | '/api/sync/push'
     | '/api/translate/chunk'
     | '/sitemap/sitemap/{$id}.xml'
     | '/$locale/_common/'
@@ -384,9 +336,6 @@ export interface RootRouteChildren {
   ApiTranslationJobsRoute: typeof ApiTranslationJobsRoute
   AuthLoginRoute: typeof AuthLoginRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiSyncCliLoginRoute: typeof ApiSyncCliLoginRoute
-  ApiSyncPullRoute: typeof ApiSyncPullRoute
-  ApiSyncPushRoute: typeof ApiSyncPushRoute
   SitemapSitemapChar123idChar125DotxmlRoute: typeof SitemapSitemapChar123idChar125DotxmlRoute
 }
 
@@ -518,13 +467,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocaleCommonHandleRouteImport
       parentRoute: typeof LocaleCommonRoute
     }
-    '/$locale/_common/about': {
-      id: '/$locale/_common/about'
-      path: '/about'
-      fullPath: '/$locale/about'
-      preLoaderRoute: typeof LocaleCommonAboutRouteImport
-      parentRoute: typeof LocaleCommonRoute
-    }
     '/$locale/_common/search': {
       id: '/$locale/_common/search'
       path: '/search'
@@ -537,27 +479,6 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/sync/cli-login': {
-      id: '/api/sync/cli-login'
-      path: '/api/sync/cli-login'
-      fullPath: '/api/sync/cli-login'
-      preLoaderRoute: typeof ApiSyncCliLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/sync/pull': {
-      id: '/api/sync/pull'
-      path: '/api/sync/pull'
-      fullPath: '/api/sync/pull'
-      preLoaderRoute: typeof ApiSyncPullRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/sync/push': {
-      id: '/api/sync/push'
-      path: '/api/sync/push'
-      fullPath: '/api/sync/push'
-      preLoaderRoute: typeof ApiSyncPushRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/translate/chunk': {
@@ -611,7 +532,6 @@ const LocaleCommonHandleRouteWithChildren =
 
 interface LocaleCommonRouteChildren {
   LocaleCommonHandleRoute: typeof LocaleCommonHandleRouteWithChildren
-  LocaleCommonAboutRoute: typeof LocaleCommonAboutRoute
   LocaleCommonSearchRoute: typeof LocaleCommonSearchRoute
   LocaleCommonIndexRoute: typeof LocaleCommonIndexRoute
   LocaleCommonHandlePageSlugRoute: typeof LocaleCommonHandlePageSlugRoute
@@ -620,7 +540,6 @@ interface LocaleCommonRouteChildren {
 
 const LocaleCommonRouteChildren: LocaleCommonRouteChildren = {
   LocaleCommonHandleRoute: LocaleCommonHandleRouteWithChildren,
-  LocaleCommonAboutRoute: LocaleCommonAboutRoute,
   LocaleCommonSearchRoute: LocaleCommonSearchRoute,
   LocaleCommonIndexRoute: LocaleCommonIndexRoute,
   LocaleCommonHandlePageSlugRoute: LocaleCommonHandlePageSlugRoute,
@@ -674,9 +593,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTranslationJobsRoute: ApiTranslationJobsRoute,
   AuthLoginRoute: AuthLoginRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiSyncCliLoginRoute: ApiSyncCliLoginRoute,
-  ApiSyncPullRoute: ApiSyncPullRoute,
-  ApiSyncPushRoute: ApiSyncPushRoute,
   SitemapSitemapChar123idChar125DotxmlRoute:
     SitemapSitemapChar123idChar125DotxmlRoute,
 }

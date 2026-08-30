@@ -2,7 +2,7 @@ import { createServerLogger } from "@/app/_service/logger.server";
 import type { SegmentDraft } from "@/app/[locale]/_domain/remark-hash-and-segments";
 import { syncSegments } from "@/app/[locale]/_service/sync-segments";
 import { db } from "@/db";
-import type { JsonValue, PageStatus } from "@/drizzle/types";
+import type { JsonValue, TipitakaPageKind } from "@/drizzle/types";
 import { upsertPage } from "./db/mutations.server";
 import { syncSegmentMetadataAndAnnotationLinks } from "./sync-segment-metadata-and-annotation-links";
 /**
@@ -15,18 +15,16 @@ import { syncSegmentMetadataAndAnnotationLinks } from "./sync-segment-metadata-a
  */
 export async function upsertPageAndSegments(p: {
 	pageSlug: string;
-	userId: string;
 	mdastJson: JsonValue;
-	sourceLocale: string;
+	kind: TipitakaPageKind;
+	parentId: number | null;
+	position: number;
+	isVisible: boolean;
 	segments: SegmentDraft[];
 	segmentTypeId: number | null;
-	parentId: number | null;
-	order: number;
 	anchorPageId: number | null;
-	status: PageStatus;
 }) {
 	const logger = createServerLogger("upsert-page-and-segments", {
-		userId: p.userId,
 		pageSlug: p.pageSlug,
 	});
 
@@ -34,7 +32,7 @@ export async function upsertPageAndSegments(p: {
 		{
 			segmentCount: p.segments.length,
 			segmentTypeId: p.segmentTypeId,
-			status: p.status,
+			kind: p.kind,
 		},
 		"Starting transaction to upsert page and segments",
 	);
@@ -44,12 +42,11 @@ export async function upsertPageAndSegments(p: {
 			// db操作: ページをupsert
 			const page = await upsertPage(tx, {
 				pageSlug: p.pageSlug,
-				userId: p.userId,
 				mdastJson: p.mdastJson,
-				sourceLocale: p.sourceLocale,
+				kind: p.kind,
 				parentId: p.parentId,
-				order: p.order,
-				status: p.status,
+				position: p.position,
+				isVisible: p.isVisible,
 			});
 
 			// db操作: セグメントを同期

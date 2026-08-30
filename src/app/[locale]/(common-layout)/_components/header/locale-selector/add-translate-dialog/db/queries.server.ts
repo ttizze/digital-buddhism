@@ -18,10 +18,10 @@ export async function fetchAnnotationPageIdsForPage(
 			"segmentAnnotationLinks.annotationSegmentId",
 			"annotationSegment.id",
 		)
-		.select("annotationSegment.contentId as pageId")
+		.select("annotationSegment.tipitakaPageId as pageId")
 		.distinct()
-		.where("mainSegment.contentId", "=", pageId)
-		.where("annotationSegment.contentId", "!=", pageId)
+		.where("mainSegment.tipitakaPageId", "=", pageId)
+		.where("annotationSegment.tipitakaPageId", "!=", pageId)
 		.execute();
 
 	return result.map((row) => row.pageId);

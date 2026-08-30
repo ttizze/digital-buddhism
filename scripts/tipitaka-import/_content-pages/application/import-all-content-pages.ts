@@ -17,13 +17,11 @@ import { sortTipitakaFileMetasFromPrimary } from "../utils/file-metas/sort-tipit
  * @param tipitakaFileMetas - Tipitakaファイルのメタデータ配列
  * @param categoryPageLookup - カテゴリページのパス → ページIDのルックアップマップ
  * @param rootPageId - ルートページのID
- * @param userId - ページを作成するユーザーのID
  */
 export async function importAllContentPages(
 	tipitakaFileMetas: TipitakaFileMeta[],
 	categoryPageLookup: Map<string, number>,
 	rootPageId: number,
-	userId: string,
 ): Promise<void> {
 	// 本文から順に処理できるようにソート
 	const sortedFileMetas = sortTipitakaFileMetasFromPrimary(tipitakaFileMetas);
@@ -53,7 +51,6 @@ export async function importAllContentPages(
 				processTipitakaFile(fileMeta, {
 					categoryPageLookup,
 					rootPageId,
-					userId,
 					pageIdByFileKey,
 				}),
 			),
@@ -69,7 +66,6 @@ export async function importAllContentPages(
 interface ProcessFileParams {
 	categoryPageLookup: Map<string, number>;
 	rootPageId: number;
-	userId: string;
 	pageIdByFileKey: Map<string, number>;
 }
 
@@ -77,10 +73,9 @@ async function processTipitakaFile(
 	fileMeta: TipitakaFileMeta,
 	params: ProcessFileParams,
 ): Promise<void> {
-	const { categoryPageLookup, rootPageId, userId, pageIdByFileKey } = params;
+	const { categoryPageLookup, rootPageId, pageIdByFileKey } = params;
 
 	const logger = createServerLogger("import-content-page", {
-		userId,
 		fileKey: fileMeta.fileKey,
 		primaryOrCommentary: fileMeta.primaryOrCommentary,
 	});
@@ -88,7 +83,7 @@ async function processTipitakaFile(
 	const parentPath = fileMeta.dirSegments.slice(0, -1).join("/") || "";
 	const parentCategoryPageId = categoryPageLookup.get(parentPath) ?? rootPageId;
 	const lastSegment = fileMeta.dirSegments[fileMeta.dirSegments.length - 1];
-	const { order: pageOrder } = parseDirSegment(lastSegment);
+	const { order: pagePosition } = parseDirSegment(lastSegment);
 
 	const fileKeyLower = fileMeta.fileKey.toLowerCase();
 	const isMula = fileMeta.primaryOrCommentary?.toUpperCase() === "MULA";
@@ -123,7 +118,7 @@ async function processTipitakaFile(
 			isMula,
 			anchorPageId,
 			parentId: parentCategoryPageId,
-			order: pageOrder,
+			position: pagePosition,
 		},
 		"Creating content page",
 	);
@@ -131,8 +126,7 @@ async function processTipitakaFile(
 	const contentPageId = await createContentPage({
 		entry: fileMeta,
 		parentId: parentCategoryPageId,
-		userId,
-		order: pageOrder,
+		position: pagePosition,
 		anchorPageId,
 	});
 

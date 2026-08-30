@@ -6,8 +6,8 @@
 import type { ColumnType } from "kysely";
 import type {
 	JsonValue,
-	PageStatus,
 	SegmentTypeKey,
+	TipitakaPageKind,
 	TranslationProofStatus,
 	TranslationStatus,
 } from "../drizzle/types";
@@ -72,30 +72,6 @@ export interface PageLocaleTranslationProofs {
 	translationProofStatus: Generated<TranslationProofStatus>;
 }
 
-export interface Pages {
-	archivedAt: Date | null;
-	createdAt: Generated<Date>;
-	id: Generated<number>;
-	mdastJson: JsonValue;
-	order: Generated<number>;
-	parentId: number | null;
-	publishedAt: Date | null;
-	slug: string;
-	sourceLocale: Generated<string>;
-	status: Generated<PageStatus>;
-	updatedAt: Generated<Date>;
-	userId: string;
-}
-
-export interface PersonalAccessTokens {
-	createdAt: Generated<Date>;
-	id: Generated<number>;
-	keyHash: string;
-	lastUsedAt: Date | null;
-	name: Generated<string>;
-	userId: string;
-}
-
 export interface SegmentAnnotationLinks {
 	annotationSegmentId: number;
 	createdAt: Generated<Date>;
@@ -117,13 +93,13 @@ export interface SegmentMetadataTypes {
 }
 
 export interface Segments {
-	contentId: number;
 	createdAt: Generated<Date>;
 	id: Generated<number>;
 	number: number;
 	segmentTypeId: number;
 	text: string;
 	textAndOccurrenceHash: string;
+	tipitakaPageId: number;
 }
 
 export interface SegmentTranslations {
@@ -142,6 +118,14 @@ export interface SegmentTypes {
 	label: string;
 }
 
+export interface SelectedSegmentTranslations {
+	locale: string;
+	segmentId: number;
+	selectedAt: Generated<Date>;
+	selectedByUserId: string | null;
+	translationId: number;
+}
+
 export interface Sessions {
 	createdAt: Generated<Date>;
 	expiresAt: Date;
@@ -153,13 +137,16 @@ export interface Sessions {
 	userId: string;
 }
 
-export interface TranslationContexts {
-	context: string;
+export interface TipitakaPages {
 	createdAt: Generated<Date>;
 	id: Generated<number>;
-	name: string;
+	isVisible: Generated<boolean>;
+	kind: TipitakaPageKind;
+	mdastJson: JsonValue;
+	parentId: number | null;
+	position: Generated<number>;
+	slug: string;
 	updatedAt: Generated<Date>;
-	userId: string;
 }
 
 export interface TranslationJobs {
@@ -224,16 +211,15 @@ export interface DB {
 	importRuns: ImportRuns;
 	notifications: Notifications;
 	pageLocaleTranslationProofs: PageLocaleTranslationProofs;
-	pages: Pages;
-	personalAccessTokens: PersonalAccessTokens;
 	segmentAnnotationLinks: SegmentAnnotationLinks;
 	segmentMetadata: SegmentMetadata;
 	segmentMetadataTypes: SegmentMetadataTypes;
 	segments: Segments;
 	segmentTranslations: SegmentTranslations;
 	segmentTypes: SegmentTypes;
+	selectedSegmentTranslations: SelectedSegmentTranslations;
 	sessions: Sessions;
-	translationContexts: TranslationContexts;
+	tipitakaPages: TipitakaPages;
 	translationJobs: TranslationJobs;
 	translationVotes: TranslationVotes;
 	users: Users;

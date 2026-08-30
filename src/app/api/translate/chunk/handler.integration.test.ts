@@ -37,14 +37,12 @@ describe("POST /api/translate/chunk", () => {
 		// Arrange
 		const user = await createUser();
 		const page = await createPageWithSegments({
-			userId: user.id,
 			slug: "test-page",
 			segments: [
 				{
 					number: 0,
 					text: "Hello",
 					textAndOccurrenceHash: "hash0",
-					segmentTypeKey: "PRIMARY" as const,
 				},
 			],
 		});
@@ -53,7 +51,7 @@ describe("POST /api/translate/chunk", () => {
 		const segments = await db
 			.selectFrom("segments")
 			.selectAll()
-			.where("contentId", "=", page.id)
+			.where("tipitakaPageId", "=", page.id)
 			.orderBy("number", "asc")
 			.execute();
 
@@ -129,14 +127,12 @@ describe("POST /api/translate/chunk", () => {
 		// Arrange
 		const user = await createUser();
 		const page = await createPageWithSegments({
-			userId: user.id,
 			slug: "test-page",
 			segments: [
 				{
 					number: 0,
 					text: "Hello",
 					textAndOccurrenceHash: "hash0",
-					segmentTypeKey: "PRIMARY" as const,
 				},
 			],
 		});
@@ -145,7 +141,7 @@ describe("POST /api/translate/chunk", () => {
 		const segments = await db
 			.selectFrom("segments")
 			.selectAll()
-			.where("contentId", "=", page.id)
+			.where("tipitakaPageId", "=", page.id)
 			.orderBy("number", "asc")
 			.execute();
 
@@ -235,14 +231,12 @@ describe("POST /api/translate/chunk", () => {
 		// Arrange
 		const user = await createUser();
 		const page = await createPageWithSegments({
-			userId: user.id,
 			slug: "test-page",
 			segments: [
 				{
 					number: 0,
 					text: "Hello",
 					textAndOccurrenceHash: "hash0",
-					segmentTypeKey: "PRIMARY" as const,
 				},
 			],
 		});
@@ -251,7 +245,7 @@ describe("POST /api/translate/chunk", () => {
 		const segments = await db
 			.selectFrom("segments")
 			.selectAll()
-			.where("contentId", "=", page.id)
+			.where("tipitakaPageId", "=", page.id)
 			.orderBy("number", "asc")
 			.execute();
 

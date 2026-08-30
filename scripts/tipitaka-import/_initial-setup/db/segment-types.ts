@@ -1,23 +1,18 @@
 import { db } from "@/db";
 
-const SEED_DATA = [
+const SEGMENT_TYPES = [
+	{ key: "PRIMARY" as const, label: "Primary" },
 	{ key: "COMMENTARY" as const, label: "Atthakatha" },
 	{ key: "COMMENTARY" as const, label: "Tika" },
 ];
 
 export async function ensureSegmentTypes() {
-	// skipDuplicates相当の処理: 既存のkey+labelを確認してから挿入
-	for (const data of SEED_DATA) {
-		const existing = await db
-			.selectFrom("segmentTypes")
-			.selectAll()
-			.where("key", "=", data.key)
-			.where("label", "=", data.label)
-			.executeTakeFirst();
-		if (!existing) {
-			await db.insertInto("segmentTypes").values(data).execute();
-		}
+	for (const segmentType of SEGMENT_TYPES) {
+		await db
+			.insertInto("segmentTypes")
+			.values(segmentType)
+			.onConflict((conflict) => conflict.columns(["key", "label"]).doNothing())
+			.execute();
 	}
-
 	return db.selectFrom("segmentTypes").select(["key", "id", "label"]).execute();
 }

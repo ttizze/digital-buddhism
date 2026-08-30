@@ -1,28 +1,25 @@
 import fs from "node:fs/promises";
 import { markdownToMdastWithSegments } from "@/app/[locale]/_domain/markdown-to-mdast-with-segments";
-import type { PageStatus } from "@/drizzle/types";
 import { upsertPageAndSegments } from "../../../application/upsert-page-and-segments";
 import { parseDirSegment } from "../../../domain/parse-dir-segment/parse-dir-segment";
 import type { TipitakaFileMeta } from "../../../types";
 import { slugify } from "../../../utils/slugify";
 import { findSegmentTypeIdForTipitakaPrimaryOrCommentary } from "../_find-segment-type-id/application/find-segment-type-id";
-import { findPageBySlugAndUserId } from "../db/pages";
+import { findTipitakaPageBySlug } from "../db/pages";
 import { removeHeader } from "../domain/remove-header";
 import { getFilePath } from "../utils/get-file-path";
 
 interface ContentPageParams {
 	entry: TipitakaFileMeta;
 	parentId: number;
-	userId: string;
-	order: number;
+	position: number;
 	anchorPageId: number | null;
 }
 
 export async function createContentPage({
 	entry: tipitakaFileMeta,
 	parentId,
-	userId,
-	order,
+	position,
 	anchorPageId,
 }: ContentPageParams): Promise<number> {
 	const filePath = getFilePath(tipitakaFileMeta);
@@ -39,24 +36,28 @@ export async function createContentPage({
 
 	const slug = slugify(`tipitaka-${tipitakaFileMeta.fileKey}`);
 
+	const normalizedKind = tipitakaFileMeta.primaryOrCommentary.toUpperCase();
+	const kind =
+		normalizedKind === "MULA" || normalizedKind === "OTHER"
+			? "TEXT"
+			: "COMMENTARY";
 	const segmentTypeId = await findSegmentTypeIdForTipitakaPrimaryOrCommentary(
 		tipitakaFileMeta.primaryOrCommentary,
 	);
 
 	await upsertPageAndSegments({
 		pageSlug: slug,
-		userId,
 		mdastJson,
-		sourceLocale: "pi",
+		kind,
+		parentId,
+		position,
+		isVisible: true,
 		segments,
 		segmentTypeId,
-		parentId,
-		order,
 		anchorPageId,
-		status: "PUBLIC" as PageStatus,
 	});
 
-	const page = await findPageBySlugAndUserId(slug, userId);
+	const page = await findTipitakaPageBySlug(slug);
 
 	return page.id;
 }

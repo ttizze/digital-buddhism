@@ -29,7 +29,7 @@ import { generateHashForText } from "../_utils/generate-hash-for-text";
 
 export type SegmentDraft = Omit<
 	Segment,
-	"id" | "contentId" | "createdAt" | "segmentTypeId"
+	"id" | "tipitakaPageId" | "createdAt" | "segmentTypeId"
 > & {
 	metadata?: { items: Array<{ typeKey: string; value: string }> };
 	paragraphNumber?: string;

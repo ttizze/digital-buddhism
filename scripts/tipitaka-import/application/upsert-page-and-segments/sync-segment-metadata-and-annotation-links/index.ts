@@ -43,9 +43,7 @@ export async function syncSegmentMetadataAndAnnotationLinks(
 	// db操作: メタデータを同期
 	await syncSegmentMetadata(tx, segmentIds, metadataDrafts);
 
-	// COMMENTARYページだけを対応する本文ページへリンクする。
 	const segmentTypeKey = await fetchSegmentTypeKey(tx, pageId);
-
 	if (segmentTypeKey !== "COMMENTARY" || !anchorPageId) {
 		return;
 	}

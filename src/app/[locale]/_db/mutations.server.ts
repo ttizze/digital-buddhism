@@ -1,4 +1,5 @@
 import { db } from "@/db";
+import { TIPITAKA_SYSTEM_USER_HANDLE } from "../_domain/tipitaka-page-visibility";
 
 type CreateTranslationJobParams = {
 	aiModel: string;
@@ -28,10 +29,9 @@ export async function createTranslationJob(params: CreateTranslationJobParams) {
 
 	// 2. ページとユーザー情報を取得
 	const pageData = await db
-		.selectFrom("pages")
-		.innerJoin("users", "pages.userId", "users.id")
-		.select(["pages.slug as pageSlug", "users.handle as userHandle"])
-		.where("pages.id", "=", params.pageId)
+		.selectFrom("tipitakaPages")
+		.select("slug as pageSlug")
+		.where("id", "=", params.pageId)
 		.executeTakeFirst();
 
 	if (!pageData) {
@@ -43,7 +43,7 @@ export async function createTranslationJob(params: CreateTranslationJobParams) {
 		page: {
 			slug: pageData.pageSlug,
 			user: {
-				handle: pageData.userHandle,
+				handle: TIPITAKA_SYSTEM_USER_HANDLE,
 			},
 		},
 	};

@@ -14,235 +14,131 @@ export type NavigationData = {
 
 export type PageTitleTree = PageForTree & { children: PageTitleTree[] };
 
-/**
- * ページナビゲーションに必要なデータを1クエリで取得
- * - 親チェーン（パンくず用）
- * - ルートからの全子孫（ツリー用）
- */
 export async function queryPageNavigationData(
 	pageId: number,
 	locale: string,
-	isTipitakaPage: boolean,
 ): Promise<NavigationData | null> {
-	// Step 1: 親チェーンを取得してルートを特定
-	const breadcrumb = await db
+	const ancestorRows = await db
 		.withRecursive("ancestors", (qb) =>
 			qb
-				.selectFrom("pages")
-				.select([
-					"pages.id",
-					"pages.slug",
-					"pages.parentId",
-					"pages.order",
-					"pages.userId",
-				])
+				.selectFrom("tipitakaPages")
+				.select(["id", "slug", "parentId", "position"])
 				.where(
-					"pages.id",
+					"id",
 					"=",
-					db.selectFrom("pages").select("parentId").where("id", "=", pageId),
+					db
+						.selectFrom("tipitakaPages")
+						.select("parentId")
+						.where("id", "=", pageId),
 				)
+				.where("isVisible", "=", true)
 				.unionAll(
 					qb
-						.selectFrom("pages")
-						.innerJoin("ancestors", "pages.id", "ancestors.parentId")
+						.selectFrom("tipitakaPages")
+						.innerJoin("ancestors", "tipitakaPages.id", "ancestors.parentId")
 						.select([
-							"pages.id",
-							"pages.slug",
-							"pages.parentId",
-							"pages.order",
-							"pages.userId",
-						]),
+							"tipitakaPages.id",
+							"tipitakaPages.slug",
+							"tipitakaPages.parentId",
+							"tipitakaPages.position",
+						])
+						.where("tipitakaPages.isVisible", "=", true),
 				),
 		)
 		.selectFrom("ancestors")
-		.innerJoin("users", "ancestors.userId", "users.id")
 		.innerJoin("segments", (join) =>
 			join
-				.onRef("segments.contentId", "=", "ancestors.id")
+				.onRef("segments.tipitakaPageId", "=", "ancestors.id")
 				.on("segments.number", "=", 0),
 		)
 		.select([
 			"ancestors.id",
 			"ancestors.slug",
 			"ancestors.parentId",
-			"ancestors.order",
-			"users.handle as userHandle",
+			"ancestors.position",
 			"segments.id as titleSegmentId",
 			"segments.text as titleText",
 		])
 		.select((eb) =>
 			bestTranslationTextSubquery({
 				locale,
-				ownerId: eb.ref("ancestors.userId"),
 				segmentId: eb.ref("segments.id"),
 			}).as("titleTranslationText"),
 		)
 		.execute();
 
-	if (breadcrumb.length === 0) return null;
-
+	if (ancestorRows.length === 0) return null;
+	const breadcrumb = orderAncestorsFromRoot(ancestorRows);
 	const rootNode = breadcrumb[0];
+	if (!rootNode) return null;
 
-	// Step 2: ルートからの全子孫を取得
-	const descendantRows = await db
-		.withRecursive("descendants", (qb) =>
-			qb
-				.selectFrom("pages")
-				.select([
-					"pages.id",
-					"pages.slug",
-					"pages.parentId",
-					"pages.order",
-					"pages.userId",
-				])
-				.where("pages.parentId", "=", rootNode.id)
-				.where((eb) =>
-					isTipitakaPage
-						? eb.or([
-								eb("pages.status", "=", "PUBLIC"),
-								eb.and([
-									eb("pages.status", "=", "ARCHIVE"),
-									eb("pages.publishedAt", "is not", null),
-								]),
-							])
-						: eb("pages.status", "=", "PUBLIC"),
-				)
-				.unionAll(
-					qb
-						.selectFrom("pages")
-						.innerJoin("descendants", "pages.parentId", "descendants.id")
-						.where((eb) =>
-							isTipitakaPage
-								? eb.or([
-										eb("pages.status", "=", "PUBLIC"),
-										eb.and([
-											eb("pages.status", "=", "ARCHIVE"),
-											eb("pages.publishedAt", "is not", null),
-										]),
-									])
-								: eb("pages.status", "=", "PUBLIC"),
-						)
-						.select([
-							"pages.id",
-							"pages.slug",
-							"pages.parentId",
-							"pages.order",
-							"pages.userId",
-						]),
-				),
-		)
-		.selectFrom("descendants")
-		.innerJoin("users", "descendants.userId", "users.id")
-		.innerJoin("segments", (join) =>
-			join
-				.onRef("segments.contentId", "=", "descendants.id")
-				.on("segments.number", "=", 0),
-		)
-		.select([
-			"descendants.id",
-			"descendants.slug",
-			"descendants.parentId",
-			"descendants.order",
-			"users.handle as userHandle",
-			"segments.id as titleSegmentId",
-			"segments.text as titleText",
-		])
-		.select((eb) =>
-			bestTranslationTextSubquery({
-				locale,
-				ownerId: eb.ref("descendants.userId"),
-				segmentId: eb.ref("segments.id"),
-			}).as("titleTranslationText"),
-		)
-		.execute();
-
-	const treeNodes = buildTree(descendantRows, rootNode.id);
-
-	return { rootNode, treeNodes, breadcrumb };
+	const descendantRows = await fetchVisibleDescendants(rootNode.id, locale);
+	return {
+		rootNode,
+		treeNodes: buildTree(descendantRows, rootNode.id),
+		breadcrumb,
+	};
 }
 
-/** 子ページの公開対象ツリーを取得（recursive CTEで1クエリ） */
 export async function queryChildPagesTree(
 	parentId: number,
 	locale: string,
-	isTipitakaPage: boolean,
 ): Promise<PageTitleTree[]> {
-	const rows = await db
+	const rows = await fetchVisibleDescendants(parentId, locale);
+	return buildTitleTree(rows, parentId);
+}
+
+async function fetchVisibleDescendants(
+	parentId: number,
+	locale: string,
+): Promise<PageForTree[]> {
+	return db
 		.withRecursive("descendants", (qb) =>
 			qb
-				.selectFrom("pages")
-				.select([
-					"pages.id",
-					"pages.slug",
-					"pages.parentId",
-					"pages.order",
-					"pages.userId",
-				])
-				.where("pages.parentId", "=", parentId)
-				.where((eb) =>
-					isTipitakaPage
-						? eb.or([
-								eb("pages.status", "=", "PUBLIC"),
-								eb.and([
-									eb("pages.status", "=", "ARCHIVE"),
-									eb("pages.publishedAt", "is not", null),
-								]),
-							])
-						: eb("pages.status", "=", "PUBLIC"),
-				)
+				.selectFrom("tipitakaPages")
+				.select(["id", "slug", "parentId", "position"])
+				.where("parentId", "=", parentId)
+				.where("isVisible", "=", true)
 				.unionAll(
 					qb
-						.selectFrom("pages")
-						.innerJoin("descendants", "pages.parentId", "descendants.id")
-						.where((eb) =>
-							isTipitakaPage
-								? eb.or([
-										eb("pages.status", "=", "PUBLIC"),
-										eb.and([
-											eb("pages.status", "=", "ARCHIVE"),
-											eb("pages.publishedAt", "is not", null),
-										]),
-									])
-								: eb("pages.status", "=", "PUBLIC"),
+						.selectFrom("tipitakaPages")
+						.innerJoin(
+							"descendants",
+							"tipitakaPages.parentId",
+							"descendants.id",
 						)
 						.select([
-							"pages.id",
-							"pages.slug",
-							"pages.parentId",
-							"pages.order",
-							"pages.userId",
-						]),
+							"tipitakaPages.id",
+							"tipitakaPages.slug",
+							"tipitakaPages.parentId",
+							"tipitakaPages.position",
+						])
+						.where("tipitakaPages.isVisible", "=", true),
 				),
 		)
 		.selectFrom("descendants")
-		.innerJoin("users", "descendants.userId", "users.id")
 		.innerJoin("segments", (join) =>
 			join
-				.onRef("segments.contentId", "=", "descendants.id")
+				.onRef("segments.tipitakaPageId", "=", "descendants.id")
 				.on("segments.number", "=", 0),
 		)
 		.select([
 			"descendants.id",
 			"descendants.slug",
 			"descendants.parentId",
-			"descendants.order",
-			"users.handle as userHandle",
+			"descendants.position",
 			"segments.id as titleSegmentId",
 			"segments.text as titleText",
 		])
 		.select((eb) =>
 			bestTranslationTextSubquery({
 				locale,
-				ownerId: eb.ref("descendants.userId"),
 				segmentId: eb.ref("segments.id"),
 			}).as("titleTranslationText"),
 		)
 		.execute();
-
-	return buildTitleTree(rows, parentId);
 }
 
-/** 完了済み翻訳ジョブのlocaleを取得 */
 export async function queryCompletedTranslationLocales(
 	pageId: number,
 ): Promise<string[]> {
@@ -253,16 +149,29 @@ export async function queryCompletedTranslationLocales(
 		.where("pageId", "=", pageId)
 		.where("status", "=", "COMPLETED")
 		.orderBy("locale")
-		.orderBy("createdAt", "desc")
 		.execute();
-
 	return jobs.map((job) => job.locale);
+}
+
+function orderAncestorsFromRoot(nodes: PageForTree[]): PageForTree[] {
+	const byId = new Map(nodes.map((node) => [node.id, node]));
+	const root = nodes.find((node) => node.parentId === null);
+	if (!root) return [];
+	const ordered = [root];
+	while (ordered.length < nodes.length) {
+		const child = nodes.find(
+			(node) => node.parentId === ordered[ordered.length - 1]?.id,
+		);
+		if (!child || byId.get(child.id) !== child) break;
+		ordered.push(child);
+	}
+	return ordered;
 }
 
 function buildTree(nodes: PageForTree[], parentId: number): PageTreeNode[] {
 	const children = nodes
 		.filter((node) => node.parentId === parentId)
-		.sort((a, b) => a.order - b.order);
+		.sort((a, b) => a.position - b.position);
 	return children.map((child) => ({
 		...child,
 		children: buildTree(nodes, child.id),
@@ -275,7 +184,7 @@ function buildTitleTree(
 ): PageTitleTree[] {
 	const children = nodes
 		.filter((node) => node.parentId === parentId)
-		.sort((a, b) => a.order - b.order);
+		.sort((a, b) => a.position - b.position);
 	return children.map((child) => ({
 		...child,
 		children: buildTitleTree(nodes, child.id),

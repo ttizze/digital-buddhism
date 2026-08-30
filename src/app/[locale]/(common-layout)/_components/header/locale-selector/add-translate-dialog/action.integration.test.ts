@@ -97,20 +97,17 @@ describe("translateAction", () => {
 		// Arrange: 実際のユーザーとページを作成
 		const user = await createUser();
 		const page = await createPageWithSegments({
-			userId: user.id,
 			slug: "test-page",
 			segments: [
 				{
 					number: 0,
 					text: "Test Page Title",
 					textAndOccurrenceHash: "hash-title",
-					segmentTypeKey: "PRIMARY",
 				},
 				{
 					number: 1,
 					text: "First paragraph",
 					textAndOccurrenceHash: "hash-1",
-					segmentTypeKey: "PRIMARY",
 				},
 			],
 		});
@@ -149,7 +146,6 @@ describe("translateAction", () => {
 		// Arrange: メインページと注釈を作成
 		const user = await createUser();
 		const { mainPage, annotationPage } = await createPageWithAnnotations({
-			userId: user.id,
 			mainPageSlug: "page-with-annotations",
 			mainPageSegments: [
 				{

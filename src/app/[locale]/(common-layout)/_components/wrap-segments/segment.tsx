@@ -78,21 +78,21 @@ export function SegmentElement({
 				{children}
 			</SegmentPair>
 
-			{annotations.map(({ annotationSegment: a }) => {
-				const typeKey = a?.segmentTypeLabel ?? a?.segmentTypeKey ?? "";
-				if (!typeKey) return null;
-
+			{annotations.map(({ annotationSegment }) => {
+				const annotationType =
+					annotationSegment.segmentTypeLabel ||
+					annotationSegment.segmentTypeKey;
 				return (
 					<SegmentPair
 						className={`${baseClassName} seg-ann hidden ml-4 text-sm leading-relaxed`}
 						interactive={interactive}
-						key={`ann-${a.id}`}
-						segment={a}
+						key={`ann-${annotationSegment.id}`}
+						segment={annotationSegment}
 						tagName={tagName}
 						tagProps={{
 							...tagProps,
 							id: undefined,
-							"data-annotation-type": typeKey,
+							"data-annotation-type": annotationType,
 						}}
 					/>
 				);

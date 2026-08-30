@@ -52,11 +52,11 @@ export async function handleVote(
 		const result = await tx
 			.selectFrom("segmentTranslations")
 			.innerJoin("segments", "segmentTranslations.segmentId", "segments.id")
-			.innerJoin("pages", "segments.contentId", "pages.id")
+			.innerJoin("tipitakaPages", "segments.tipitakaPageId", "tipitakaPages.id")
 			.select([
 				"segmentTranslations.point",
 				"segmentTranslations.locale",
-				"pages.id as pageId",
+				"tipitakaPages.id as pageId",
 			])
 			.where("segmentTranslations.id", "=", segmentTranslationId)
 			.executeTakeFirst();
@@ -130,7 +130,7 @@ async function updateProofStatus(
 ) {
 	const stats = await tx
 		.selectFrom("segments")
-		.innerJoin("pages", "segments.contentId", "pages.id")
+		.innerJoin("tipitakaPages", "segments.tipitakaPageId", "tipitakaPages.id")
 		.leftJoin("segmentTranslations", (join) =>
 			join
 				.onRef("segmentTranslations.segmentId", "=", "segments.id")
@@ -145,7 +145,7 @@ async function updateProofStatus(
 				"segmentsWith2PlusVotes",
 			),
 		])
-		.where("pages.id", "=", pageId)
+		.where("tipitakaPages.id", "=", pageId)
 		.executeTakeFirst();
 
 	const { totalSegments, segmentsWith1PlusVotes, segmentsWith2PlusVotes } =

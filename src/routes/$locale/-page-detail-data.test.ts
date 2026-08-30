@@ -38,41 +38,32 @@ vi.mock(
 
 const { getPageDetailData } = await import("./-page-detail-data");
 
-const input = { locale: "en", handle: "owner", pageSlug: "draft" };
+const input = { locale: "en", handle: "owner", pageSlug: "not-tipitaka" };
 
 describe("getPageDetailData", () => {
 	beforeEach(() => {
 		queryPageDetailMock.mockReset().mockResolvedValue({
-			status: "DRAFT",
-			userHandle: "owner",
+			id: 1,
 			segments: [{ number: 0 }],
 		});
-		getCurrentUserFromHeadersMock
-			.mockReset()
-			.mockResolvedValue({ handle: "owner" });
+		getCurrentUserFromHeadersMock.mockReset();
 		loadPageContentDataMock.mockReset().mockResolvedValue({ pageDetail: {} });
 		setResponseHeaderMock.mockReset();
 	});
 
-	it("所有者だけが読めるdraft responseを共有cacheへ保存させない", async () => {
-		await expect(getPageDetailData({ data: input })).resolves.toEqual({
-			pageDetail: {},
-		});
+	it("Tipitakaシステムhandle以外は取得しない", async () => {
+		await expect(getPageDetailData({ data: input })).resolves.toBeNull();
+		expect(queryPageDetailMock).not.toHaveBeenCalled();
+		expect(getCurrentUserFromHeadersMock).not.toHaveBeenCalled();
 		expect(setResponseHeaderMock).toHaveBeenCalledWith(
 			"Cache-Control",
-			"private, no-store",
-		);
-		expect(setResponseHeaderMock).toHaveBeenCalledWith(
-			"Vary",
-			"Cookie, Authorization",
+			"public, max-age=60, stale-while-revalidate=300",
 		);
 	});
 
-	it("公開日時があるTipiṭakaのARCHIVEページはログインなしで表示する", async () => {
+	it("可視なTipitakaページを表示する", async () => {
 		queryPageDetailMock.mockResolvedValue({
-			isPublishedTipitakaArchive: true,
-			status: "ARCHIVE",
-			userHandle: "evame",
+			id: 1,
 			segments: [{ number: 0 }],
 		});
 		loadPageContentDataMock.mockResolvedValue({ pageDetail: { id: 1 } });

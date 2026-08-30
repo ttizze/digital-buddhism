@@ -7,13 +7,13 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/db";
-import type { Page, Segment } from "@/db/types.helpers";
+import type { Segment, TipitakaPage } from "@/db/types.helpers";
 import {
 	getSegmentTypeId,
 	resetDatabase,
 	setupMasterData,
 } from "@/tests/db-helpers";
-import { createPageWithSegments, createUser } from "@/tests/factories";
+import { createPageWithSegments } from "@/tests/factories";
 import { setupDbPerFile } from "@/tests/test-db-manager";
 import { syncAnnotationLinksByParagraphNumber } from "./index";
 
@@ -44,10 +44,9 @@ async function addParagraphNumbersToSegments(
 async function createAnnotationPageWithSegments(
 	texts: string[],
 ): Promise<{ annotationPageId: number; annotationSegments: Segment[] }> {
-	const user = await createUser();
 	const annotationPage = await createPageWithSegments({
-		userId: user.id,
 		slug: "annotation-page",
+		kind: "COMMENTARY",
 		segments: texts.map((text, index) => ({
 			number: index,
 			text,
@@ -58,7 +57,7 @@ async function createAnnotationPageWithSegments(
 	const annotationSegments = await db
 		.selectFrom("segments")
 		.selectAll()
-		.where("contentId", "=", annotationPage.id)
+		.where("tipitakaPageId", "=", annotationPage.id)
 		.orderBy("number")
 		.execute();
 
@@ -67,22 +66,21 @@ async function createAnnotationPageWithSegments(
 
 async function createMainPageWithParagraphNumbers(
 	paragraphNumbers: string[],
-): Promise<{ mainPage: Page; mainSegments: Segment[] }> {
-	const user = await createUser();
+): Promise<{ mainPage: TipitakaPage; mainSegments: Segment[] }> {
 	const mainPage = (await createPageWithSegments({
-		userId: user.id,
 		slug: "main-page",
+		kind: "TEXT",
 		segments: paragraphNumbers.map((_, i) => ({
 			number: i,
 			text: `Main segment ${i}`,
 			textAndOccurrenceHash: `hash-main-${i}`,
 			segmentTypeKey: "PRIMARY",
 		})),
-	})) as Page;
+	})) as TipitakaPage;
 	const mainSegments = await db
 		.selectFrom("segments")
 		.selectAll()
-		.where("contentId", "=", mainPage.id)
+		.where("tipitakaPageId", "=", mainPage.id)
 		.orderBy("number")
 		.execute();
 
@@ -149,25 +147,23 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 		);
 	});
 
-	it("COMMENTARYタイプでなくても、この関数単体ではリンクを作成する", async () => {
+	it("TEXTページでも、この関数単体ではリンクを作成する", async () => {
 		const { mainPage } = await createMainPageWithParagraphNumbers(["1"]);
-		const primaryUser = await createUser();
 		const primaryPage = await createPageWithSegments({
-			userId: primaryUser.id,
 			slug: "primary-annotation-page",
+			kind: "TEXT",
 			segments: [
 				{
 					number: 0,
 					text: "Primary segment",
 					textAndOccurrenceHash: "hash-primary",
-					segmentTypeKey: "PRIMARY",
 				},
 			],
 		});
 		const primarySegment = await db
 			.selectFrom("segments")
 			.selectAll()
-			.where("contentId", "=", primaryPage.id)
+			.where("tipitakaPageId", "=", primaryPage.id)
 			.executeTakeFirstOrThrow();
 
 		await db
@@ -251,16 +247,17 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 		const { mainPage } = await createMainPageWithParagraphNumbers(["1"]);
 		const { annotationPageId, annotationSegments } =
 			await createAnnotationPageWithSegments(["Ann"]);
+		const primarySegmentTypeId = await getSegmentTypeId("PRIMARY");
 
 		// 既存リンクを作成
 		const extraMainSegment = await db
 			.insertInto("segments")
 			.values({
-				contentId: mainPage.id,
+				tipitakaPageId: mainPage.id,
 				number: 999,
 				text: "Extra",
 				textAndOccurrenceHash: "hash-extra",
-				segmentTypeId: await getSegmentTypeId("PRIMARY"),
+				segmentTypeId: primarySegmentTypeId,
 			})
 			.returningAll()
 			.executeTakeFirstOrThrow();
@@ -356,29 +353,25 @@ describe("syncAnnotationLinksByParagraphNumber", () => {
 	});
 
 	it("最初の段落番号より前のアノテーションは直前のPRIMARYにリンクする", async () => {
-		const user = await createUser();
 		const mainPage = (await createPageWithSegments({
-			userId: user.id,
 			slug: "main-page-preface",
 			segments: [
 				{
 					number: 0,
 					text: "Preface",
 					textAndOccurrenceHash: "hash-main-preface",
-					segmentTypeKey: "PRIMARY",
 				},
 				{
 					number: 1,
 					text: "Main segment 1",
 					textAndOccurrenceHash: "hash-main-1",
-					segmentTypeKey: "PRIMARY",
 				},
 			],
-		})) as Page;
+		})) as TipitakaPage;
 		const mainSegments = await db
 			.selectFrom("segments")
 			.selectAll()
-			.where("contentId", "=", mainPage.id)
+			.where("tipitakaPageId", "=", mainPage.id)
 			.orderBy("number")
 			.execute();
 

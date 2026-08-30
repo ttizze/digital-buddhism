@@ -1,6 +1,5 @@
 import { markdownToMdastWithSegments } from "@/app/[locale]/_domain/markdown-to-mdast-with-segments";
 import { db } from "@/db";
-import type { PageStatus } from "@/drizzle/types";
 import { upsertPageAndSegments } from "../../application/upsert-page-and-segments";
 import { slugify } from "../../utils/slugify";
 
@@ -8,16 +7,14 @@ interface CategoryPageParams {
 	title: string;
 	dirPath: string;
 	parentId: number;
-	userId: string;
-	order: number;
+	position: number;
 }
 
 export async function createCategoryPage({
 	title,
 	dirPath,
 	parentId,
-	userId,
-	order,
+	position,
 }: CategoryPageParams): Promise<number> {
 	const mdast = await markdownToMdastWithSegments({
 		header: title,
@@ -27,26 +24,24 @@ export async function createCategoryPage({
 	const slug = slugify(`tipitaka-${dirPath}`);
 	await upsertPageAndSegments({
 		pageSlug: slug,
-		userId,
 		mdastJson: mdast.mdastJson,
-		sourceLocale: "pi",
+		kind: "CATEGORY",
+		parentId,
+		position,
+		isVisible: true,
 		segments: mdast.segments,
 		segmentTypeId: null,
-		parentId,
-		order,
 		anchorPageId: null,
-		status: "PUBLIC" satisfies PageStatus,
 	});
 
 	const page = await db
-		.selectFrom("pages")
+		.selectFrom("tipitakaPages")
 		.select("id")
 		.where("slug", "=", slug)
-		.where("userId", "=", userId)
 		.executeTakeFirst();
 
 	if (!page) {
-		throw new Error(`Page with slug ${slug} and userId ${userId} not found`);
+		throw new Error(`Page with slug ${slug} not found`);
 	}
 
 	return page.id;

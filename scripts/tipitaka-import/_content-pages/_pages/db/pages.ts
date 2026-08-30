@@ -1,21 +1,19 @@
 import { db } from "@/db";
 
 /**
- * スラグとユーザーIDからページを取得する
+ * スラグからTipitakaページを取得する。
  */
-export async function findPageBySlugAndUserId(
+export async function findTipitakaPageBySlug(
 	slug: string,
-	userId: string,
 ): Promise<{ id: number }> {
 	const page = await db
-		.selectFrom("pages")
+		.selectFrom("tipitakaPages")
 		.select("id")
 		.where("slug", "=", slug)
-		.where("userId", "=", userId)
 		.executeTakeFirst();
 
 	if (!page) {
-		throw new Error(`Page with slug ${slug} and userId ${userId} not found`);
+		throw new Error(`Tipitaka page with slug ${slug} not found`);
 	}
 
 	return page;

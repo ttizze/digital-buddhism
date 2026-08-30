@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { TursoValueCodecPlugin } from "./turso-value-codec";
 
 type TestDatabase = {
-	pages: {
+	tipitakaPages: {
 		id: number;
 		createdAt: ColumnType<Date, Date | string, Date | string>;
 		mdastJson: unknown;
@@ -45,7 +45,7 @@ describe("Tursoの値codec", () => {
 		const client = createClient({ url: "file::memory:" });
 		clients.push(client);
 		await client.batch([
-			"CREATE TABLE pages (id INTEGER PRIMARY KEY, created_at INTEGER NOT NULL, mdast_json TEXT NOT NULL)",
+			"CREATE TABLE tipitaka_pages (id INTEGER PRIMARY KEY, created_at INTEGER NOT NULL, mdast_json TEXT NOT NULL)",
 			"CREATE TABLE users (id TEXT PRIMARY KEY, is_ai INTEGER NOT NULL, email_verified INTEGER)",
 			"CREATE TABLE user_settings (id INTEGER PRIMARY KEY, user_id TEXT NOT NULL, target_locales TEXT NOT NULL)",
 			"CREATE TABLE segment_metadata (id INTEGER PRIMARY KEY, value TEXT NOT NULL)",
@@ -65,7 +65,7 @@ describe("Tursoの値codec", () => {
 		};
 
 		await db
-			.insertInto("pages")
+			.insertInto("tipitakaPages")
 			.values({ id: 1, createdAt, mdastJson })
 			.execute();
 		await db
@@ -82,7 +82,7 @@ describe("Tursoの値codec", () => {
 			.execute();
 
 		const raw = await client.execute(
-			"SELECT created_at, mdast_json FROM pages WHERE id = 1",
+			"SELECT created_at, mdast_json FROM tipitaka_pages WHERE id = 1",
 		);
 		const rawUser = await client.execute(
 			"SELECT is_ai, email_verified FROM users WHERE id = 'u1'",
@@ -92,7 +92,7 @@ describe("Tursoの値codec", () => {
 		expect(rawUser.rows[0]).toMatchObject({ is_ai: 1, email_verified: 0 });
 
 		const page = await db
-			.selectFrom("pages")
+			.selectFrom("tipitakaPages")
 			.select(["createdAt as pageCreatedAt", "mdastJson"])
 			.where("id", "=", 1)
 			.executeTakeFirstOrThrow();
@@ -124,7 +124,7 @@ describe("Tursoの値codec", () => {
 		const updatedAt = new Date("2026-08-30T00:00:00.456Z");
 		const updatedBody = { type: "root", children: [] };
 		await db
-			.updateTable("pages")
+			.updateTable("tipitakaPages")
 			.set({ createdAt: updatedAt, mdastJson: updatedBody })
 			.where("id", "=", 1)
 			.execute();
@@ -144,7 +144,7 @@ describe("Tursoの値codec", () => {
 			children: [{ type: "thematicBreak" }],
 		};
 		await db
-			.insertInto("pages")
+			.insertInto("tipitakaPages")
 			.values({ id: 1, createdAt: updatedAt, mdastJson: updatedBody })
 			.onConflict((oc) =>
 				oc.column("id").doUpdateSet({ mdastJson: conflictBody }),
@@ -153,7 +153,7 @@ describe("Tursoの値codec", () => {
 
 		await expect(
 			db
-				.selectFrom("pages")
+				.selectFrom("tipitakaPages")
 				.select(["createdAt", "mdastJson"])
 				.where("id", "=", 1)
 				.executeTakeFirstOrThrow(),

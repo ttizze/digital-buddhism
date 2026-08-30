@@ -16,14 +16,12 @@ describe("addTranslationService", () => {
 		// Arrange
 		const user = await createUser();
 		const page = await createPageWithSegments({
-			userId: user.id,
 			slug: "test-page",
 			segments: [
 				{
 					number: 0,
 					text: "Title",
 					textAndOccurrenceHash: "hash0",
-					segmentTypeKey: "PRIMARY",
 				},
 			],
 		});
@@ -31,7 +29,7 @@ describe("addTranslationService", () => {
 		const pageSegment = await db
 			.selectFrom("segments")
 			.selectAll()
-			.where("contentId", "=", page.id)
+			.where("tipitakaPageId", "=", page.id)
 			.where("number", "=", 0)
 			.executeTakeFirstOrThrow();
 

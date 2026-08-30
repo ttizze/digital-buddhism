@@ -16,36 +16,36 @@ describe("queryPageDetail", () => {
 		await resetDatabase();
 	});
 
-	it("非公開のTipiṭaka祖先を持つPUBLICページは直URLでも取得しない", async () => {
-		const user = await createUser({ handle: "evame" });
+	it("非表示のTipitaka祖先を持つページは直URLでも取得しない", async () => {
 		const root = await createPage({
-			publishedAt: new Date("2026-01-01T00:00:00.000Z"),
 			slug: "tipitaka",
-			status: "ARCHIVE",
-			userId: user.id,
+			kind: "ROOT",
+			isVisible: true,
 		});
 		const hiddenParent = await createPage({
 			parentId: root.id,
 			slug: "hidden-parent",
-			status: "DRAFT",
-			userId: user.id,
+			kind: "CATEGORY",
+			isVisible: false,
 		});
 		await createPage({
 			parentId: hiddenParent.id,
-			slug: "public-child",
-			status: "PUBLIC",
-			userId: user.id,
+			slug: "visible-child",
+			kind: "TEXT",
+			isVisible: true,
 		});
 
-		await expect(queryPageDetail("public-child", "ja")).resolves.toBeNull();
+		await expect(queryPageDetail("visible-child", "ja")).resolves.toBeNull();
 	});
 
-	it("対象セグメントごとにページオーナー推奨の翻訳を選ぶ", async () => {
-		const pageOwner = await createUser({ handle: "owner" });
+	it("対象セグメントごとに明示的な採用訳を選ぶ", async () => {
+		const curator = await createUser({ handle: "evame" });
 		const translator = await createUser({ handle: "translator" });
+		const root = await createPage({ slug: "tipitaka", kind: "ROOT" });
 		const page = await createPageWithSegments({
-			userId: pageOwner.id,
 			slug: "translated-page",
+			kind: "TEXT",
+			parentId: root.id,
 			segments: [
 				{
 					number: 0,
@@ -58,9 +58,8 @@ describe("queryPageDetail", () => {
 		const segment = await db
 			.selectFrom("segments")
 			.select("id")
-			.where("contentId", "=", page.id)
+			.where("tipitakaPageId", "=", page.id)
 			.executeTakeFirstOrThrow();
-
 		await db
 			.insertInto("segmentTranslations")
 			.values({
@@ -71,28 +70,28 @@ describe("queryPageDetail", () => {
 				userId: translator.id,
 			})
 			.execute();
-		const ownerTranslation = await db
+		const selected = await db
 			.insertInto("segmentTranslations")
 			.values({
 				segmentId: segment.id,
 				locale: "ja",
-				text: "オーナー推奨翻訳",
+				text: "採用訳",
 				point: 1,
 				userId: translator.id,
 			})
-			.returning("id")
+			.returningAll()
 			.executeTakeFirstOrThrow();
 		await db
-			.insertInto("translationVotes")
+			.insertInto("selectedSegmentTranslations")
 			.values({
-				translationId: ownerTranslation.id,
-				userId: pageOwner.id,
-				isUpvote: true,
+				segmentId: selected.segmentId,
+				locale: selected.locale,
+				translationId: selected.id,
+				selectedByUserId: curator.id,
 			})
 			.execute();
 
 		const result = await queryPageDetail(page.slug, "ja");
-
-		expect(result?.segments[0]?.translationText).toBe("オーナー推奨翻訳");
+		expect(result?.segments[0]?.translationText).toBe("採用訳");
 	});
 });

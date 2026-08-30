@@ -1,11 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/db";
 import { resetDatabase } from "@/tests/db-helpers";
-import {
-	createPage,
-	createPageWithSegments,
-	createUser,
-} from "@/tests/factories";
+import { createPage, createPageWithSegments } from "@/tests/factories";
 import { setupDbPerFile } from "@/tests/test-db-manager";
 import { syncSegments } from "./index";
 
@@ -18,8 +14,7 @@ describe("syncSegments", () => {
 
 	it("新規セグメントを作成する", async () => {
 		// Arrange
-		const user = await createUser();
-		const page = await createPage({ userId: user.id, slug: "test-page" });
+		const page = await createPage({ slug: "test-page" });
 
 		const drafts = [
 			{ number: 0, text: "Title", textAndOccurrenceHash: "hash-title" },
@@ -40,7 +35,7 @@ describe("syncSegments", () => {
 		const createdSegments = await db
 			.selectFrom("segments")
 			.selectAll()
-			.where("contentId", "=", page.id)
+			.where("tipitakaPageId", "=", page.id)
 			.execute();
 		expect(createdSegments).toHaveLength(2);
 
@@ -51,22 +46,18 @@ describe("syncSegments", () => {
 
 	it("既存セグメントの番号を更新する", async () => {
 		// Arrange: セグメント付きページを作成
-		const user = await createUser();
 		const page = await createPageWithSegments({
-			userId: user.id,
 			slug: "test-page",
 			segments: [
 				{
 					number: 0,
 					text: "Title",
 					textAndOccurrenceHash: "hash-title",
-					segmentTypeKey: "PRIMARY",
 				},
 				{
 					number: 1,
 					text: "First paragraph",
 					textAndOccurrenceHash: "hash-p1",
-					segmentTypeKey: "PRIMARY",
 				},
 			],
 		});
@@ -86,7 +77,7 @@ describe("syncSegments", () => {
 		const updatedSegments = await db
 			.selectFrom("segments")
 			.selectAll()
-			.where("contentId", "=", page.id)
+			.where("tipitakaPageId", "=", page.id)
 			.execute();
 
 		const titleSegment = updatedSegments.find(
@@ -102,28 +93,23 @@ describe("syncSegments", () => {
 
 	it("不要なセグメントを削除する", async () => {
 		// Arrange: 3つのセグメントを持つページを作成
-		const user = await createUser();
 		const page = await createPageWithSegments({
-			userId: user.id,
 			slug: "test-page",
 			segments: [
 				{
 					number: 0,
 					text: "Title",
 					textAndOccurrenceHash: "hash-title",
-					segmentTypeKey: "PRIMARY",
 				},
 				{
 					number: 1,
 					text: "First paragraph",
 					textAndOccurrenceHash: "hash-p1",
-					segmentTypeKey: "PRIMARY",
 				},
 				{
 					number: 2,
 					text: "Second paragraph",
 					textAndOccurrenceHash: "hash-p2",
-					segmentTypeKey: "PRIMARY",
 				},
 			],
 		});
@@ -143,7 +129,7 @@ describe("syncSegments", () => {
 		const remainingSegments = await db
 			.selectFrom("segments")
 			.selectAll()
-			.where("contentId", "=", page.id)
+			.where("tipitakaPageId", "=", page.id)
 			.execute();
 
 		expect(remainingSegments).toHaveLength(2);
@@ -157,22 +143,18 @@ describe("syncSegments", () => {
 
 	it("追加・更新・削除が同時に発生する複合ケース", async () => {
 		// Arrange: 2つのセグメントを持つページを作成
-		const user = await createUser();
 		const page = await createPageWithSegments({
-			userId: user.id,
 			slug: "test-page",
 			segments: [
 				{
 					number: 0,
 					text: "Title",
 					textAndOccurrenceHash: "hash-title",
-					segmentTypeKey: "PRIMARY",
 				},
 				{
 					number: 1,
 					text: "Old paragraph",
 					textAndOccurrenceHash: "hash-old",
-					segmentTypeKey: "PRIMARY",
 				},
 			],
 		});
@@ -198,7 +180,7 @@ describe("syncSegments", () => {
 		const finalSegments = await db
 			.selectFrom("segments")
 			.selectAll()
-			.where("contentId", "=", page.id)
+			.where("tipitakaPageId", "=", page.id)
 			.execute();
 
 		expect(finalSegments).toHaveLength(2);
@@ -225,16 +207,13 @@ describe("syncSegments", () => {
 
 	it("空のドラフトを渡すと既存セグメントがすべて削除される", async () => {
 		// Arrange
-		const user = await createUser();
 		const page = await createPageWithSegments({
-			userId: user.id,
 			slug: "test-page",
 			segments: [
 				{
 					number: 0,
 					text: "Title",
 					textAndOccurrenceHash: "hash-title",
-					segmentTypeKey: "PRIMARY",
 				},
 			],
 		});
@@ -250,15 +229,14 @@ describe("syncSegments", () => {
 		const remainingSegments = await db
 			.selectFrom("segments")
 			.selectAll()
-			.where("contentId", "=", page.id)
+			.where("tipitakaPageId", "=", page.id)
 			.execute();
 		expect(remainingSegments).toHaveLength(0);
 	});
 
 	it("既存セグメントがない状態で新規セグメントを作成する", async () => {
 		// Arrange: セグメントなしのページ
-		const user = await createUser();
-		const page = await createPage({ userId: user.id, slug: "test-page" });
+		const page = await createPage({ slug: "test-page" });
 
 		const drafts = [
 			{ number: 0, text: "Title", textAndOccurrenceHash: "hash-title" },

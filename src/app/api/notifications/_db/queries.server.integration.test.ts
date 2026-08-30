@@ -20,27 +20,24 @@ describe("fetchNotificationRowsWithRelations", () => {
 			image: "https://example.com/actor.png",
 		});
 		const page = await createPageWithSegments({
-			userId: recipient.id,
 			slug: "notification-page",
 			segments: [
 				{
 					number: 0,
 					text: "Notification Page",
 					textAndOccurrenceHash: "notification-title",
-					segmentTypeKey: "PRIMARY",
 				},
 				{
 					number: 1,
 					text: "Notification segment",
 					textAndOccurrenceHash: "notification-segment",
-					segmentTypeKey: "PRIMARY",
 				},
 			],
 		});
 		const segment = await db
 			.selectFrom("segments")
 			.select("id")
-			.where("contentId", "=", page.id)
+			.where("tipitakaPageId", "=", page.id)
 			.where("number", "=", 1)
 			.executeTakeFirstOrThrow();
 		const translation = await db
@@ -74,7 +71,7 @@ describe("fetchNotificationRowsWithRelations", () => {
 				actorHandle: "notification-actor",
 				segmentTranslationText: "翻訳された通知セグメント",
 				pageSlug: "notification-page",
-				pageOwnerHandle: "notification-recipient",
+				pageOwnerHandle: "evame",
 				pageTitle: "Notification Page",
 			}),
 		);

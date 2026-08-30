@@ -18,7 +18,7 @@ function makeDetailSegment(
 ): SegmentForDetail {
 	return {
 		...makeListSegment(),
-		segmentTypeKey: "Primary",
+		segmentTypeKey: "PRIMARY",
 		segmentTypeLabel: "Primary",
 		annotations: [],
 		...overrides,
@@ -74,7 +74,7 @@ describe("SegmentElement", () => {
 								id: 200,
 								number: 200,
 								text: "ann-src",
-								segmentTypeKey: "Atthakatha",
+								segmentTypeKey: "COMMENTARY",
 								segmentTypeLabel: "Atthakatha",
 								translationText: "ann-tr",
 							}),

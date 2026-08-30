@@ -91,21 +91,7 @@ export async function getOgImage(request: Request): Promise<Response> {
 						width: "100%",
 					}}
 				>
-					<div style={{ display: "flex", alignItems: "center" }}>
-						<img
-							alt={pageDetail.userName}
-							src={pageDetail.userImage}
-							style={{
-								width: "96px",
-								height: "96px",
-								borderRadius: "9999px",
-								marginRight: "16px",
-							}}
-						/>
-						<p style={{ fontSize: "60px", lineHeight: 1 }}>
-							{pageDetail.userName}
-						</p>
-					</div>
+					<p style={{ fontSize: "60px", lineHeight: 1 }}>Tipitaka</p>
 					<img
 						alt="logo"
 						src={logoSrc}

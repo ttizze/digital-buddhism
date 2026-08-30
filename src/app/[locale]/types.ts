@@ -1,48 +1,55 @@
-import type { fetchPageDetail } from "@/app/[locale]/_db/fetch-page-detail.server";
-import type { PageStatus } from "@/drizzle/types";
+import type {
+	JsonValue,
+	SegmentTypeKey,
+	TipitakaPageKind,
+} from "@/drizzle/types";
 
-// fetchPageDetail の戻り値から型を推論
-export type PageDetail = NonNullable<
-	Awaited<ReturnType<typeof fetchPageDetail>>
->;
-
-export type SegmentWithSegmentType = {
+export type SegmentForPage = {
 	id: number;
 	pageId: number;
 	number: number;
 	text: string;
 	translationText: string | null;
-	segmentTypeKey: string;
+	segmentTypeKey: SegmentTypeKey;
 	segmentTypeLabel: string;
 };
+
 export type TitleSegment = Omit<
-	SegmentWithSegmentType,
+	SegmentForPage,
 	"segmentTypeKey" | "segmentTypeLabel"
 >;
 
-export type SegmentForDetail = SegmentWithSegmentType & {
+export type SegmentForDetail = SegmentForPage & {
 	annotations: Array<{
-		annotationSegment: SegmentWithSegmentType;
+		annotationSegment: SegmentForPage;
 	}>;
 };
 
-// 注釈は取得経路によって省略される場合がある
-type SegmentWithOptionalAnnotations = Omit<SegmentForDetail, "annotations"> & {
-	annotations?: SegmentForDetail["annotations"];
-};
 export type Segment =
 	| SegmentForDetail
-	| SegmentWithOptionalAnnotations
+	| (Omit<SegmentForDetail, "annotations"> & {
+			annotations?: SegmentForDetail["annotations"];
+	  })
 	| TitleSegment;
+
+export type PageDetail = {
+	id: number;
+	slug: string;
+	title: string;
+	kind: TipitakaPageKind;
+	parentId: number | null;
+	position: number;
+	mdastJson: JsonValue;
+	segments: SegmentForDetail[];
+	createdAt: Date;
+	updatedAt: Date;
+};
 
 export type PageForList = {
 	id: number;
 	slug: string;
 	createdAt: Date;
-	status: PageStatus;
-	userHandle: string;
-	userName: string;
-	userImage: string;
+	kind: TipitakaPageKind;
 	titleSegment: TitleSegment;
 };
 
@@ -50,8 +57,7 @@ export type PageForTree = {
 	id: number;
 	slug: string;
 	parentId: number | null;
-	order: number;
-	userHandle: string;
+	position: number;
 	titleSegmentId: number;
 	titleText: string;
 	titleTranslationText: string | null;

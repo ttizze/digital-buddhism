@@ -1,9 +1,5 @@
 import { db } from "@/db";
 
-/**
- * COMMENTARYセグメントタイプのIDを取得する
- * @param label セグメントタイプのlabel
- */
 export async function findCommentarySegmentTypeId(
 	label: string,
 ): Promise<number> {
@@ -13,7 +9,6 @@ export async function findCommentarySegmentTypeId(
 		.where("key", "=", "COMMENTARY")
 		.where("label", "=", label)
 		.executeTakeFirst();
-
 	if (!segmentType) {
 		throw new Error(
 			`Segment type not found for commentary with label: ${label}`,

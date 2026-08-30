@@ -30,7 +30,7 @@ const createSegment = (
 		number,
 		text,
 		translationText: translatedText,
-		segmentTypeKey: "Primary",
+		segmentTypeKey: "PRIMARY",
 		segmentTypeLabel: "Primary",
 		annotations: [],
 	}) as SegmentForDetail;
