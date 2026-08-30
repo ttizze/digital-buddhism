@@ -114,9 +114,8 @@ export default function TermsPage() {
 					<p>
 						If you believe content infringes your copyright, send a written
 						notice containing the information required by 17 U.S.C. § 512 to
-						REIMEI LLC at the controller address in the Privacy Policy. We will
-						respond and, where appropriate, remove or disable access to the
-						material.
+						REIMEI LLC at contact@reimei.dev. We will respond and, where
+						appropriate, remove or disable access to the material.
 					</p>
 				</section>
 
@@ -160,8 +159,8 @@ export default function TermsPage() {
 					</h2>
 					<p>
 						EU users may appeal content-moderation decisions or submit
-						illegal-content notices in writing to REIMEI LLC at the controller
-						address in the Privacy Policy. Include <code>[DSA Appeal]</code> or
+						illegal-content notices to REIMEI LLC at contact@reimei.dev. Include{" "}
+						<code>[DSA Appeal]</code> or
 						<code>[Illegal Content]</code> in the subject. We publish an annual
 						transparency report in accordance with Regulation (EU) 2022/2065.
 					</p>
@@ -195,8 +194,8 @@ export default function TermsPage() {
 				<section className="mb-8">
 					<h2 className="text-2xl font-semibold mb-4">12. Contact</h2>
 					<p>
-						Questions about these Terms may be sent in writing to REIMEI LLC at
-						the controller address in the Privacy Policy.
+						Questions about these Terms may be sent to REIMEI LLC at
+						contact@reimei.dev.
 					</p>
 				</section>
 

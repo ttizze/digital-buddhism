@@ -28,12 +28,14 @@ export default function PrivacyPolicyPage() {
 					<p>
 						<b>REIMEI LLC</b>
 						<br />
-						3-7-46 Hakenomiya, Kita-ku, Kumamoto-shi, Kumamoto 〒861-8064 Japan
-						<br />
 						Managing Member: Takate Tomoki
 						<br />
-						Privacy and data-protection requests may be sent in writing to the
-						address above.
+						Privacy and data-protection requests may be sent to{" "}
+						<a className="text-blue-600" href="mailto:contact@reimei.dev">
+							contact@reimei.dev
+						</a>
+						. The controller's address will be provided without delay upon
+						request.
 					</p>
 				</section>
 
@@ -143,10 +145,10 @@ export default function PrivacyPolicyPage() {
 					<p className="mb-4">
 						Subject to applicable law, you have the right to access, correct,
 						delete, restrict, or object to the processing of your Personal Data,
-						and to receive a portable copy. Requests may be sent in writing to
-						the controller address above. You may also lodge a complaint with
-						the Personal Information Protection Commission (Japan) or your local
-						supervisory authority.
+						and to receive a portable copy. Requests may be sent to
+						contact@reimei.dev. You may also lodge a complaint with the Personal
+						Information Protection Commission (Japan) or your local supervisory
+						authority.
 					</p>
 				</section>
 
@@ -175,10 +177,7 @@ export default function PrivacyPolicyPage() {
 				{/* 10. Contact */}
 				<section className="mb-8">
 					<h2 className="text-2xl font-semibold mb-4">10. Contact</h2>
-					<p>
-						Questions about this Policy may be sent in writing to the controller
-						address above.
-					</p>
+					<p>Questions about this Policy may be sent to contact@reimei.dev.</p>
 				</section>
 
 				<div className="mt-8">
