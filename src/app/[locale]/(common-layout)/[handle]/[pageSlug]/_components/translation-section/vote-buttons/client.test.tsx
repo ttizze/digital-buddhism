@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 // VoteButtons.test.tsx
 import React from "react";
 import { vi } from "vitest";
@@ -36,6 +37,7 @@ const dummyTranslationDownvote = {
 describe("VoteButtons コンポーネント", () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
+		vi.unstubAllGlobals();
 	});
 
 	test("フォームと hidden input、アップ／ダウンボタンがレンダリングされる", () => {
@@ -102,5 +104,31 @@ describe("VoteButtons コンポーネント", () => {
 
 		expect(upvoteButton.className).toContain("disabled:pointer-events-none");
 		expect(downvoteButton.className).toContain("disabled:pointer-events-none");
+	});
+
+	test("確定した投票結果を翻訳データとして通知する", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () =>
+				Response.json({
+					success: true,
+					data: { isUpvote: false, point: 8 },
+				}),
+			),
+		);
+		const onVoted = vi.fn();
+		render(
+			<VoteButtons onVoted={onVoted} translation={dummyTranslationUpvote} />,
+		);
+
+		await userEvent.click(screen.getByTestId("vote-down-button"));
+
+		await waitFor(() => {
+			expect(onVoted).toHaveBeenCalledWith({
+				...dummyTranslationUpvote,
+				point: 8,
+				currentUserVoteIsUpvote: false,
+			});
+		});
 	});
 });

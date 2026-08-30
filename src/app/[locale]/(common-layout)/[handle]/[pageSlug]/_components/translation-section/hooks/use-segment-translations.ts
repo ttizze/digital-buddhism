@@ -30,6 +30,16 @@ export function useSegmentTranslations({
 		key,
 		fetcher,
 	);
+	const updateVote = (updatedTranslation: SegmentTranslation) =>
+		mutate(
+			(currentTranslations) =>
+				currentTranslations?.map((translation) =>
+					translation.id === updatedTranslation.id
+						? updatedTranslation
+						: translation,
+				),
+			{ revalidate: false },
+		);
 
-	return { data, error, isLoading, mutate };
+	return { data, error, isLoading, mutate, updateVote };
 }
