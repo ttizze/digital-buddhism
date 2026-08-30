@@ -83,6 +83,7 @@ export async function getSegmentTranslations(
 			.orderBy("selected.translationId", (ob) => ob.desc().nullsLast())
 			.orderBy("st.point", "desc")
 			.orderBy("st.createdAt", "desc")
+			.orderBy("st.id", "desc")
 			.execute();
 
 		const response = segmentTranslationSchema.array().parse(
@@ -91,7 +92,9 @@ export async function getSegmentTranslations(
 				isSelected: selectedTranslationId !== null,
 			})),
 		);
-		return Response.json(response);
+		return Response.json(response, {
+			headers: { "Cache-Control": "no-store" },
+		});
 	} catch (error) {
 		console.error("Error fetching translations:", error);
 		return Response.json(

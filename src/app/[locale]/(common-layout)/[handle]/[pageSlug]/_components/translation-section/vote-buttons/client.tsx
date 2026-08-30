@@ -7,7 +7,7 @@ import { VoteButton } from "./vote-button";
 
 interface VoteButtonsProps {
 	translation: SegmentTranslation;
-	onVoted?: (translation: SegmentTranslation) => void;
+	onVoted?: (translation: SegmentTranslation) => void | Promise<void>;
 	locale?: string;
 }
 
@@ -106,7 +106,7 @@ export function VoteButtons({
 				const body = (await response.json()) as VoteResponse;
 				setServerState(body);
 				if (response.ok && body.success && body.data) {
-					onVoted?.({
+					await onVoted?.({
 						...translation,
 						point: body.data.point,
 						currentUserVoteIsUpvote: body.data.isUpvote ?? null,

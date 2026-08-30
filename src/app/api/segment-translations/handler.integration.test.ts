@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
 import { db } from "@/db";
 import { resetDatabase } from "@/tests/db-helpers";
 import { createPageWithSegments, createUser } from "@/tests/factories";
 import { setupDbPerFile } from "@/tests/test-db-manager";
-import { getSegmentTranslations } from "./handler";
+import { getSegmentTranslations, patchSegmentTranslationVote } from "./handler";
 
 await setupDbPerFile(import.meta.url);
 
@@ -179,5 +180,77 @@ describe("/api/segment-translations GET", () => {
 		expect(body[0].text).toBe("明示的に選択された翻訳");
 		expect(body[0].isSelected).toBe(true);
 		expect(body[1].id).toBe(highPointTranslation.id);
+	});
+
+	it("交互の投票ごとにサーバー順位を確定し、同点は新しい翻訳を優先する", async () => {
+		const currentUser = await createUser({ handle: "voter" });
+		const translator = await createUser({ handle: "translator" });
+		const page = await createPageWithSegments({
+			slug: "vote-ranking",
+			segments: [
+				{
+					number: 0,
+					text: "source",
+					textAndOccurrenceHash: "vote-ranking-source",
+				},
+			],
+		});
+		const segment = await db
+			.selectFrom("segments")
+			.select("id")
+			.where("tipitakaPageId", "=", page.id)
+			.executeTakeFirstOrThrow();
+		const createdAt = new Date("2026-01-01T00:00:00.000Z");
+		const firstTranslation = await db
+			.insertInto("segmentTranslations")
+			.values({
+				segmentId: segment.id,
+				locale: "ja",
+				text: "first",
+				point: 0,
+				createdAt,
+				userId: translator.id,
+			})
+			.returningAll()
+			.executeTakeFirstOrThrow();
+		const secondTranslation = await db
+			.insertInto("segmentTranslations")
+			.values({
+				segmentId: segment.id,
+				locale: "ja",
+				text: "second",
+				point: 0,
+				createdAt,
+				userId: translator.id,
+			})
+			.returningAll()
+			.executeTakeFirstOrThrow();
+		getCurrentUser.mockResolvedValue({ id: currentUser.id });
+
+		const vote = (translationId: number) => {
+			const formData = new FormData();
+			formData.set("segmentTranslationId", String(translationId));
+			formData.set("isUpvote", "true");
+			return patchSegmentTranslationVote(
+				new Request("http://localhost/api/segment-translations", {
+					method: "PATCH",
+					body: formData,
+				}),
+			);
+		};
+		const rankedTexts = async () => {
+			const response = await getSegmentTranslations(
+				new Request(
+					`http://localhost/api/segment-translations?segmentId=${segment.id}&userLocale=ja`,
+				),
+			);
+			const rows = (await response.json()) as SegmentTranslation[];
+			return rows.map((translation) => translation.text);
+		};
+
+		await vote(firstTranslation.id);
+		await expect(rankedTexts()).resolves.toStrictEqual(["first", "second"]);
+		await vote(secondTranslation.id);
+		await expect(rankedTexts()).resolves.toStrictEqual(["second", "first"]);
 	});
 });

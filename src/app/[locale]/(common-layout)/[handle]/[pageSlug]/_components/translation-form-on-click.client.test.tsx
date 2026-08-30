@@ -16,8 +16,20 @@ beforeEach(() => {
 });
 
 vi.mock("./translation-section/add-and-vote-translations.client", () => ({
-	AddAndVoteTranslations: ({ segmentId }: { segmentId: number }) => (
-		<div data-testid="tr-ui">segment:{segmentId}</div>
+	AddAndVoteTranslations: ({
+		segmentId,
+		onBestTranslationChanged,
+	}: {
+		segmentId: number;
+		onBestTranslationChanged?: (text: string) => void;
+	}) => (
+		<button
+			data-testid="tr-ui"
+			onClick={() => onBestTranslationChanged?.("<strong>updated</strong>")}
+			type="button"
+		>
+			segment:{segmentId}
+		</button>
 	),
 }));
 
@@ -175,5 +187,24 @@ describe("TranslationFormOnClick", () => {
 		);
 
 		expect(screen.queryByTestId("tr-ui")).toBeNull();
+	});
+
+	test("再ランキング後の先頭訳を、開いている本文へ反映する", async () => {
+		const user = userEvent.setup();
+		render(
+			<>
+				<button className="seg-tr" data-segment-id="123" type="button">
+					before
+				</button>
+				<TranslationFormOnClick />
+			</>,
+		);
+
+		await user.click(screen.getByText("before"));
+		await user.click(screen.getByTestId("tr-ui"));
+
+		const updatedText = screen.getByText("updated");
+		expect(updatedText.tagName).toBe("STRONG");
+		expect(updatedText.closest(".seg-tr")).not.toBeNull();
 	});
 });

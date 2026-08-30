@@ -15,6 +15,9 @@ function normalizeInlineHtml(text: string): string {
 }
 
 export function sanitizeAndParseText(text: string): React.ReactNode {
-	const sanitized = DOMPurify.sanitize(normalizeInlineHtml(text));
-	return parse(sanitized);
+	return parse(sanitizeTextToHtml(text));
+}
+
+export function sanitizeTextToHtml(text: string): string {
+	return DOMPurify.sanitize(normalizeInlineHtml(text));
 }

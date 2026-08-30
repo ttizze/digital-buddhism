@@ -14,21 +14,21 @@ const INITIAL_DISPLAY_COUNT = 3;
 interface AddAndVoteTranslationsProps {
 	segmentId: number;
 	open: boolean;
+	onBestTranslationChanged?: (text: string) => void;
 }
 
 export function AddAndVoteTranslations({
 	segmentId,
 	open,
+	onBestTranslationChanged,
 }: AddAndVoteTranslationsProps) {
 	const [showAll, setShowAll] = useState(false);
 	const userLocale = useLocale();
-	const { data, error, isLoading, mutate, updateVote } = useSegmentTranslations(
-		{
-			segmentId,
-			userLocale,
-			enabled: open,
-		},
-	);
+	const { data, error, isLoading, mutate } = useSegmentTranslations({
+		segmentId,
+		userLocale,
+		enabled: open,
+	});
 
 	const translations = data ?? [];
 	const bestTranslation = translations[0];
@@ -42,6 +42,13 @@ export function AddAndVoteTranslations({
 		alternativeTranslations.length > INITIAL_DISPLAY_COUNT;
 
 	const toggleShowAll = () => setShowAll((prev) => !prev);
+	const refreshAfterVote = async () => {
+		const refreshedTranslations = await mutate();
+		const refreshedBestTranslation = refreshedTranslations?.[0];
+		if (refreshedBestTranslation) {
+			onBestTranslationChanged?.(refreshedBestTranslation.text);
+		}
+	};
 
 	if (!open) return null;
 
@@ -88,7 +95,7 @@ export function AddAndVoteTranslations({
 				<VoteButtons
 					key={bestTranslation.id}
 					locale={userLocale}
-					onVoted={updateVote}
+					onVoted={refreshAfterVote}
 					translation={bestTranslation}
 				/>
 			</span>
@@ -102,7 +109,7 @@ export function AddAndVoteTranslations({
 					onDeleted={() => {
 						void mutate();
 					}}
-					onVoted={updateVote}
+					onVoted={refreshAfterVote}
 					translation={displayedTranslation}
 				/>
 			))}

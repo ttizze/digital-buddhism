@@ -19,7 +19,7 @@ export function useSegmentTranslations({
 		: null;
 
 	const fetcher = async (url: string): Promise<SegmentTranslation[]> => {
-		const response = await fetch(url);
+		const response = await fetch(url, { cache: "no-store" });
 		if (!response.ok) {
 			throw new Error("Failed to fetch translations");
 		}
@@ -30,16 +30,6 @@ export function useSegmentTranslations({
 		key,
 		fetcher,
 	);
-	const updateVote = (updatedTranslation: SegmentTranslation) =>
-		mutate(
-			(currentTranslations) =>
-				currentTranslations?.map((translation) =>
-					translation.id === updatedTranslation.id
-						? updatedTranslation
-						: translation,
-				),
-			{ revalidate: false },
-		);
 
-	return { data, error, isLoading, mutate, updateVote };
+	return { data, error, isLoading, mutate };
 }

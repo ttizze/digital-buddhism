@@ -3,14 +3,20 @@
 import { useLocation } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { sanitizeTextToHtml } from "@/app/[locale]/_utils/sanitize-and-parse-text.client";
 import { AddAndVoteTranslations } from "./translation-section/add-and-vote-translations.client";
 
 type ActiveState = {
 	segmentId: number | null;
 	rootEl: HTMLElement | null;
+	translationEl: HTMLElement | null;
 };
 
-const emptyState: ActiveState = { segmentId: null, rootEl: null };
+const emptyState: ActiveState = {
+	segmentId: null,
+	rootEl: null,
+	translationEl: null,
+};
 
 /** Portal用rootを.seg-trの直後に確保（既存があれば再利用） */
 function ensureFormRoot(afterEl: Element): HTMLElement {
@@ -89,7 +95,7 @@ export function TranslationFormOnClick() {
 			if (!translationBlock) return;
 
 			const rootEl = ensureFormRoot(translationBlock);
-			const nextState = { segmentId: segId, rootEl };
+			const nextState = { segmentId: segId, rootEl, translationEl: el };
 			stateRef.current = nextState;
 			setActiveState(nextState);
 		};
@@ -136,7 +142,15 @@ export function TranslationFormOnClick() {
 	if (!activeState.segmentId || !activeState.rootEl) return null;
 
 	return createPortal(
-		<AddAndVoteTranslations open segmentId={activeState.segmentId} />,
+		<AddAndVoteTranslations
+			onBestTranslationChanged={(text) => {
+				if (activeState.translationEl) {
+					activeState.translationEl.innerHTML = sanitizeTextToHtml(text);
+				}
+			}}
+			open
+			segmentId={activeState.segmentId}
+		/>,
 		activeState.rootEl,
 	);
 }
