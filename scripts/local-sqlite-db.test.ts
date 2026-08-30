@@ -17,8 +17,10 @@ const execFileAsync = promisify(execFile);
 const expectedMigrations = readMigrationFiles({
 	migrationsFolder: join(import.meta.dirname, "../src/drizzle/turso"),
 });
-const latestExpectedMigration = expectedMigrations.at(-1);
-if (!latestExpectedMigration) throw new Error("No Turso migrations found");
+const expectedMigrationJournal = expectedMigrations.map((migration) => ({
+	hash: migration.hash,
+	createdAt: migration.folderMillis,
+}));
 
 describe("ローカルSQLiteのDrizzle migration", () => {
 	it("fixture作成時に正式なmigration journalを記録する", async () => {
@@ -30,13 +32,12 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			const migrations = await client.execute(
 				"SELECT hash, created_at FROM __drizzle_migrations ORDER BY created_at",
 			);
-			expect(migrations.rows).toHaveLength(expectedMigrations.length);
-			expect(String(migrations.rows.at(-1)?.hash)).toBe(
-				latestExpectedMigration.hash,
-			);
-			expect(Number(migrations.rows.at(-1)?.created_at)).toBe(
-				latestExpectedMigration.folderMillis,
-			);
+			expect(
+				migrations.rows.map((row) => ({
+					hash: String(row.hash),
+					createdAt: Number(row.created_at),
+				})),
+			).toEqual(expectedMigrationJournal);
 		} finally {
 			client.close();
 			await database.cleanup();
@@ -226,13 +227,12 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			const first = await client.execute(
 				"SELECT hash, created_at FROM __drizzle_migrations ORDER BY created_at",
 			);
-			expect(first.rows).toHaveLength(expectedMigrations.length);
-			expect(String(first.rows.at(-1)?.hash)).toBe(
-				latestExpectedMigration.hash,
-			);
-			expect(Number(first.rows.at(-1)?.created_at)).toBe(
-				latestExpectedMigration.folderMillis,
-			);
+			expect(
+				first.rows.map((row) => ({
+					hash: String(row.hash),
+					createdAt: Number(row.created_at),
+				})),
+			).toEqual(expectedMigrationJournal);
 
 			await execFileAsync("bun", ["run", "db:prod:migrate"], {
 				cwd: join(import.meta.dirname, ".."),
