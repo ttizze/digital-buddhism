@@ -1,16 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
 
-const {
-	getCurrentUserFromHeadersMock,
-	loadPageContentDataMock,
-	queryPageDetailMock,
-	setResponseHeaderMock,
-} = vi.hoisted(() => ({
-	getCurrentUserFromHeadersMock: vi.fn(),
-	loadPageContentDataMock: vi.fn(),
-	queryPageDetailMock: vi.fn(),
-	setResponseHeaderMock: vi.fn(),
-}));
+const { loadPageContentDataMock, queryPageDetailMock, setResponseHeadersMock } =
+	vi.hoisted(() => ({
+		loadPageContentDataMock: vi.fn(),
+		queryPageDetailMock: vi.fn(),
+		setResponseHeadersMock: vi.fn(),
+	}));
 
 vi.mock("@tanstack/react-start", () => ({
 	createServerFn: () => {
@@ -22,14 +18,10 @@ vi.mock("@tanstack/react-start", () => ({
 	},
 }));
 vi.mock("@tanstack/react-start/server", () => ({
-	getRequestHeaders: () => new Headers(),
-	setResponseHeader: setResponseHeaderMock,
+	setResponseHeaders: setResponseHeadersMock,
 }));
 vi.mock("@/app/[locale]/_db/queries", () => ({
 	queryPageDetail: queryPageDetailMock,
-}));
-vi.mock("@/app/_service/current-user", () => ({
-	getCurrentUserFromHeaders: getCurrentUserFromHeadersMock,
 }));
 vi.mock(
 	"@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_service/load-page-content-data",
@@ -46,18 +38,19 @@ describe("getPageDetailData", () => {
 			id: 1,
 			segments: [{ number: 0 }],
 		});
-		getCurrentUserFromHeadersMock.mockReset();
 		loadPageContentDataMock.mockReset().mockResolvedValue({ pageDetail: {} });
-		setResponseHeaderMock.mockReset();
+		setResponseHeadersMock.mockReset();
 	});
 
 	it("Tipitakaシステムhandle以外は取得しない", async () => {
 		await expect(getPageDetailData({ data: input })).resolves.toBeNull();
 		expect(queryPageDetailMock).not.toHaveBeenCalled();
-		expect(getCurrentUserFromHeadersMock).not.toHaveBeenCalled();
-		expect(setResponseHeaderMock).toHaveBeenCalledWith(
-			"Cache-Control",
-			"public, max-age=60, stale-while-revalidate=300",
+		const headers = setResponseHeadersMock.mock.calls[0]?.[0] as Headers;
+		expect(headers.get("Cache-Control")).toBe(
+			PUBLIC_PAGE_CACHE_HEADERS["Cache-Control"],
+		);
+		expect(headers.get("CDN-Cache-Control")).toBe(
+			PUBLIC_PAGE_CACHE_HEADERS["CDN-Cache-Control"],
 		);
 	});
 
@@ -73,6 +66,6 @@ describe("getPageDetailData", () => {
 				data: { locale: "ja", handle: "tipitaka", pageSlug: "vinaya-pitaka" },
 			}),
 		).resolves.toEqual({ pageDetail: { id: 1 } });
-		expect(getCurrentUserFromHeadersMock).not.toHaveBeenCalled();
+		expect(setResponseHeadersMock).toHaveBeenCalledOnce();
 	});
 });

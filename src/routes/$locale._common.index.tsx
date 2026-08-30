@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
 import { getHomeMetadata } from "@/app/[locale]/(common-layout)/_components/home/metadata";
 import { HomePresentation } from "@/app/[locale]/(common-layout)/_components/home/presentation";
 import { getIndexData } from "./$locale/-index-data";
@@ -9,6 +10,7 @@ export const Route = createFileRoute("/$locale/_common/")({
 
 		return data;
 	},
+	headers: () => PUBLIC_PAGE_CACHE_HEADERS,
 	head: ({ params }) => {
 		const { title, description, alternates } = getHomeMetadata(params.locale);
 

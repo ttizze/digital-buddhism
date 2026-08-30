@@ -5,9 +5,9 @@ import {
 	Outlet,
 } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { getCookie, setCookie } from "@tanstack/react-start/server";
 import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/tanstack-router";
+import { useEffect } from "react";
 import { IntlProvider } from "use-intl";
 import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { AnalyticsConsent } from "@/app/[locale]/_components/analytics-consent.client";
@@ -28,15 +28,9 @@ const messages = {
 };
 const cookieConsentMessageLocales = new Set(["en", "ja", "es", "ko", "zh"]);
 
-const loadLocaleRuntimeData = createServerFn({ method: "GET" })
-	.validator((locale: string) => locale)
-	.handler(({ data: locale }) => {
-		if (getCookie("NEXT_LOCALE") !== locale) {
-			setCookie("NEXT_LOCALE", locale, { sameSite: "lax" });
-		}
-
-		return { gaTrackingId: process.env.GOOGLE_ANALYTICS_ID ?? "" };
-	});
+const loadLocaleRuntimeData = createServerFn({ method: "GET" }).handler(() => ({
+	gaTrackingId: process.env.GOOGLE_ANALYTICS_ID ?? "",
+}));
 
 export const Route = createFileRoute("/$locale")({
 	params: {
@@ -48,9 +42,21 @@ export const Route = createFileRoute("/$locale")({
 			return params;
 		},
 	},
-	loader: ({ params }) => loadLocaleRuntimeData({ data: params.locale }),
+	loader: () => loadLocaleRuntimeData(),
 	component: LocaleShell,
 });
+
+function LocalePreference({ locale }: { locale: string }) {
+	useEffect(() => {
+		const localeCookie = `NEXT_LOCALE=${encodeURIComponent(locale)}`;
+		if (!document.cookie.split("; ").includes(localeCookie)) {
+			// biome-ignore lint/suspicious/noDocumentCookie: The locale preference must also work where Cookie Store is unavailable.
+			document.cookie = `${localeCookie}; Path=/; SameSite=Lax`;
+		}
+	}, [locale]);
+
+	return null;
+}
 
 function LocaleShell() {
 	const { locale } = Route.useParams();
@@ -67,6 +73,7 @@ function LocaleShell() {
 		<IntlProvider locale={locale} messages={localeMessages} timeZone="UTC">
 			<NuqsAdapter>
 				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+					<LocalePreference locale={locale} />
 					<ClientOnly fallback={null}>
 						<AnalyticsConsent
 							gaTrackingId={gaTrackingId}

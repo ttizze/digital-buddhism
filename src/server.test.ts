@@ -10,6 +10,9 @@ const { handlerFetchMock, runWithDatabaseRequestContextMock, withSentryMock } =
 			(_options: unknown, workerEntry: unknown) => workerEntry,
 		),
 	}));
+const cacheMatchMock = vi.fn();
+const cachePutMock = vi.fn();
+const waitUntilMock = vi.fn();
 
 vi.mock("@sentry/cloudflare", () => ({
 	withSentry: withSentryMock,
@@ -26,6 +29,15 @@ vi.mock("./db/request-context", () => ({
 import worker from "./server";
 
 beforeEach(() => {
+	cacheMatchMock.mockReset().mockResolvedValue(undefined);
+	cachePutMock.mockReset().mockResolvedValue(undefined);
+	waitUntilMock.mockReset();
+	vi.stubGlobal("caches", {
+		default: {
+			match: cacheMatchMock,
+			put: cachePutMock,
+		},
+	});
 	handlerFetchMock.mockReset();
 	runWithDatabaseRequestContextMock.mockClear();
 });
@@ -48,7 +60,7 @@ describe("Cloudflare Workerのセキュリティヘッダー", () => {
 				TURSO_DATABASE_URL: "https://db.test",
 				TURSO_AUTH_TOKEN: "db-token",
 			},
-			undefined,
+			{ waitUntil: waitUntilMock },
 		);
 
 		expect(response.status).toBe(201);
@@ -66,5 +78,54 @@ describe("Cloudflare Workerのセキュリティヘッダー", () => {
 		expect(response.headers.get("permissions-policy")).toBe(
 			"camera=(), microphone=(), geolocation=()",
 		);
+	});
+});
+
+describe("Cloudflare Workerの公開レスポンスキャッシュ", () => {
+	it("公開GETレスポンスをCache APIへ保存する", async () => {
+		handlerFetchMock.mockResolvedValueOnce(
+			new Response("fresh body", {
+				headers: {
+					"CDN-Cache-Control": "max-age=600",
+				},
+			}),
+		);
+		const request = new Request("https://evame.test/ja");
+
+		const response = await worker.fetch(
+			request,
+			{
+				TURSO_DATABASE_URL: "https://db.test",
+				TURSO_AUTH_TOKEN: "db-token",
+			},
+			{ waitUntil: waitUntilMock },
+		);
+
+		expect(await response.text()).toBe("fresh body");
+		expect(cachePutMock).toHaveBeenCalledOnce();
+		expect(cachePutMock.mock.calls[0]?.[0]).toBe(request);
+		const cachedResponse = cachePutMock.mock.calls[0]?.[1] as Response;
+		expect(cachedResponse.headers.get("x-frame-options")).toBe("DENY");
+		expect(waitUntilMock).toHaveBeenCalledWith(
+			cachePutMock.mock.results[0]?.value,
+		);
+	});
+
+	it("Cache APIのヒット時はDBとSSRを実行しない", async () => {
+		cacheMatchMock.mockResolvedValueOnce(new Response("cached body"));
+
+		const response = await worker.fetch(
+			new Request("https://evame.test/ja"),
+			{
+				TURSO_DATABASE_URL: "https://db.test",
+				TURSO_AUTH_TOKEN: "db-token",
+			},
+			{ waitUntil: waitUntilMock },
+		);
+
+		expect(await response.text()).toBe("cached body");
+		expect(runWithDatabaseRequestContextMock).not.toHaveBeenCalled();
+		expect(handlerFetchMock).not.toHaveBeenCalled();
+		expect(cachePutMock).not.toHaveBeenCalled();
 	});
 });

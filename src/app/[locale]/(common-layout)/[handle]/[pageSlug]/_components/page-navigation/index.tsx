@@ -10,16 +10,11 @@ interface PageNavigationProps {
 
 export function PageNavigation({ pageId, locale, data }: PageNavigationProps) {
 	if (!data) return null;
-	const { rootNode, treeNodes, breadcrumb } = data;
+	const { rootNode, breadcrumb } = data;
 
 	return (
 		<div className="mb-4 not-prose flex items-start gap-2">
-			<PageTree
-				currentPageId={pageId}
-				locale={locale}
-				rootNode={rootNode}
-				treeNodes={treeNodes}
-			/>
+			<PageTree currentPageId={pageId} locale={locale} rootNode={rootNode} />
 			<PageBreadcrumb breadcrumb={breadcrumb} locale={locale} />
 		</div>
 	);

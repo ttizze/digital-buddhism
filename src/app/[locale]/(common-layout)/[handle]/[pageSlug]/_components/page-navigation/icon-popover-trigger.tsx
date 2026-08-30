@@ -18,7 +18,7 @@ type Align = "start" | "center" | "end";
 interface IconPopoverTriggerProps {
 	icon: ReactNode;
 	title: string;
-	children: ReactNode;
+	children: ReactNode | (() => ReactNode);
 	align: Align;
 }
 
@@ -58,7 +58,11 @@ export function IconPopoverTrigger({
 				data-view={view}
 				onFocusOutside={(event) => event.preventDefault()}
 			>
-				{children}
+				{isOpen
+					? typeof children === "function"
+						? children()
+						: children
+					: null}
 			</PopoverContent>
 		</Popover>
 	);

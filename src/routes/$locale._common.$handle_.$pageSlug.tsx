@@ -1,4 +1,5 @@
 import { ClientOnly, createFileRoute, notFound } from "@tanstack/react-router";
+import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
 import { TIPITAKA_SOURCE_LOCALE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { FloatingControls } from "@/app/[locale]/(common-layout)/_components/floating-controls/floating-controls.client";
 import {
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/$locale/_common/$handle_/$pageSlug")({
 		if (!data) throw notFound();
 		return data;
 	},
+	headers: () => PUBLIC_PAGE_CACHE_HEADERS,
 	head: ({ loaderData, params }) => {
 		if (!loaderData) return {};
 
