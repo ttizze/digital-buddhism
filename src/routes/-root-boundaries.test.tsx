@@ -66,7 +66,7 @@ describe("TanStack Startのroot境界UI", () => {
 		expect(screen.getByText("404")).toBeInTheDocument();
 		expect(screen.getByRole("link", { name: "Go Home" })).toHaveAttribute(
 			"href",
-			"/en",
+			"/en/tipitaka",
 		);
 		expect(screen.getByRole("link", { name: "Search" })).toHaveAttribute(
 			"href",
