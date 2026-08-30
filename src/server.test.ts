@@ -112,7 +112,7 @@ describe("Cloudflare Workerの公開レスポンスキャッシュ", () => {
 				},
 			}),
 		);
-		const request = new Request("https://evame.test/ja");
+		const request = new Request("https://digital-buddhism.test/ja");
 
 		const response = await worker.fetch(
 			request,
@@ -138,7 +138,7 @@ describe("Cloudflare Workerの公開レスポンスキャッシュ", () => {
 		cacheMatchMock.mockResolvedValueOnce(new Response("cached body"));
 
 		const response = await worker.fetch(
-			new Request("https://evame.test/ja"),
+			new Request("https://digital-buddhism.test/ja"),
 			{
 				TURSO_DATABASE_URL: "https://db.test",
 				TURSO_AUTH_TOKEN: "db-token",
@@ -159,7 +159,7 @@ describe("Cloudflare WorkerのRead Model更新", () => {
 		handlerFetchMock.mockResolvedValueOnce(Response.json({ success: true }));
 
 		const response = await worker.fetch(
-			new Request("https://evame.test/api/segment-translations", {
+			new Request("https://digital-buddhism.test/api/segment-translations", {
 				method: "POST",
 			}),
 			{
