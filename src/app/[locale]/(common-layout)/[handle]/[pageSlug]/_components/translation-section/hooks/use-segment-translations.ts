@@ -9,6 +9,17 @@ interface UseSegmentTranslationsParams {
 	userLocale: string;
 	enabled: boolean;
 }
+
+async function fetchSegmentTranslations(
+	url: string,
+): Promise<SegmentTranslation[]> {
+	const response = await fetch(url, { cache: "no-store" });
+	if (!response.ok) {
+		throw new Error("Failed to fetch translations");
+	}
+	return segmentTranslationSchema.array().parse(await response.json());
+}
+
 export function useSegmentTranslations({
 	segmentId,
 	userLocale,
@@ -18,17 +29,9 @@ export function useSegmentTranslations({
 		? `/api/segment-translations?segmentId=${segmentId}&userLocale=${userLocale}`
 		: null;
 
-	const fetcher = async (url: string): Promise<SegmentTranslation[]> => {
-		const response = await fetch(url, { cache: "no-store" });
-		if (!response.ok) {
-			throw new Error("Failed to fetch translations");
-		}
-		return segmentTranslationSchema.array().parse(await response.json());
-	};
-
 	const { data, error, isLoading, mutate } = useSWR<SegmentTranslation[]>(
 		key,
-		fetcher,
+		fetchSegmentTranslations,
 	);
 
 	return { data, error, isLoading, mutate };

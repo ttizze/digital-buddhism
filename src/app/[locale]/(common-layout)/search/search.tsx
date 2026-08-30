@@ -10,6 +10,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+function renderIcon(category: Category) {
+	switch (category) {
+		case "title":
+			return <FileText className="mr-1 h-4 w-4" />;
+		case "user":
+			return <User className="mr-1 h-4 w-4" />;
+		case "content":
+			return <Edit3 className="mr-1 h-4 w-4" />;
+		default:
+			return null;
+	}
+}
+
 export function SearchPageClient({ locale }: { locale: string }) {
 	const [isPending, startTransition] = useTransition();
 	const [query, setQuery] = useQueryState(
@@ -38,19 +51,6 @@ export function SearchPageClient({ locale }: { locale: string }) {
 	function handleTabChange(newCat: Category) {
 		setCurrentCategory(newCat);
 		setPageNumber(1);
-	}
-
-	function renderIcon(cat: Category) {
-		switch (cat) {
-			case "title":
-				return <FileText className="mr-1 h-4 w-4" />;
-			case "user":
-				return <User className="mr-1 h-4 w-4" />;
-			case "content":
-				return <Edit3 className="mr-1 h-4 w-4" />;
-			default:
-				return null;
-		}
 	}
 
 	return (

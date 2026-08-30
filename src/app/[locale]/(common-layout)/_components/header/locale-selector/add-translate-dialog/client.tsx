@@ -24,14 +24,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { type TranslateActionState, translateAction } from "./action";
+import { canTranslateWithoutGeminiApiKey } from "./can-translate-without-gemini-api-key";
 import { DialogLocaleSelector } from "./dialog-locale-selector";
-
-export function canTranslateWithoutGeminiApiKey(
-	hasGeminiApiKey: boolean,
-	selectedModel: string,
-) {
-	return hasGeminiApiKey || !selectedModel.startsWith("gemini-");
-}
 
 type AddTranslateDialogProps = {
 	open: boolean;

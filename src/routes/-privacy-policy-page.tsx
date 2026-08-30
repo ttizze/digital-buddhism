@@ -1,11 +1,8 @@
-export const metadata = {
-	title: "Privacy Policy | Tipiṭaka",
-	description:
-		"Tipiṭaka Privacy Policy. Learn how we collect, use, and protect your personal data.",
-	robots: { index: true, follow: true },
-};
+import { Link, useParams } from "@tanstack/react-router";
 
 export default function PrivacyPolicyPage() {
+	const { locale } = useParams({ from: "/$locale/privacy" });
+
 	return (
 		<div className="min-h-screen bg-background">
 			<main className="container mx-auto px-4 py-8">
@@ -181,9 +178,13 @@ export default function PrivacyPolicyPage() {
 				</section>
 
 				<div className="mt-8">
-					<a className="text-blue-600 hover:underline" href="/">
+					<Link
+						className="text-blue-600 hover:underline"
+						params={{ locale }}
+						to="/$locale/tipitaka"
+					>
 						Return to Home
-					</a>
+					</Link>
 				</div>
 			</main>
 		</div>

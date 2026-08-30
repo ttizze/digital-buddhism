@@ -3,7 +3,7 @@
 import { Link } from "@tanstack/react-router";
 import { Bell, Loader2 } from "lucide-react";
 import useSWR from "swr";
-import type { NotificationRowsWithRelations } from "@/app/api/notifications/_types/notification";
+import type { NotificationJson } from "@/app/api/notifications/_types/notification";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -12,12 +12,28 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+type NotificationsResponse = { notifications: NotificationJson[] };
+
+async function fetchNotifications(url: string): Promise<NotificationsResponse> {
+	const response = await fetch(url, { credentials: "include" });
+	if (!response.ok) {
+		throw new Error(`Failed to fetch notifications: ${response.status}`);
+	}
+	return response.json();
+}
+
+function formatNotificationDate(createdAt: string, locale: string): string {
+	return new Intl.DateTimeFormat(locale, {
+		dateStyle: "medium",
+		timeStyle: "short",
+		timeZone: "UTC",
+	}).format(new Date(createdAt));
+}
+
 export function NotificationsDropdownClient({ locale }: { locale: string }) {
-	const { data, isLoading, mutate } = useSWR<{
-		notifications: NotificationRowsWithRelations[];
-	}>(
+	const { data, isLoading, mutate } = useSWR<NotificationsResponse>(
 		"/api/notifications",
-		(url) => fetch(url, { credentials: "include" }).then((r) => r.json()),
+		fetchNotifications,
 		{ revalidateOnFocus: true },
 	);
 
@@ -97,7 +113,7 @@ function NotificationItem({
 	locale,
 	index,
 }: {
-	notificationRowsWithRelations: NotificationRowsWithRelations;
+	notificationRowsWithRelations: NotificationJson;
 	locale: string;
 	index: number;
 }) {
@@ -119,7 +135,7 @@ function NotificationContent({
 	notificationRowsWithRelations,
 	locale,
 }: {
-	notificationRowsWithRelations: NotificationRowsWithRelations;
+	notificationRowsWithRelations: NotificationJson;
 	locale: string;
 }) {
 	const {
@@ -160,7 +176,10 @@ function NotificationContent({
 					</Link>
 				</span>
 				<span className="text-gray-500 text-sm">
-					{notificationRowsWithRelations.createdAt.toLocaleString()}
+					{formatNotificationDate(
+						notificationRowsWithRelations.createdAt,
+						locale,
+					)}
 				</span>
 			</span>
 		</>

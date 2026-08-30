@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import useSWR from "swr";
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
-import type { NotificationRowsWithRelations } from "@/app/api/notifications/_types/notification";
+import type { NotificationJson } from "@/app/api/notifications/_types/notification";
 import { NotificationsDropdownClient } from "./client";
 
 vi.mock("swr", () => ({ default: vi.fn() }));
@@ -20,7 +20,7 @@ vi.mock("@tanstack/react-router", () => ({
 	),
 }));
 
-const sampleNotifications: NotificationRowsWithRelations[] = [
+const sampleNotifications: NotificationJson[] = [
 	{
 		id: 4,
 		actorId: "actor_4",
@@ -28,7 +28,7 @@ const sampleNotifications: NotificationRowsWithRelations[] = [
 		actorName: "Alice Jones",
 		actorImage: "https://example.com/avatar4.png",
 		read: false,
-		createdAt: new Date("2023-01-04T00:00:00Z"),
+		createdAt: "2023-01-04T00:00:00.000Z",
 		segmentTranslationText: "Translation Text",
 		pageSlug: "page-slug-translation",
 		pageTitle: "Translated Page Title",

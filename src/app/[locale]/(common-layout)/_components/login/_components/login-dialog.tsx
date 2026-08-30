@@ -1,8 +1,8 @@
 "use client";
 
+import { useLocation } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 import { useLocale } from "use-intl";
-import { useHydrated } from "@/app/_hooks/use-hydrated";
 import {
 	Dialog,
 	DialogContent,
@@ -35,10 +35,9 @@ export function LoginDialog({
 }: LoginDialogProps) {
 	const [open, setOpen] = useState(defaultOpen);
 	const locale = useLocale();
-	const hydrated = useHydrated();
-	const redirectTo = hydrated
-		? `${window.location.pathname}${window.location.search}`
-		: "/";
+	const redirectTo = useLocation({
+		select: (location) => `${location.pathname}${location.searchStr}`,
+	});
 	return (
 		<Dialog onOpenChange={setOpen} open={open}>
 			<DialogTrigger asChild>{trigger}</DialogTrigger>

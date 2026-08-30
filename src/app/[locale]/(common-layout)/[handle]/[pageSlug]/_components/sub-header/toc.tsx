@@ -9,31 +9,31 @@ type TocTreeItem = {
 	children: TocItem[];
 };
 
+const toTreeNode = (item: TocItem): TreeNode => ({
+	id: item.anchorId,
+	label: <TocLink item={item} />,
+	children: [],
+});
+
+const renderNode = (node: TocTreeItem): ReactNode => {
+	const treeNode: TreeNode = {
+		id: node.item.anchorId,
+		label: <TocLink item={node.item} />,
+		children: node.children.map(toTreeNode),
+	};
+	return (
+		<TreeNodeItem
+			key={node.item.anchorId}
+			node={treeNode}
+			renderChildren={(children) =>
+				children.map((child) => <li key={child.id}>{child.label}</li>)
+			}
+		/>
+	);
+};
+
 export default function Toc({ items }: { items: TocItem[] }) {
 	const nodes = buildTocTree(items);
-
-	const toTreeNode = (item: TocItem): TreeNode => ({
-		id: item.anchorId,
-		label: <TocLink item={item} />,
-		children: [],
-	});
-
-	const renderNode = (node: TocTreeItem): ReactNode => {
-		const treeNode: TreeNode = {
-			id: node.item.anchorId,
-			label: <TocLink item={node.item} />,
-			children: node.children.map(toTreeNode),
-		};
-		return (
-			<TreeNodeItem
-				key={node.item.anchorId}
-				node={treeNode}
-				renderChildren={(children) =>
-					children.map((child) => <li key={child.id}>{child.label}</li>)
-				}
-			/>
-		);
-	};
 
 	return (
 		<nav aria-label="Table of contents" data-testid="toc">

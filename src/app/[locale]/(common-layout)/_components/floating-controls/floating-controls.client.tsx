@@ -1,6 +1,6 @@
 "use client";
 import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useScrollVisibility } from "./hooks/use-scroll-visibility";
@@ -33,6 +33,10 @@ export function FloatingControls({
 			.withDefault([])
 			.withOptions({ shallow: true }),
 	);
+	const visibleAnnotationSet = useMemo(
+		() => new Set(visibleAnnotations),
+		[visibleAnnotations],
+	);
 	useEffect(() => {
 		const tokens = visibleAnnotations.filter(Boolean);
 		if (tokens.length === 0) {
@@ -44,7 +48,7 @@ export function FloatingControls({
 
 	const toggleAnnotationType = (annotationType: AnnotationType) => {
 		const uniqueKey = annotationType.label;
-		const isVisible = visibleAnnotations.includes(uniqueKey);
+		const isVisible = visibleAnnotationSet.has(uniqueKey);
 		if (isVisible) {
 			setVisibleAnnotations(visibleAnnotations.filter((k) => k !== uniqueKey));
 		} else {
@@ -71,7 +75,7 @@ export function FloatingControls({
 
 			{annotationTypes.map((annotationType) => {
 				const uniqueKey = annotationType.label;
-				const isActive = visibleAnnotations.includes(uniqueKey);
+				const isActive = visibleAnnotationSet.has(uniqueKey);
 				return (
 					<Button
 						className="h-10 px-3 rounded-full text-sm cursor-pointer"

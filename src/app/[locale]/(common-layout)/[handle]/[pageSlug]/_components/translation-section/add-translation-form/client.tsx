@@ -23,6 +23,7 @@ export function AddTranslationForm({
 	const { data: session } = authClient.useSession();
 	const currentUser = hydrated ? session?.user : undefined;
 	const formRef = useRef<HTMLFormElement>(null);
+	const isAddingTranslationRef = useRef(false);
 	const [addTranslationState, setAddTranslationState] =
 		useState<ActionResponse>({
 			success: false,
@@ -31,6 +32,8 @@ export function AddTranslationForm({
 
 	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
+		if (isAddingTranslationRef.current) return;
+		isAddingTranslationRef.current = true;
 		setIsAddingTranslation(true);
 		setAddTranslationState({ success: false });
 
@@ -66,6 +69,7 @@ export function AddTranslationForm({
 		} catch {
 			setAddTranslationState({ success: false });
 		} finally {
+			isAddingTranslationRef.current = false;
 			setIsAddingTranslation(false);
 		}
 	};

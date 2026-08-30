@@ -10,7 +10,6 @@ export const Route = createFileRoute("/$locale/_common/tipitaka")({
 
 		return data;
 	},
-	headers: () => PUBLIC_PAGE_CACHE_HEADERS,
 	head: ({ params }) => {
 		const { title, description, alternates } = getHomeMetadata(params.locale);
 
@@ -33,6 +32,7 @@ export const Route = createFileRoute("/$locale/_common/tipitaka")({
 			],
 		};
 	},
+	headers: () => PUBLIC_PAGE_CACHE_HEADERS,
 	component: TipitakaIndex,
 });
 

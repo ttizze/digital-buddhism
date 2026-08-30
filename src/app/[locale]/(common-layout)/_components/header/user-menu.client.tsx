@@ -20,25 +20,25 @@ interface UserMenuProps {
 	locale: string;
 }
 
+async function handleSignOut() {
+	try {
+		await authClient.signOut({
+			fetchOptions: {
+				onSuccess: () => {
+					window.location.href = "/";
+				},
+			},
+		});
+	} catch (error) {
+		console.error("Sign out error:", error);
+	}
+}
+
 export function UserMenu({
 	currentUser,
 	hasGeminiApiKey = false,
 	locale,
 }: UserMenuProps) {
-	const handleSignOut = async () => {
-		try {
-			await authClient.signOut({
-				fetchOptions: {
-					onSuccess: () => {
-						window.location.href = "/";
-					},
-				},
-			});
-		} catch (error) {
-			console.error("Sign out error:", error);
-		}
-	};
-
 	return (
 		<DropdownMenu modal={false}>
 			<DropdownMenuTrigger>

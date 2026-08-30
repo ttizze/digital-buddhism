@@ -6,6 +6,15 @@ import type { TocItem } from "../../_domain/extract-toc-items";
 import { ExportMarkdownButton } from "../export-markdown-button";
 import { TocTrigger } from "./toc-trigger";
 
+function formatUpdatedDate(date: Date, locale: string): string {
+	return new Intl.DateTimeFormat(locale, {
+		day: "numeric",
+		month: "numeric",
+		timeZone: "UTC",
+		year: "numeric",
+	}).format(date);
+}
+
 export function SubHeader({
 	pageDetail,
 	tocItems,
@@ -34,7 +43,7 @@ export function SubHeader({
 						<span className="text-sm">Tipitaka</span>
 						{!isPinned && (
 							<time className="text-xs text-gray-500">
-								{pageDetail.updatedAt.toLocaleDateString(locale)}
+								{formatUpdatedDate(pageDetail.updatedAt, locale)}
 							</time>
 						)}
 					</div>

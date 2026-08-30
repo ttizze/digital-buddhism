@@ -232,21 +232,3 @@ export async function createGeminiApiKey(data: {
 		.returningAll()
 		.executeTakeFirstOrThrow();
 }
-
-export async function createSession(data: {
-	userId: string;
-	token?: string;
-	expiresAt?: Date;
-}) {
-	const token = data.token ?? `session_${randomUUID().replaceAll("-", "")}`;
-	return db
-		.insertInto("sessions")
-		.values({
-			id: createId(),
-			token,
-			userId: data.userId,
-			expiresAt: data.expiresAt ?? new Date(Date.now() + 86_400_000),
-		})
-		.returningAll()
-		.executeTakeFirstOrThrow();
-}

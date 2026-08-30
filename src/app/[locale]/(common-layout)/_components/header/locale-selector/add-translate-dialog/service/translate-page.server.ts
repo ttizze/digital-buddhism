@@ -20,17 +20,18 @@ interface NewJobParams {
 	locale: string;
 	pageId: number;
 	annotationPageId: number | null;
-	jobs: TranslationJobForToast[];
 }
 
 /* ───────── ジョブ作成・キュー投入 ───────── */
 
 /** 翻訳ジョブを作成しキューに投入する */
-async function createAndEnqueueJob(params: NewJobParams) {
+async function createAndEnqueueJob(
+	params: NewJobParams,
+): Promise<TranslationJobForToast | null> {
 	const targetPageId = params.annotationPageId ?? params.pageId;
 	const hasSegments = await hasSegmentsForPageId(targetPageId);
 	if (!hasSegments) {
-		return;
+		return null;
 	}
 
 	const job = await createTranslationJob({
@@ -39,8 +40,6 @@ async function createAndEnqueueJob(params: NewJobParams) {
 		locale: params.locale,
 		pageId: params.pageId,
 	});
-
-	params.jobs.push(job);
 
 	// TODO: translationContext をサポートする
 	// locale-selector からの翻訳でもユーザーの translationContext を選択できるようにする
@@ -53,6 +52,8 @@ async function createAndEnqueueJob(params: NewJobParams) {
 		annotationPageId: params.annotationPageId,
 		translationContext: "",
 	});
+
+	return job;
 }
 
 /* ───────── ページ翻訳オーケストレーション ───────── */
@@ -71,30 +72,32 @@ export async function translatePage(
 	if (!page) return { success: false, message: "Page not found" };
 	const pageId = page.id;
 
-	const jobs: TranslationJobForToast[] = [];
-
-	// 本文の翻訳ジョブ
-	await createAndEnqueueJob({
-		userId: params.userId,
-		aiModel: params.aiModel,
-		locale: params.locale,
-		pageId,
-		annotationPageId: null,
-		jobs,
-	});
-
-	// リンク先の注釈ページも同じ翻訳操作で処理する。
-	const annotationPageIds = await fetchAnnotationPageIdsForPage(pageId);
-	for (const annotationPageId of annotationPageIds) {
-		await createAndEnqueueJob({
+	const [mainJob, annotationPageIds] = await Promise.all([
+		createAndEnqueueJob({
 			userId: params.userId,
 			aiModel: params.aiModel,
 			locale: params.locale,
 			pageId,
-			annotationPageId,
-			jobs,
-		});
-	}
+			annotationPageId: null,
+		}),
+		fetchAnnotationPageIdsForPage(pageId),
+	]);
+
+	// リンク先の注釈ページも同じ翻訳操作で処理する。
+	const annotationJobs = await Promise.all(
+		annotationPageIds.map((annotationPageId) =>
+			createAndEnqueueJob({
+				userId: params.userId,
+				aiModel: params.aiModel,
+				locale: params.locale,
+				pageId,
+				annotationPageId,
+			}),
+		),
+	);
+	const jobs = [mainJob, ...annotationJobs].filter(
+		(job): job is TranslationJobForToast => job !== null,
+	);
 
 	return { success: true, jobs };
 }

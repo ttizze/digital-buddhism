@@ -1,6 +1,6 @@
 import type { PageTitleTree } from "../../_db/queries";
 import { CollapsibleTreeList } from "../page-navigation/collapsible-tree-list";
-import { toCollapsibleTreeNodes } from "../page-navigation/page-tree";
+import { toCollapsibleTreeNodes } from "../page-navigation/page-tree-nodes";
 
 interface ChildPagesProps {
 	locale: string;

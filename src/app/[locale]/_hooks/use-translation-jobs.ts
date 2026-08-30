@@ -4,7 +4,13 @@ import {
 	type TranslationJobForToast,
 } from "@/app/types/translation-job";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = async (url: string): Promise<TranslationJobForToast[]> => {
+	const response = await fetch(url);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch translation jobs: ${response.status}`);
+	}
+	return response.json();
+};
 const isTerminalJob = (job: TranslationJobForToast) =>
 	isTranslationJobTerminalStatus(job.status);
 

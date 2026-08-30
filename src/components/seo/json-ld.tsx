@@ -15,21 +15,21 @@ const ORGANIZATION_LOGO: ImageObject = {
 	"@type": "ImageObject",
 	url: `${BASE_URL}/brand-icon.png`,
 };
+const ORGANIZATION_DATA: WithContext<Organization> = {
+	"@context": "https://schema.org",
+	"@type": "Organization",
+	"@id": ORGANIZATION_ID,
+	name: "Tipiṭaka",
+	url: BASE_URL,
+	logo: ORGANIZATION_LOGO,
+};
 
 function JsonLd<T extends Thing>({ data }: { data: WithContext<T> }) {
 	return <script type="application/ld+json">{JSON.stringify(data)}</script>;
 }
 
 export function OrganizationJsonLd() {
-	const data: WithContext<Organization> = {
-		"@context": "https://schema.org",
-		"@type": "Organization",
-		"@id": ORGANIZATION_ID,
-		name: "Tipiṭaka",
-		url: BASE_URL,
-		logo: ORGANIZATION_LOGO,
-	};
-	return <JsonLd data={data} />;
+	return <JsonLd data={ORGANIZATION_DATA} />;
 }
 
 export function WebSiteJsonLd({ locale }: { locale: string }) {

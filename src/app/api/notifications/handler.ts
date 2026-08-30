@@ -3,6 +3,7 @@ import { isSameOriginRequest } from "@/app/api/_utils/is-same-origin-request";
 import { PRIVATE_RESPONSE_HEADERS } from "@/app/api/_utils/private-response-headers";
 import { markAllNotificationAsRead } from "./_db/mutations.server";
 import { fetchNotificationRowsWithRelations } from "./_db/queries.server";
+import type { NotificationJson } from "./_types/notification";
 
 export async function getNotifications(request: Request): Promise<Response> {
 	const user = await getCurrentUserFromHeaders(request.headers);
@@ -13,7 +14,11 @@ export async function getNotifications(request: Request): Promise<Response> {
 		);
 	}
 
-	const notifications = await fetchNotificationRowsWithRelations(user.handle);
+	const rows = await fetchNotificationRowsWithRelations(user.handle);
+	const notifications: NotificationJson[] = rows.map((notification) => ({
+		...notification,
+		createdAt: notification.createdAt.toISOString(),
+	}));
 	return Response.json(
 		{ notifications },
 		{ headers: PRIVATE_RESPONSE_HEADERS },

@@ -1,5 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import PrivacyPolicyPage, { metadata } from "./-privacy-policy-page";
+import PrivacyPolicyPage from "./-privacy-policy-page";
+
+const metadata = {
+	title: "Privacy Policy | Tipiṭaka",
+	description:
+		"Tipiṭaka Privacy Policy. Learn how we collect, use, and protect your personal data.",
+	robots: { index: true, follow: true },
+};
 
 export const Route = createFileRoute("/$locale/privacy")({
 	component: PrivacyPolicyPage,

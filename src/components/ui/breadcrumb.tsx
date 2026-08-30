@@ -50,14 +50,10 @@ function BreadcrumbLink({
 
 function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">) {
 	return (
-		// biome-ignore lint/a11y/useFocusableInteractive: <>
-		// biome-ignore lint/a11y/useSemanticElements: <>
 		<span
 			aria-current="page"
-			aria-disabled="true"
 			className={cn("text-foreground font-normal", className)}
 			data-slot="breadcrumb-page"
-			role="link"
 			{...props}
 		/>
 	);

@@ -12,7 +12,6 @@ export const Route = createFileRoute("/$locale/_common/tipitaka_/$pageSlug")({
 		if (!data) throw notFound();
 		return data;
 	},
-	headers: () => PUBLIC_PAGE_CACHE_HEADERS,
 	head: ({ loaderData, params }) => {
 		if (!loaderData) return {};
 
@@ -53,6 +52,7 @@ export const Route = createFileRoute("/$locale/_common/tipitaka_/$pageSlug")({
 			],
 		};
 	},
+	headers: () => PUBLIC_PAGE_CACHE_HEADERS,
 	component: PageDetailRoute,
 });
 

@@ -152,7 +152,7 @@ export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 			{/* ---------- Avatar ---------- */}
 			<form className="space-y-4" onSubmit={handleImageSubmit}>
 				<div className="mt-3">
-					<Label>Icon</Label>
+					<Label htmlFor="profile-image">Icon</Label>
 				</div>
 				<div className="relative group">
 					<button
@@ -180,6 +180,7 @@ export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 				<Input
 					accept="image/*"
 					className="hidden"
+					id="profile-image"
 					name="image"
 					onChange={(event) => {
 						if (event.currentTarget.files?.[0]) {
@@ -198,10 +199,11 @@ export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 			<form className="space-y-4" onSubmit={handleProfileSubmit}>
 				<input name="handle" type="hidden" value={currentUser.handle} />
 				<div>
-					<Label>Display Name</Label>
+					<Label htmlFor="display-name">Display Name</Label>
 					<Input
 						className="w-full h-10 px-3 py-2 border rounded-lg bg-white dark:bg-black/50 focus:outline-hidden"
 						defaultValue={editState.success ? editState.data?.name : ""}
+						id="display-name"
 						maxLength={25}
 						minLength={3}
 						name="name"
@@ -215,10 +217,11 @@ export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 				</div>
 
 				<div>
-					<Label>Profile</Label>
+					<Label htmlFor="profile">Profile</Label>
 					<textarea
 						className="w-full h-32 px-3 py-2 border rounded-lg bg-white dark:bg-black/50 focus:outline-hidden"
 						defaultValue={editState.success ? editState.data?.profile : ""}
+						id="profile"
 						name="profile"
 					/>
 					{!editState.success && editState.zodErrors?.profile && (
@@ -228,12 +231,13 @@ export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 					)}
 				</div>
 				<div>
-					<Label>Twitter Handle</Label>
+					<Label htmlFor="twitter-handle">Twitter Handle</Label>
 					<Input
 						className="w-full h-10 px-3 py-2 border rounded-lg bg-white dark:bg-black/50 focus:outline-hidden"
 						defaultValue={
 							editState.success ? editState.data?.twitterHandle : ""
 						}
+						id="twitter-handle"
 						name="twitterHandle"
 						pattern="@[A-Za-z0-9_]+"
 						placeholder="start with @. e.g. @tipitaka"

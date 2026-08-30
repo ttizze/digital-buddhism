@@ -1,11 +1,8 @@
-export const metadata = {
-	title: "Terms of Service | Tipiṭaka",
-	description:
-		"Tipiṭaka Terms of Service. Learn about user responsibilities, content licensing, and platform usage guidelines.",
-	robots: { index: true, follow: true },
-};
+import { Link, useParams } from "@tanstack/react-router";
 
 export default function TermsPage() {
+	const { locale } = useParams({ from: "/$locale/terms" });
+
 	return (
 		<div className="min-h-screen bg-background">
 			<main className="container mx-auto px-4 py-8">
@@ -16,9 +13,13 @@ export default function TermsPage() {
 						These Terms of Service (“Terms”) govern your access to and use of
 						Tipiṭaka (the “Service”). By clicking “I agree” or using the
 						Service, you accept these Terms and our{" "}
-						<a className="text-blue-600" href="/privacy-policy">
+						<Link
+							className="text-blue-600"
+							params={{ locale }}
+							to="/$locale/privacy"
+						>
 							Privacy Policy
-						</a>
+						</Link>
 						.
 					</p>
 					<p className="text-sm">
@@ -200,9 +201,13 @@ export default function TermsPage() {
 				</section>
 
 				<div className="mt-8">
-					<a className="text-blue-600 hover:underline" href="/">
+					<Link
+						className="text-blue-600 hover:underline"
+						params={{ locale }}
+						to="/$locale/tipitaka"
+					>
 						Return to Home
-					</a>
+					</Link>
 				</div>
 			</main>
 		</div>

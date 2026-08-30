@@ -10,3 +10,10 @@ export type NotificationRowsWithRelations = {
 	pageTitle: string;
 	segmentTranslationText: string;
 };
+
+export type NotificationJson = Omit<
+	NotificationRowsWithRelations,
+	"createdAt"
+> & {
+	createdAt: string;
+};

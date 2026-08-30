@@ -1,7 +1,7 @@
 "use client";
 import { Link } from "@tanstack/react-router";
 import { EllipsisVertical, Trash2 } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { useHydrated } from "@/app/_hooks/use-hydrated";
 import { authClient } from "@/app/[locale]/_service/auth-client";
 import { sanitizeAndParseText } from "@/app/[locale]/_utils/sanitize-and-parse-text.client";
@@ -31,6 +31,7 @@ export function TranslationListItem({
 	locale = "en",
 }: TranslationItemProps) {
 	const hydrated = useHydrated();
+	const isDeletingTranslationRef = useRef(false);
 	const [isDeletingTranslation, setIsDeletingTranslation] = useState(false);
 
 	const { data: session } = authClient.useSession();
@@ -39,6 +40,8 @@ export function TranslationListItem({
 
 	const handleDelete = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
+		if (isDeletingTranslationRef.current) return;
+		isDeletingTranslationRef.current = true;
 		setIsDeletingTranslation(true);
 
 		try {
@@ -57,6 +60,7 @@ export function TranslationListItem({
 				onDeleted?.();
 			}
 		} finally {
+			isDeletingTranslationRef.current = false;
 			setIsDeletingTranslation(false);
 		}
 	};

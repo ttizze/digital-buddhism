@@ -38,25 +38,26 @@ export function extractTipitakaPageTree(
 		ancestors: ReadonlySet<number>,
 	): TipitakaPageTreeNode[] => {
 		const siblings = rowsByParent.get(parentId) ?? [];
-		return [...siblings]
-			.sort(
-				(left, right) => left.position - right.position || left.id - right.id,
-			)
-			.filter((row) => !ancestors.has(row.id))
-			.map((row) => {
-				const nextAncestors = new Set(ancestors);
-				nextAncestors.add(row.id);
-				return {
-					id: row.id,
-					slug: row.slug,
-					parentId: row.parentId as number,
-					position: row.position,
-					titleSegmentId: row.titleSegmentId,
-					titleText: row.titleText,
-					titleTranslationText: row.titleTranslationText,
-					children: buildChildren(row.id, nextAncestors),
-				};
+		const sortedSiblings = [...siblings].sort(
+			(left, right) => left.position - right.position || left.id - right.id,
+		);
+		const children: TipitakaPageTreeNode[] = [];
+		for (const row of sortedSiblings) {
+			if (ancestors.has(row.id)) continue;
+			const nextAncestors = new Set(ancestors);
+			nextAncestors.add(row.id);
+			children.push({
+				id: row.id,
+				slug: row.slug,
+				parentId: row.parentId as number,
+				position: row.position,
+				titleSegmentId: row.titleSegmentId,
+				titleText: row.titleText,
+				titleTranslationText: row.titleTranslationText,
+				children: buildChildren(row.id, nextAncestors),
 			});
+		}
+		return children;
 	};
 
 	return buildChildren(rootPageId, new Set([rootPageId]));
