@@ -17,14 +17,16 @@ import { VoteButtons } from "../vote-buttons/client";
 
 interface TranslationItemProps {
 	translation: SegmentTranslation;
-	onVoted?: (translation: SegmentTranslation) => void;
+	isVoting: boolean;
+	onVote: (translationId: number, isUpvote: boolean) => void;
 	onDeleted?: () => void;
 	locale?: string;
 }
 
 export function TranslationListItem({
 	translation,
-	onVoted,
+	isVoting,
+	onVote,
 	onDeleted,
 	locale = "en",
 }: TranslationItemProps) {
@@ -106,8 +108,8 @@ export function TranslationListItem({
 					</span>
 				</Link>
 				<VoteButtons
-					locale={locale}
-					onVoted={onVoted}
+					isVoting={isVoting}
+					onVote={onVote}
 					translation={translation}
 				/>
 			</span>

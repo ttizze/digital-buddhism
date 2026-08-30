@@ -1,7 +1,5 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-// VoteButtons.test.tsx
-import React from "react";
 import { vi } from "vitest";
 import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
 import { VoteButtons } from "./client";
@@ -40,26 +38,27 @@ describe("VoteButtons コンポーネント", () => {
 		vi.unstubAllGlobals();
 	});
 
-	test("フォームと hidden input、アップ／ダウンボタンがレンダリングされる", () => {
-		render(<VoteButtons translation={dummyTranslationUpvote} />);
-
-		// hidden input (voteTarget) の検証
-		const voteTargetInput = screen.getByDisplayValue(dummyTranslationUpvote.id);
-		expect(voteTargetInput).toBeInTheDocument();
-
-		// hidden input (segmentTranslationId) の検証
-		const segmentTranslationIdInput = screen.getByDisplayValue(
-			dummyTranslationUpvote.id,
+	test("フォームとアップ／ダウンボタンがレンダリングされる", () => {
+		render(
+			<VoteButtons
+				isVoting={false}
+				onVote={vi.fn()}
+				translation={dummyTranslationUpvote}
+			/>,
 		);
-		expect(segmentTranslationIdInput).toBeInTheDocument();
 
-		// VoteButton の data-testid を用いた検証
-		expect(screen.getByTestId("vote-up-button")).toBeInTheDocument();
+		expect(screen.getByTestId("vote-up-button").closest("form")).not.toBeNull();
 		expect(screen.getByTestId("vote-down-button")).toBeInTheDocument();
 	});
 
 	test("アップボタンが正しい投票数とアクティブ状態のアイコンクラスを表示する", () => {
-		render(<VoteButtons translation={dummyTranslationUpvote} />);
+		render(
+			<VoteButtons
+				isVoting={false}
+				onVote={vi.fn()}
+				translation={dummyTranslationUpvote}
+			/>,
+		);
 
 		const upvoteButton = screen.getByTestId("vote-up-button");
 		// upvote ボタンは voteCount (10) を表示する
@@ -75,7 +74,13 @@ describe("VoteButtons コンポーネント", () => {
 	});
 
 	test("ダウンボタンがアクティブの場合、適切なアイコンクラスが付与され、voteCount は表示されない", () => {
-		render(<VoteButtons translation={dummyTranslationDownvote} />);
+		render(
+			<VoteButtons
+				isVoting={false}
+				onVote={vi.fn()}
+				translation={dummyTranslationDownvote}
+			/>,
+		);
 
 		const downvoteButton = screen.getByTestId("vote-down-button");
 		expect(downvoteButton).toBeInTheDocument();
@@ -92,43 +97,33 @@ describe("VoteButtons コンポーネント", () => {
 	});
 
 	test("isVoting が true の場合、全てのボタンが disabled になる", () => {
-		vi.spyOn(React, "useTransition").mockReturnValue([
-			true,
-			vi.fn(),
-		] as ReturnType<typeof React.useTransition>);
-
-		render(<VoteButtons translation={dummyTranslationUpvote} />);
+		render(
+			<VoteButtons
+				isVoting
+				onVote={vi.fn()}
+				translation={dummyTranslationUpvote}
+			/>,
+		);
 
 		const upvoteButton = screen.getByTestId("vote-up-button");
 		const downvoteButton = screen.getByTestId("vote-down-button");
 
-		expect(upvoteButton.className).toContain("disabled:pointer-events-none");
-		expect(downvoteButton.className).toContain("disabled:pointer-events-none");
+		expect(upvoteButton).toBeDisabled();
+		expect(downvoteButton).toBeDisabled();
 	});
 
-	test("確定した投票結果を翻訳データとして通知する", async () => {
-		vi.stubGlobal(
-			"fetch",
-			vi.fn(async () =>
-				Response.json({
-					success: true,
-					data: { isUpvote: false, point: 8 },
-				}),
-			),
-		);
-		const onVoted = vi.fn();
+	test("選んだ投票種別と翻訳IDを親へ通知する", async () => {
+		const onVote = vi.fn();
 		render(
-			<VoteButtons onVoted={onVoted} translation={dummyTranslationUpvote} />,
+			<VoteButtons
+				isVoting={false}
+				onVote={onVote}
+				translation={dummyTranslationUpvote}
+			/>,
 		);
 
 		await userEvent.click(screen.getByTestId("vote-down-button"));
 
-		await waitFor(() => {
-			expect(onVoted).toHaveBeenCalledWith({
-				...dummyTranslationUpvote,
-				point: 8,
-				currentUserVoteIsUpvote: false,
-			});
-		});
+		expect(onVote).toHaveBeenCalledWith(dummyTranslationUpvote.id, false);
 	});
 });

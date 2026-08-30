@@ -227,30 +227,32 @@ describe("/api/segment-translations GET", () => {
 			.executeTakeFirstOrThrow();
 		getCurrentUser.mockResolvedValue({ id: currentUser.id });
 
-		const vote = (translationId: number) => {
+		const vote = async (translationId: number) => {
 			const formData = new FormData();
 			formData.set("segmentTranslationId", String(translationId));
 			formData.set("isUpvote", "true");
-			return patchSegmentTranslationVote(
+			const result = await patchSegmentTranslationVote(
 				new Request("http://localhost/api/segment-translations", {
 					method: "PATCH",
 					body: formData,
 				}),
 			);
-		};
-		const rankedTexts = async () => {
-			const response = await getSegmentTranslations(
-				new Request(
-					`http://localhost/api/segment-translations?segmentId=${segment.id}&userLocale=ja`,
-				),
-			);
-			const rows = (await response.json()) as SegmentTranslation[];
-			return rows.map((translation) => translation.text);
+			const body = (await result.response.json()) as {
+				data: { translations: SegmentTranslation[] };
+			};
+			return body.data.translations;
 		};
 
-		await vote(firstTranslation.id);
-		await expect(rankedTexts()).resolves.toStrictEqual(["first", "second"]);
-		await vote(secondTranslation.id);
-		await expect(rankedTexts()).resolves.toStrictEqual(["second", "first"]);
+		const afterFirstVote = await vote(firstTranslation.id);
+		expect(afterFirstVote.map((translation) => translation.text)).toStrictEqual(
+			["first", "second"],
+		);
+		expect(afterFirstVote[0].currentUserVoteIsUpvote).toBe(true);
+
+		const afterSecondVote = await vote(secondTranslation.id);
+		expect(
+			afterSecondVote.map((translation) => translation.text),
+		).toStrictEqual(["second", "first"]);
+		expect(afterSecondVote[0].currentUserVoteIsUpvote).toBe(true);
 	});
 });

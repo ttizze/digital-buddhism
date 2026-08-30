@@ -3,6 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronUp, Languages } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocale } from "use-intl";
+import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
+import type { ActionResponse } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import { AddTranslationForm } from "./add-translation-form/client";
 import { useSegmentTranslations } from "./hooks/use-segment-translations";
@@ -10,6 +12,8 @@ import { TranslationListItem } from "./translation-list-item/client";
 import { VoteButtons } from "./vote-buttons/client";
 
 const INITIAL_DISPLAY_COUNT = 3;
+
+type VoteResponse = ActionResponse<{ translations: SegmentTranslation[] }>;
 
 interface AddAndVoteTranslationsProps {
 	segmentId: number;
@@ -23,6 +27,7 @@ export function AddAndVoteTranslations({
 	onBestTranslationChanged,
 }: AddAndVoteTranslationsProps) {
 	const [showAll, setShowAll] = useState(false);
+	const [isVoting, setIsVoting] = useState(false);
 	const userLocale = useLocale();
 	const { data, error, isLoading, mutate } = useSegmentTranslations({
 		segmentId,
@@ -49,11 +54,34 @@ export function AddAndVoteTranslations({
 		alternativeTranslations.length > INITIAL_DISPLAY_COUNT;
 
 	const toggleShowAll = () => setShowAll((prev) => !prev);
-	const refreshAfterVote = async () => {
-		const refreshedTranslations = await mutate();
-		const refreshedBestTranslation = refreshedTranslations?.[0];
-		if (refreshedBestTranslation) {
-			onBestTranslationChanged?.(refreshedBestTranslation.text);
+	const vote = async (translationId: number, isUpvote: boolean) => {
+		if (isVoting) return;
+
+		setIsVoting(true);
+		const formData = new FormData();
+		formData.set("segmentTranslationId", String(translationId));
+		formData.set("isUpvote", String(isUpvote));
+
+		try {
+			const response = await fetch("/api/segment-translations", {
+				method: "PATCH",
+				body: formData,
+				credentials: "same-origin",
+			});
+
+			if (response.status === 401) {
+				window.location.assign(`/${userLocale}/auth/login`);
+				return;
+			}
+
+			const body = (await response.json()) as VoteResponse;
+			if (response.ok && body.success) {
+				await mutate(body.data.translations, { revalidate: false });
+			}
+		} catch {
+			// 通信失敗時は最後にサーバーから確定した一覧を維持する。
+		} finally {
+			setIsVoting(false);
 		}
 	};
 
@@ -100,9 +128,9 @@ export function AddAndVoteTranslations({
 					</span>
 				</Link>
 				<VoteButtons
+					isVoting={isVoting}
 					key={bestTranslation.id}
-					locale={userLocale}
-					onVoted={refreshAfterVote}
+					onVote={vote}
 					translation={bestTranslation}
 				/>
 			</span>
@@ -111,12 +139,13 @@ export function AddAndVoteTranslations({
 			</span>
 			{displayedTranslations.map((displayedTranslation) => (
 				<TranslationListItem
+					isVoting={isVoting}
 					key={displayedTranslation.id}
 					locale={userLocale}
 					onDeleted={() => {
 						void mutate();
 					}}
-					onVoted={refreshAfterVote}
+					onVote={vote}
 					translation={displayedTranslation}
 				/>
 			))}

@@ -36,6 +36,54 @@ const deleteSchema = z.object({
 	translationId: z.coerce.number(),
 });
 
+async function listSegmentTranslations(
+	segmentId: number,
+	userLocale: string,
+	currentUserId?: string,
+) {
+	const translations = await db
+		.selectFrom("segmentTranslations as st")
+		.innerJoin("segments as s", "st.segmentId", "s.id")
+		.innerJoin("users as u", "st.userId", "u.id")
+		.leftJoin("translationVotes as tv", (join) =>
+			join
+				.onRef("tv.translationId", "=", "st.id")
+				.on("tv.userId", "=", currentUserId ?? ""),
+		)
+		.leftJoin("selectedSegmentTranslations as selected", (join) =>
+			join
+				.onRef("selected.translationId", "=", "st.id")
+				.onRef("selected.segmentId", "=", "st.segmentId")
+				.onRef("selected.locale", "=", "st.locale"),
+		)
+		.select([
+			"st.id",
+			"st.segmentId",
+			"st.locale",
+			"st.text",
+			"st.point",
+			"st.createdAt",
+			"u.name as userName",
+			"u.handle as userHandle",
+			"tv.isUpvote as currentUserVoteIsUpvote",
+			"selected.translationId as selectedTranslationId",
+		])
+		.where("st.segmentId", "=", segmentId)
+		.where("st.locale", "=", userLocale)
+		.orderBy("selected.translationId", (ob) => ob.desc().nullsLast())
+		.orderBy("st.point", "desc")
+		.orderBy("st.createdAt", "desc")
+		.orderBy("st.id", "desc")
+		.execute();
+
+	return segmentTranslationSchema.array().parse(
+		translations.map(({ selectedTranslationId, ...translation }) => ({
+			...translation,
+			isSelected: selectedTranslationId !== null,
+		})),
+	);
+}
+
 export async function getSegmentTranslations(
 	request: Request,
 ): Promise<Response> {
@@ -51,46 +99,10 @@ export async function getSegmentTranslations(
 	const currentUser = await getCurrentUserFromHeaders(request.headers);
 
 	try {
-		const translations = await db
-			.selectFrom("segmentTranslations as st")
-			.innerJoin("segments as s", "st.segmentId", "s.id")
-			.innerJoin("users as u", "st.userId", "u.id")
-			.leftJoin("translationVotes as tv", (join) =>
-				join
-					.onRef("tv.translationId", "=", "st.id")
-					.on("tv.userId", "=", currentUser?.id ?? ""),
-			)
-			.leftJoin("selectedSegmentTranslations as selected", (join) =>
-				join
-					.onRef("selected.translationId", "=", "st.id")
-					.onRef("selected.segmentId", "=", "st.segmentId")
-					.onRef("selected.locale", "=", "st.locale"),
-			)
-			.select([
-				"st.id",
-				"st.segmentId",
-				"st.locale",
-				"st.text",
-				"st.point",
-				"st.createdAt",
-				"u.name as userName",
-				"u.handle as userHandle",
-				"tv.isUpvote as currentUserVoteIsUpvote",
-				"selected.translationId as selectedTranslationId",
-			])
-			.where("st.segmentId", "=", segmentId)
-			.where("st.locale", "=", userLocale)
-			.orderBy("selected.translationId", (ob) => ob.desc().nullsLast())
-			.orderBy("st.point", "desc")
-			.orderBy("st.createdAt", "desc")
-			.orderBy("st.id", "desc")
-			.execute();
-
-		const response = segmentTranslationSchema.array().parse(
-			translations.map(({ selectedTranslationId, ...translation }) => ({
-				...translation,
-				isSelected: selectedTranslationId !== null,
-			})),
+		const response = await listSegmentTranslations(
+			segmentId,
+			userLocale,
+			currentUser?.id,
 		);
 		return Response.json(response, {
 			headers: { "Cache-Control": "no-store" },
@@ -202,23 +214,23 @@ export async function patchSegmentTranslationVote(request: Request) {
 	}
 
 	const { segmentTranslationId, isUpvote } = parsed.data;
-	const result = await handleVote(
-		segmentTranslationId,
-		isUpvote,
-		currentUser.id,
-	);
+	const vote = await handleVote(segmentTranslationId, isUpvote, currentUser.id);
 
-	if (result.data.isUpvote) {
+	if (vote.isUpvote) {
 		await createNotificationPageSegmentTranslationVote(
 			segmentTranslationId,
 			currentUser.id,
 		);
 	}
 
-	const pageId = await findPageIdBySegmentTranslationId(segmentTranslationId);
+	const translations = await listSegmentTranslations(
+		vote.segmentId,
+		vote.locale,
+		currentUser.id,
+	);
 	return {
-		response: Response.json({ success: true, data: result.data }),
-		pageId,
+		response: Response.json({ success: true, data: { translations } }),
+		pageId: vote.pageId,
 	};
 }
 

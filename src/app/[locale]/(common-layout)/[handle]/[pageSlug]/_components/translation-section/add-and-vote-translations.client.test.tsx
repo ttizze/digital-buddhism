@@ -19,14 +19,17 @@ vi.mock("./add-translation-form/client", () => ({
 vi.mock("./vote-buttons/client", () => ({
 	VoteButtons: ({
 		translation,
-		onVoted,
+		isVoting,
+		onVote,
 	}: {
 		translation: SegmentTranslation;
-		onVoted?: (translation: SegmentTranslation) => void | Promise<void>;
+		isVoting: boolean;
+		onVote: (translationId: number, isUpvote: boolean) => void;
 	}) => (
 		<button
 			data-testid={`vote-${translation.id}`}
-			onClick={() => onVoted?.(translation)}
+			disabled={isVoting}
+			onClick={() => onVote(translation.id, true)}
 			type="button"
 		>
 			vote
@@ -36,14 +39,17 @@ vi.mock("./vote-buttons/client", () => ({
 vi.mock("./translation-list-item/client", () => ({
 	TranslationListItem: ({
 		translation,
-		onVoted,
+		isVoting,
+		onVote,
 	}: {
 		translation: SegmentTranslation;
-		onVoted?: (translation: SegmentTranslation) => void | Promise<void>;
+		isVoting: boolean;
+		onVote: (translationId: number, isUpvote: boolean) => void;
 	}) => (
 		<button
 			data-testid={`vote-${translation.id}`}
-			onClick={() => onVoted?.(translation)}
+			disabled={isVoting}
+			onClick={() => onVote(translation.id, true)}
 			type="button"
 		>
 			{translation.text}
@@ -74,6 +80,10 @@ const secondTranslation = {
 } satisfies SegmentTranslation;
 
 describe("AddAndVoteTranslations", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
 	it("初回取得した先頭訳を本文へ通知する", async () => {
 		vi.mocked(useSegmentTranslations).mockReturnValue({
 			data: [firstTranslation, secondTranslation],
@@ -96,17 +106,29 @@ describe("AddAndVoteTranslations", () => {
 		});
 	});
 
-	it("投票ごとに再ランキングし、確定した先頭訳を本文へ通知する", async () => {
-		const mutate = vi
-			.fn()
-			.mockResolvedValueOnce([secondTranslation, firstTranslation])
-			.mockResolvedValueOnce([firstTranslation, secondTranslation]);
+	it("PATCHが返した最新順位を再GETせず確定状態にする", async () => {
+		const mutate = vi.fn().mockResolvedValue(undefined);
 		vi.mocked(useSegmentTranslations).mockReturnValue({
 			data: [firstTranslation, secondTranslation],
 			error: undefined,
 			isLoading: false,
 			mutate,
 		});
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce(
+				Response.json({
+					success: true,
+					data: { translations: [secondTranslation, firstTranslation] },
+				}),
+			)
+			.mockResolvedValueOnce(
+				Response.json({
+					success: true,
+					data: { translations: [firstTranslation, secondTranslation] },
+				}),
+			);
+		vi.stubGlobal("fetch", fetchMock);
 		const onBestTranslationChanged = vi.fn();
 		render(
 			<AddAndVoteTranslations
@@ -118,12 +140,21 @@ describe("AddAndVoteTranslations", () => {
 
 		await userEvent.click(screen.getByTestId("vote-2"));
 		await waitFor(() => {
-			expect(onBestTranslationChanged).toHaveBeenLastCalledWith("second");
+			expect(mutate).toHaveBeenNthCalledWith(
+				1,
+				[secondTranslation, firstTranslation],
+				{ revalidate: false },
+			);
 		});
 		await userEvent.click(screen.getByTestId("vote-1"));
 		await waitFor(() => {
-			expect(onBestTranslationChanged).toHaveBeenLastCalledWith("first");
+			expect(mutate).toHaveBeenNthCalledWith(
+				2,
+				[firstTranslation, secondTranslation],
+				{ revalidate: false },
+			);
 		});
+		expect(fetchMock).toHaveBeenCalledTimes(2);
 		expect(mutate).toHaveBeenCalledTimes(2);
 	});
 });
