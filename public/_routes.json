@@ -4,8 +4,8 @@
 	"exclude": [
 		"/apple-touch-icon.png",
 		"/brand-icon.png",
-		"/favicon-dark.png",
-		"/favicon.png",
+		"/brand-icon.svg",
+		"/favicon.svg",
 		"/assets/*"
 	]
 }

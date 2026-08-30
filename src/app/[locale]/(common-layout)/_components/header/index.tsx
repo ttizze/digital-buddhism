@@ -19,7 +19,7 @@ export function HeaderFrame({
 					<img
 						alt=""
 						className="size-8 shrink-0 dark:invert"
-						src="/brand-icon.png"
+						src="/brand-icon.svg"
 					/>
 					<span className="hidden font-semibold text-xl sm:inline">
 						Digital Buddhism
