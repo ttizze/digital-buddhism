@@ -65,5 +65,4 @@ export function extractTipitakaPageTree(
 export {
 	TIPITAKA_ROOT_SLUG,
 	TIPITAKA_SOURCE_LOCALE,
-	TIPITAKA_SYSTEM_USER_HANDLE,
 } from "@/app/[locale]/_domain/tipitaka-page-visibility";

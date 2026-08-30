@@ -21,7 +21,7 @@ const pendingJobs: TranslationJobForToast[] = [
 		status: "PENDING",
 		progress: 0,
 		error: "",
-		page: { slug: "test-page", user: { handle: "testuser" } },
+		page: { slug: "test-page" },
 	},
 	{
 		id: 2,
@@ -29,7 +29,7 @@ const pendingJobs: TranslationJobForToast[] = [
 		status: "IN_PROGRESS",
 		progress: 30,
 		error: "",
-		page: { slug: "test-page", user: { handle: "testuser" } },
+		page: { slug: "test-page" },
 	},
 ];
 
@@ -40,7 +40,7 @@ const completedJobs: TranslationJobForToast[] = [
 		status: "COMPLETED",
 		progress: 100,
 		error: "",
-		page: { slug: "test-page", user: { handle: "testuser" } },
+		page: { slug: "test-page" },
 	},
 	{
 		id: 2,
@@ -48,7 +48,7 @@ const completedJobs: TranslationJobForToast[] = [
 		status: "COMPLETED",
 		progress: 100,
 		error: "",
-		page: { slug: "test-page", user: { handle: "testuser" } },
+		page: { slug: "test-page" },
 	},
 ];
 

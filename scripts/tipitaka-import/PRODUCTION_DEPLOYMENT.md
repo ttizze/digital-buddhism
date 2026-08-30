@@ -23,26 +23,18 @@ DBへの投入が完了すると、本文・目次・翻訳・注釈の表示用
    各migrationとjournal更新は同じtransactionで確定するため、失敗時は最後に
    完了したmigrationから再開します。
 
-2. **システムユーザー**: `tipitaka` というハンドルのユーザーが存在することを
-   確認します。初期セットアップ時は、シードを本番DBへ明示的に実行します。
-
-   ```bash
-   bun run db:prod:seed
-   ```
-
-3. **接続情報**: 実行環境に次の環境変数を安全に設定します。
+2. **接続情報**: 実行環境に次の環境変数を安全に設定します。
    - `TURSO_DATABASE_URL`（本番Tursoの接続URL）
    - `TURSO_AUTH_TOKEN`（本番Tursoの認証トークン）
 
    これらの値はGit、ログ、ドキュメントへ保存しません。
 
-4. **Cloudflareの権限**: Wranglerが対象アカウントへログイン済みであり、`wrangler.jsonc`の`TIPITAKA_READ_MODELS` bindingへ書き込めることを確認します。
+3. **Cloudflareの権限**: Wranglerが対象アカウントへログイン済みであり、`wrangler.jsonc`の`TIPITAKA_READ_MODELS` bindingへ書き込めることを確認します。
 
-5. **Tipitakaファイル**: `tipitaka-md*` ディレクトリと `books.json` が存在することを確認します。
+4. **Tipitakaファイル**: `tipitaka-md*` ディレクトリと `books.json` が存在することを確認します。
 
-マイグレーションとシードは、投入対象と同じTurso環境を指していることを確認
-してから実行してください。ローカルの一時SQLite DBやCIから本番DBへ接続して
-はいけません。
+マイグレーションは、投入対象と同じTurso環境を指していることを確認してから実行してください。
+ローカルの一時SQLite DBやCIから本番DBへ接続してはいけません。
 
 ## 実行手順
 
@@ -89,14 +81,6 @@ Cloudflare Workersのビルド・デプロイやリクエスト処理に全量�
 
 ## トラブルシューティング
 
-### エラー: `User with handle tipitaka not found`
-
-システムユーザーが本番Turso DBに存在しません。接続先を確認したうえで、初期
-セットアップなら以下を実行します。
-
-```bash
-bun run db:prod:seed
-```
 
 ### エラー: `TURSO_DATABASE_URL is not defined`
 

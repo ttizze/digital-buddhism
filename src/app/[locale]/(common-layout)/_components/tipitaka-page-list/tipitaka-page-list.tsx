@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
 import type { TipitakaPageTreeNode } from "./domain/extract-tipitaka-page-tree";
 
@@ -36,12 +35,8 @@ function TipitakaTreeList({
 				<li className="py-3 first:pt-0 last:pb-0" key={node.id}>
 					<Link
 						className="block rounded-md px-2 py-1 hover:bg-muted"
-						params={{
-							handle: TIPITAKA_SYSTEM_USER_HANDLE,
-							locale,
-							pageSlug: node.slug,
-						}}
-						to="/$locale/$handle/$pageSlug"
+						params={{ locale, pageSlug: node.slug }}
+						to="/$locale/tipitaka/$pageSlug"
 					>
 						<SegmentElement
 							className="break-all overflow-wrap-anywhere"

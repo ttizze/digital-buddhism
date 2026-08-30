@@ -4,8 +4,8 @@ import {
 	fetchTipitakaPagesWithTranslationsChunk,
 } from "@/app/_db/sitemap-queries.server";
 import {
+	TIPITAKA_ROOT_SLUG,
 	TIPITAKA_SOURCE_LOCALE,
-	TIPITAKA_SYSTEM_USER_HANDLE,
 } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 
 const CHUNK = 1_000;
@@ -43,7 +43,7 @@ export async function generateSitemapEntries(id: number) {
 	}));
 
 	const pageRoutes = pages.map((page) => ({
-		url: `${BASE_URL}/${TIPITAKA_SOURCE_LOCALE}/${TIPITAKA_SYSTEM_USER_HANDLE}/${page.slug}`,
+		url: `${BASE_URL}/${TIPITAKA_SOURCE_LOCALE}/${TIPITAKA_ROOT_SLUG}/${page.slug}`,
 		lastModified: page.updatedAt,
 		changeFrequency: "daily" as const,
 		priority: 0.7,
@@ -51,7 +51,7 @@ export async function generateSitemapEntries(id: number) {
 			languages: Object.fromEntries(
 				[TIPITAKA_SOURCE_LOCALE, ...page.translationLocales].map((locale) => [
 					locale,
-					`${BASE_URL}/${locale}/${TIPITAKA_SYSTEM_USER_HANDLE}/${page.slug}`,
+					`${BASE_URL}/${locale}/${TIPITAKA_ROOT_SLUG}/${page.slug}`,
 				]),
 			),
 		},

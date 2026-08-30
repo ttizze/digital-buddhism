@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { PaginationBar } from "@/app/[locale]/(common-layout)/_components/pagination-bar";
 import type { UserTranslationContribution } from "../_db/queries";
 
@@ -33,12 +32,8 @@ export function UserTranslationList({
 					<article className="py-4" key={contribution.id}>
 						<Link
 							className="font-medium hover:underline"
-							params={{
-								handle: TIPITAKA_SYSTEM_USER_HANDLE,
-								locale,
-								pageSlug: contribution.pageSlug,
-							}}
-							to="/$locale/$handle/$pageSlug"
+							params={{ locale, pageSlug: contribution.pageSlug }}
+							to="/$locale/tipitaka/$pageSlug"
 						>
 							{contribution.sourceText}
 						</Link>

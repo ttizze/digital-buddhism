@@ -13,7 +13,7 @@ import { BASE_URL } from "@/app/_constants/base-url";
 const ORGANIZATION_ID = `${BASE_URL}/#organization`;
 const ORGANIZATION_LOGO: ImageObject = {
 	"@type": "ImageObject",
-	url: `${BASE_URL}/favicon.svg`,
+	url: `${BASE_URL}/brand-icon.png`,
 };
 
 function JsonLd<T extends Thing>({ data }: { data: WithContext<T> }) {

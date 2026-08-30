@@ -63,7 +63,7 @@ export const Route = createFileRoute("/")({
 	beforeLoad: async ({ location }) => {
 		const locale = await getLocale();
 		throw redirect({
-			to: "/$locale",
+			to: "/$locale/tipitaka",
 			params: { locale },
 			search: location.search,
 		});

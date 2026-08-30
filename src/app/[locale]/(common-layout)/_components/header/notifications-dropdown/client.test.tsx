@@ -31,7 +31,6 @@ const sampleNotifications: NotificationRowsWithRelations[] = [
 		createdAt: new Date("2023-01-04T00:00:00Z"),
 		segmentTranslationText: "Translation Text",
 		pageSlug: "page-slug-translation",
-		pageOwnerHandle: "user_of_page",
 		pageTitle: "Translated Page Title",
 	},
 ];

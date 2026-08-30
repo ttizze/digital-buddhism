@@ -1,4 +1,3 @@
-import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import type {
 	TranslationJobForToast,
 	TranslationJobStatus,
@@ -29,12 +28,7 @@ export async function fetchTranslationJobsByIds(
 		status: row.status as TranslationJobStatus,
 		progress: row.progress,
 		error: row.error,
-		page: {
-			slug: row.pageSlug,
-			user: {
-				handle: TIPITAKA_SYSTEM_USER_HANDLE,
-			},
-		},
+		page: { slug: row.pageSlug },
 	}));
 
 	return rowsTyped;

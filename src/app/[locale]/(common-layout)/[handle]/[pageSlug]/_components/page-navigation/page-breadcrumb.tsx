@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
+import { TIPITAKA_ROOT_SLUG } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
 import type { PageForTree } from "@/app/[locale]/types";
 import {
@@ -24,9 +24,7 @@ export function PageBreadcrumb({
 					<Fragment key={node.id}>
 						<BreadcrumbItem>
 							<BreadcrumbLink asChild>
-								<a
-									href={`/${locale}/${TIPITAKA_SYSTEM_USER_HANDLE}/${node.slug}`}
-								>
+								<a href={`/${locale}/${TIPITAKA_ROOT_SLUG}/${node.slug}`}>
 									<SegmentElement
 										className="line-clamp-1 break-all overflow-wrap-anywhere"
 										interactive={false}

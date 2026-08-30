@@ -7,6 +7,7 @@ type BestTranslationTextParams = {
 };
 
 /** Select the explicit translation when present, then fall back to vote ranking. */
+// TODO: 指定したユーザーが投票した訳を採用訳として優先する方式へ変更する。
 export function bestTranslationTextSubquery({
 	locale,
 	segmentId,

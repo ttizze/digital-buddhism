@@ -11,7 +11,7 @@ import { buildLocalDatabaseEnv } from "./local-sqlite-db";
 const execFileAsync = promisify(execFile);
 
 describe("ローカルSQLiteのDrizzle migration", () => {
-	it("Tipitakaを正規化schemaへ移し翻訳選定と参照整合性を保持する", async () => {
+	it("Tipitakaを正規化schemaへ移しlegacy system identityだけを削除する", async () => {
 		const directory = await mkdtemp(
 			join(tmpdir(), "digital-buddshim-tipitaka-cutover-"),
 		);
@@ -46,6 +46,10 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 				[
 					"INSERT INTO users (id, handle, email) VALUES ('legacy-system-user', 'evame', 'evame@example.com')",
 					"INSERT INTO users (id, handle, email) VALUES ('translator', 'translator', 'translator@example.com')",
+					"INSERT INTO accounts (id, user_id, provider_id, account_id) VALUES ('legacy-account', 'legacy-system-user', 'google', 'legacy-google-account')",
+					"INSERT INTO gemini_api_keys (user_id, api_key) VALUES ('legacy-system-user', 'local-test-key')",
+					"INSERT INTO sessions (id, token, user_id, expires_at) VALUES ('legacy-session', 'legacy-token', 'legacy-system-user', 2000000000000)",
+					"INSERT INTO user_settings (user_id) VALUES ('legacy-system-user')",
 					"INSERT INTO contents (id, kind) VALUES (100, 'PAGE'), (101, 'PAGE'), (200, 'PAGE')",
 					"INSERT INTO pages (id, slug, user_id, mdast_json, status, parent_id, \"order\") VALUES (100, 'tipitaka', 'legacy-system-user', '{}', 'PUBLIC', NULL, 0)",
 					"INSERT INTO pages (id, slug, user_id, mdast_json, status, parent_id, \"order\") VALUES (101, 'vinaya-pitaka', 'legacy-system-user', '{}', 'PUBLIC', 100, 1)",
@@ -84,20 +88,17 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 					tipitaka_pages.text_level,
 					segments.tipitaka_page_id AS segment_page_id,
 					segments.source_paragraph_number,
-					segment_translations.id AS translation_id,
-					notifications.id AS notification_id
+					segment_translations.id AS translation_id
 				FROM tipitaka_pages
 				JOIN segments ON segments.tipitaka_page_id = tipitaka_pages.id
 				JOIN segment_translations ON segment_translations.segment_id = segments.id
-				JOIN notifications
-					ON notifications.segment_translation_id = segment_translations.id
 				WHERE tipitaka_pages.id = 101
+					AND segment_translations.id = 101
 			`);
 			expect(preserved.rows).toEqual([
 				expect.objectContaining({
 					catalog_key: "vinaya-pitaka",
 					text_level: "MULA",
-					notification_id: 101,
 					page_id: 101,
 					segment_page_id: 101,
 					source_paragraph_number: null,
@@ -112,21 +113,25 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 				{
 					locale: "ja",
 					segment_id: 101,
-					selected_by_user_id: "legacy-system-user",
+					selected_by_user_id: null,
 					translation_id: 101,
 				},
 			]);
 
-			const systemUser = await client.execute(
-				"SELECT handle, name, image FROM users WHERE id = 'legacy-system-user'",
-			);
-			expect(systemUser.rows).toEqual([
-				{
-					handle: "tipitaka",
-					image: "/favicon.svg",
-					name: "Tipiṭaka",
-				},
-			]);
+			for (const [table, column] of [
+				["users", "id"],
+				["accounts", "user_id"],
+				["gemini_api_keys", "user_id"],
+				["sessions", "user_id"],
+				["user_settings", "user_id"],
+				["translation_votes", "user_id"],
+				["notifications", "actor_id"],
+			] as const) {
+				const result = await client.execute(
+					`SELECT count(*) AS count FROM ${table} WHERE ${column} = 'legacy-system-user'`,
+				);
+				expect(Number(result.rows[0]?.count)).toBe(0);
+			}
 
 			for (const table of [
 				"tipitaka_pages",

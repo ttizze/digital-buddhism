@@ -7,7 +7,6 @@ export type NotificationRowsWithRelations = {
 	read: boolean;
 	createdAt: Date;
 	pageSlug: string;
-	pageOwnerHandle: string;
 	pageTitle: string;
 	segmentTranslationText: string;
 };

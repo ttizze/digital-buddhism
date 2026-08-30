@@ -42,12 +42,8 @@ export const JobsView = ({ jobs }: { jobs: TranslationJobForToast[] }) => (
 					{statusIcon(j.status)}
 					<Link
 						className="min-w-[48px] cursor-pointer flex items-center capitalize hover:underline"
-						params={{
-							handle: j.page.user.handle,
-							locale: j.locale,
-							pageSlug: j.page.slug,
-						}}
-						to="/$locale/$handle/$pageSlug"
+						params={{ locale: j.locale, pageSlug: j.page.slug }}
+						to="/$locale/tipitaka/$pageSlug"
 					>
 						<LinkIcon className="w-4 h-4 mr-1" />
 						{j.locale}

@@ -21,9 +21,7 @@ function runCommand(commandArgs: string[], env: NodeJS.ProcessEnv): number {
 }
 
 async function main(): Promise<void> {
-	const args = process.argv.slice(2);
-	const shouldSeed = args[0] === "--seed";
-	const commandArgs = shouldSeed ? args.slice(args[1] === "--" ? 2 : 1) : args;
+	const commandArgs = process.argv.slice(2);
 	if (commandArgs.length === 0) {
 		throw new Error("A command is required");
 	}
@@ -33,12 +31,7 @@ async function main(): Promise<void> {
 	let exitCode = 0;
 
 	try {
-		if (shouldSeed) {
-			exitCode = runCommand(["bun", "run", "tsx", "src/db/seed.ts"], env);
-		}
-		if (exitCode === 0) {
-			exitCode = runCommand(commandArgs, env);
-		}
+		exitCode = runCommand(commandArgs, env);
 	} finally {
 		await database.cleanup();
 	}

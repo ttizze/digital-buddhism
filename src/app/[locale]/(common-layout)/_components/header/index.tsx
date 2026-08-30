@@ -14,7 +14,7 @@ export function HeaderFrame({
 				<a
 					aria-label="Digital Buddhism"
 					className="flex items-center gap-2"
-					href={`/${locale}`}
+					href={`/${locale}/tipitaka`}
 				>
 					<img
 						alt=""

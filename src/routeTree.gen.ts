@@ -28,12 +28,13 @@ import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as LocaleCommonIndexRouteImport } from './routes/$locale._common.index'
 import { Route as LocaleCommonHandleRouteImport } from './routes/$locale._common.$handle'
 import { Route as LocaleCommonSearchRouteImport } from './routes/$locale._common.search'
+import { Route as LocaleCommonTipitakaRouteImport } from './routes/$locale._common.tipitaka'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiTranslateChunkRouteImport } from './routes/api/translate/chunk'
 import { Route as SitemapSitemapChar123idChar125DotxmlRouteImport } from './routes/sitemap/sitemap/{$id}[.]xml'
 import { Route as LocaleCommonHandleEditRouteImport } from './routes/$locale._common.$handle.edit'
-import { Route as LocaleCommonHandlePageSlugRouteImport } from './routes/$locale._common.$handle_.$pageSlug'
 import { Route as LocaleCommonAuthLoginRouteImport } from './routes/$locale._common.auth.login'
+import { Route as LocaleCommonTipitakaPageSlugRouteImport } from './routes/$locale._common.tipitaka_.$pageSlug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -129,6 +130,11 @@ const LocaleCommonSearchRoute = LocaleCommonSearchRouteImport.update({
   path: '/search',
   getParentRoute: () => LocaleCommonRoute,
 } as any)
+const LocaleCommonTipitakaRoute = LocaleCommonTipitakaRouteImport.update({
+  id: '/tipitaka',
+  path: '/tipitaka',
+  getParentRoute: () => LocaleCommonRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -150,17 +156,17 @@ const LocaleCommonHandleEditRoute = LocaleCommonHandleEditRouteImport.update({
   path: '/edit',
   getParentRoute: () => LocaleCommonHandleRoute,
 } as any)
-const LocaleCommonHandlePageSlugRoute =
-  LocaleCommonHandlePageSlugRouteImport.update({
-    id: '/$handle_/$pageSlug',
-    path: '/$handle/$pageSlug',
-    getParentRoute: () => LocaleCommonRoute,
-  } as any)
 const LocaleCommonAuthLoginRoute = LocaleCommonAuthLoginRouteImport.update({
   id: '/auth/login',
   path: '/auth/login',
   getParentRoute: () => LocaleCommonRoute,
 } as any)
+const LocaleCommonTipitakaPageSlugRoute =
+  LocaleCommonTipitakaPageSlugRouteImport.update({
+    id: '/tipitaka_/$pageSlug',
+    path: '/tipitaka/$pageSlug',
+    getParentRoute: () => LocaleCommonRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -180,13 +186,14 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/$locale/$handle': typeof LocaleCommonHandleRouteWithChildren
   '/$locale/search': typeof LocaleCommonSearchRoute
+  '/$locale/tipitaka': typeof LocaleCommonTipitakaRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/translate/chunk': typeof ApiTranslateChunkRoute
   '/sitemap/sitemap/{$id}.xml': typeof SitemapSitemapChar123idChar125DotxmlRoute
   '/$locale/': typeof LocaleCommonIndexRoute
   '/$locale/$handle/edit': typeof LocaleCommonHandleEditRoute
-  '/$locale/$handle/$pageSlug': typeof LocaleCommonHandlePageSlugRoute
   '/$locale/auth/login': typeof LocaleCommonAuthLoginRoute
+  '/$locale/tipitaka/$pageSlug': typeof LocaleCommonTipitakaPageSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -206,12 +213,13 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/$locale/$handle': typeof LocaleCommonHandleRouteWithChildren
   '/$locale/search': typeof LocaleCommonSearchRoute
+  '/$locale/tipitaka': typeof LocaleCommonTipitakaRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/translate/chunk': typeof ApiTranslateChunkRoute
   '/sitemap/sitemap/{$id}.xml': typeof SitemapSitemapChar123idChar125DotxmlRoute
   '/$locale/$handle/edit': typeof LocaleCommonHandleEditRoute
-  '/$locale/$handle/$pageSlug': typeof LocaleCommonHandlePageSlugRoute
   '/$locale/auth/login': typeof LocaleCommonAuthLoginRoute
+  '/$locale/tipitaka/$pageSlug': typeof LocaleCommonTipitakaPageSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -233,13 +241,14 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/$locale/_common/$handle': typeof LocaleCommonHandleRouteWithChildren
   '/$locale/_common/search': typeof LocaleCommonSearchRoute
+  '/$locale/_common/tipitaka': typeof LocaleCommonTipitakaRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/translate/chunk': typeof ApiTranslateChunkRoute
   '/sitemap/sitemap/{$id}.xml': typeof SitemapSitemapChar123idChar125DotxmlRoute
   '/$locale/_common/': typeof LocaleCommonIndexRoute
   '/$locale/_common/$handle/edit': typeof LocaleCommonHandleEditRoute
-  '/$locale/_common/$handle_/$pageSlug': typeof LocaleCommonHandlePageSlugRoute
   '/$locale/_common/auth/login': typeof LocaleCommonAuthLoginRoute
+  '/$locale/_common/tipitaka_/$pageSlug': typeof LocaleCommonTipitakaPageSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -261,13 +270,14 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/$locale/$handle'
     | '/$locale/search'
+    | '/$locale/tipitaka'
     | '/api/auth/$'
     | '/api/translate/chunk'
     | '/sitemap/sitemap/{$id}.xml'
     | '/$locale/'
     | '/$locale/$handle/edit'
-    | '/$locale/$handle/$pageSlug'
     | '/$locale/auth/login'
+    | '/$locale/tipitaka/$pageSlug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -287,12 +297,13 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/$locale/$handle'
     | '/$locale/search'
+    | '/$locale/tipitaka'
     | '/api/auth/$'
     | '/api/translate/chunk'
     | '/sitemap/sitemap/{$id}.xml'
     | '/$locale/$handle/edit'
-    | '/$locale/$handle/$pageSlug'
     | '/$locale/auth/login'
+    | '/$locale/tipitaka/$pageSlug'
   id:
     | '__root__'
     | '/'
@@ -313,13 +324,14 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/$locale/_common/$handle'
     | '/$locale/_common/search'
+    | '/$locale/_common/tipitaka'
     | '/api/auth/$'
     | '/api/translate/chunk'
     | '/sitemap/sitemap/{$id}.xml'
     | '/$locale/_common/'
     | '/$locale/_common/$handle/edit'
-    | '/$locale/_common/$handle_/$pageSlug'
     | '/$locale/_common/auth/login'
+    | '/$locale/_common/tipitaka_/$pageSlug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -474,6 +486,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocaleCommonSearchRouteImport
       parentRoute: typeof LocaleCommonRoute
     }
+    '/$locale/_common/tipitaka': {
+      id: '/$locale/_common/tipitaka'
+      path: '/tipitaka'
+      fullPath: '/$locale/tipitaka'
+      preLoaderRoute: typeof LocaleCommonTipitakaRouteImport
+      parentRoute: typeof LocaleCommonRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -502,18 +521,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocaleCommonHandleEditRouteImport
       parentRoute: typeof LocaleCommonHandleRoute
     }
-    '/$locale/_common/$handle_/$pageSlug': {
-      id: '/$locale/_common/$handle_/$pageSlug'
-      path: '/$handle/$pageSlug'
-      fullPath: '/$locale/$handle/$pageSlug'
-      preLoaderRoute: typeof LocaleCommonHandlePageSlugRouteImport
-      parentRoute: typeof LocaleCommonRoute
-    }
     '/$locale/_common/auth/login': {
       id: '/$locale/_common/auth/login'
       path: '/auth/login'
       fullPath: '/$locale/auth/login'
       preLoaderRoute: typeof LocaleCommonAuthLoginRouteImport
+      parentRoute: typeof LocaleCommonRoute
+    }
+    '/$locale/_common/tipitaka_/$pageSlug': {
+      id: '/$locale/_common/tipitaka_/$pageSlug'
+      path: '/tipitaka/$pageSlug'
+      fullPath: '/$locale/tipitaka/$pageSlug'
+      preLoaderRoute: typeof LocaleCommonTipitakaPageSlugRouteImport
       parentRoute: typeof LocaleCommonRoute
     }
   }
@@ -533,17 +552,19 @@ const LocaleCommonHandleRouteWithChildren =
 interface LocaleCommonRouteChildren {
   LocaleCommonHandleRoute: typeof LocaleCommonHandleRouteWithChildren
   LocaleCommonSearchRoute: typeof LocaleCommonSearchRoute
+  LocaleCommonTipitakaRoute: typeof LocaleCommonTipitakaRoute
   LocaleCommonIndexRoute: typeof LocaleCommonIndexRoute
-  LocaleCommonHandlePageSlugRoute: typeof LocaleCommonHandlePageSlugRoute
   LocaleCommonAuthLoginRoute: typeof LocaleCommonAuthLoginRoute
+  LocaleCommonTipitakaPageSlugRoute: typeof LocaleCommonTipitakaPageSlugRoute
 }
 
 const LocaleCommonRouteChildren: LocaleCommonRouteChildren = {
   LocaleCommonHandleRoute: LocaleCommonHandleRouteWithChildren,
   LocaleCommonSearchRoute: LocaleCommonSearchRoute,
+  LocaleCommonTipitakaRoute: LocaleCommonTipitakaRoute,
   LocaleCommonIndexRoute: LocaleCommonIndexRoute,
-  LocaleCommonHandlePageSlugRoute: LocaleCommonHandlePageSlugRoute,
   LocaleCommonAuthLoginRoute: LocaleCommonAuthLoginRoute,
+  LocaleCommonTipitakaPageSlugRoute: LocaleCommonTipitakaPageSlugRoute,
 }
 
 const LocaleCommonRouteWithChildren = LocaleCommonRoute._addFileChildren(

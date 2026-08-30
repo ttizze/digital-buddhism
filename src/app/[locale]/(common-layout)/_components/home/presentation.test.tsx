@@ -28,12 +28,14 @@ describe("ホーム画面", () => {
 });
 
 describe("ホーム画面のメタデータ", () => {
-	it("ロケール別の文言とルートのcanonical alternateを返す", () => {
+	it("ロケール別の文言とTipitaka rootのcanonical alternateを返す", () => {
 		const metadata = getHomeMetadata("ja");
 
 		expect(metadata.title).toBe("Tipiṭaka — パーリ仏典を読む・翻訳する");
 		expect(metadata.description).toContain("パーリ仏典Tipiṭaka");
-		expect(metadata.alternates.canonical).toMatch(/\/ja$/);
-		expect(metadata.alternates.languages["x-default"]).toMatch(/\/en$/);
+		expect(metadata.alternates.canonical).toMatch(/\/ja\/tipitaka$/);
+		expect(metadata.alternates.languages["x-default"]).toMatch(
+			/\/en\/tipitaka$/,
+		);
 	});
 });

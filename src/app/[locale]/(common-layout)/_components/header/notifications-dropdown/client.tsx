@@ -126,7 +126,6 @@ function NotificationContent({
 		actorHandle,
 		actorImage,
 		actorName,
-		pageOwnerHandle,
 		pageSlug,
 		pageTitle,
 		segmentTranslationText,
@@ -154,8 +153,8 @@ function NotificationContent({
 					<span className="text-gray-500"> on </span>
 					<Link
 						className="hover:underline font-bold"
-						params={{ handle: pageOwnerHandle, locale, pageSlug }}
-						to="/$locale/$handle/$pageSlug"
+						params={{ locale, pageSlug }}
+						to="/$locale/tipitaka/$pageSlug"
 					>
 						{pageTitle}
 					</Link>

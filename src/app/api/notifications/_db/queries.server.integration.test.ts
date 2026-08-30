@@ -71,7 +71,6 @@ describe("fetchNotificationRowsWithRelations", () => {
 				actorHandle: "notification-actor",
 				segmentTranslationText: "翻訳された通知セグメント",
 				pageSlug: "notification-page",
-				pageOwnerHandle: "tipitaka",
 				pageTitle: "Notification Page",
 			}),
 		);

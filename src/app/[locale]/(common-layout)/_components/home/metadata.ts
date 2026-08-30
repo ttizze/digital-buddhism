@@ -34,6 +34,6 @@ export function getHomeMetadata(locale: string) {
 	return {
 		title,
 		description,
-		alternates: buildAlternates(locale, "/"),
+		alternates: buildAlternates(locale, "/tipitaka"),
 	};
 }

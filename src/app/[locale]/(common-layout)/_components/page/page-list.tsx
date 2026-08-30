@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
 import type { PageForList } from "@/app/[locale]/types";
 
@@ -33,12 +32,8 @@ export function PageList({ PageForList, index, locale }: PageListProps) {
 				<div className="grid grid-cols-[1fr_auto] gap-2">
 					<Link
 						className="block overflow-hidden"
-						params={{
-							handle: TIPITAKA_SYSTEM_USER_HANDLE,
-							locale,
-							pageSlug: PageForList.slug,
-						}}
-						to="/$locale/$handle/$pageSlug"
+						params={{ locale, pageSlug: PageForList.slug }}
+						to="/$locale/tipitaka/$pageSlug"
 					>
 						<SegmentElement
 							className="line-clamp-1 break-all overflow-wrap-anywhere"

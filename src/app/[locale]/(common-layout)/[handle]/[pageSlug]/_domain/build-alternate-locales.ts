@@ -1,7 +1,7 @@
 import { BASE_URL } from "@/app/_constants/base-url";
 import {
+	TIPITAKA_ROOT_SLUG,
 	TIPITAKA_SOURCE_LOCALE,
-	TIPITAKA_SYSTEM_USER_HANDLE,
 } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 
 interface BuildAlternateLocalesParams {
@@ -14,7 +14,7 @@ export function buildAlternateLocales({
 	translatedLocales,
 }: BuildAlternateLocalesParams): Record<string, string> {
 	const buildUrl = (locale: string) =>
-		`${BASE_URL}/${locale}/${TIPITAKA_SYSTEM_USER_HANDLE}/${page.slug}`;
+		`${BASE_URL}/${locale}/${TIPITAKA_ROOT_SLUG}/${page.slug}`;
 
 	const locales = new Set([TIPITAKA_SOURCE_LOCALE, ...translatedLocales]);
 

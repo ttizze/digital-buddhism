@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
-import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { parseFormData } from "@/app/[locale]/_utils/parse-form-data";
 import { findPageIdBySegmentTranslationId } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-section/_db/queries.server";
 import { addTranslationService } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-section/add-translation-form/service/add-translation.server";
@@ -33,9 +32,6 @@ const patchSchema = z.object({
 	isUpvote: z.string().transform((val) => val === "true"),
 });
 
-const selectSchema = z.object({
-	translationId: z.coerce.number().int(),
-});
 const deleteSchema = z.object({
 	translationId: z.coerce.number(),
 });
@@ -220,83 +216,6 @@ export async function patchSegmentTranslationVote(request: Request) {
 	return {
 		response: Response.json({ success: true, data: result.data }),
 		pageId,
-	};
-}
-
-export async function putSelectedSegmentTranslation(request: Request) {
-	if (!isSameOriginRequest(request)) {
-		return {
-			response: Response.json({ error: "Forbidden" }, { status: 403 }),
-		};
-	}
-
-	const currentUser = await getCurrentUserFromHeaders(request.headers);
-	if (!currentUser || currentUser.handle !== TIPITAKA_SYSTEM_USER_HANDLE) {
-		return {
-			response: Response.json({ error: "Forbidden" }, { status: 403 }),
-		};
-	}
-
-	let formData: FormData;
-	try {
-		formData = await request.formData();
-	} catch {
-		return {
-			response: Response.json({ error: "Invalid form data" }, { status: 400 }),
-		};
-	}
-
-	const parsed = await parseFormData(selectSchema, formData);
-	if (!parsed.success) {
-		return {
-			response: Response.json(
-				{ error: "Invalid translation" },
-				{ status: 400 },
-			),
-		};
-	}
-
-	const translation = await db
-		.selectFrom("segmentTranslations")
-		.innerJoin("segments", "segments.id", "segmentTranslations.segmentId")
-		.select([
-			"segmentTranslations.id",
-			"segmentTranslations.segmentId",
-			"segmentTranslations.locale",
-			"segments.tipitakaPageId as pageId",
-		])
-		.where("segmentTranslations.id", "=", parsed.data.translationId)
-		.executeTakeFirst();
-	if (!translation) {
-		return {
-			response: Response.json(
-				{ error: "Translation not found" },
-				{ status: 404 },
-			),
-		};
-	}
-
-	await db
-		.insertInto("selectedSegmentTranslations")
-		.values({
-			segmentId: translation.segmentId,
-			locale: translation.locale,
-			translationId: translation.id,
-			selectedByUserId: currentUser.id,
-			selectedAt: new Date(),
-		})
-		.onConflict((conflict) =>
-			conflict.columns(["segmentId", "locale"]).doUpdateSet({
-				translationId: translation.id,
-				selectedByUserId: currentUser.id,
-				selectedAt: new Date(),
-			}),
-		)
-		.execute();
-
-	return {
-		response: Response.json({ success: true }),
-		pageId: translation.pageId,
 	};
 }
 

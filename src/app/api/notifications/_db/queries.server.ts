@@ -1,4 +1,3 @@
-import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import type { NotificationRowsWithRelations } from "@/app/api/notifications/_types/notification";
 import { db } from "@/db";
 
@@ -21,7 +20,7 @@ export async function fetchNotificationRowsWithRelations(
 				.onRef("titleSegments.tipitakaPageId", "=", "tipitakaPages.id")
 				.on("titleSegments.number", "=", 0),
 		)
-		.select((eb) => [
+		.select([
 			"notifications.id",
 			"notifications.actorId",
 			"notifications.read",
@@ -30,7 +29,6 @@ export async function fetchNotificationRowsWithRelations(
 			"actorUsers.image as actorImage",
 			"actorUsers.name as actorName",
 			"tipitakaPages.slug as pageSlug",
-			eb.val(TIPITAKA_SYSTEM_USER_HANDLE).as("pageOwnerHandle"),
 			"titleSegments.text as pageTitle",
 			"segmentTranslations.text as segmentTranslationText",
 		])

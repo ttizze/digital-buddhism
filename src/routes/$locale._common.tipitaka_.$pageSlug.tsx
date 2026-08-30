@@ -6,7 +6,7 @@ import { PageContent } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/
 import { buildPageMetadata } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_service/page-metadata";
 import { getPageDetailData } from "./$locale/-page-detail-data";
 
-export const Route = createFileRoute("/$locale/_common/$handle_/$pageSlug")({
+export const Route = createFileRoute("/$locale/_common/tipitaka_/$pageSlug")({
 	loader: async ({ params }) => {
 		const data = await getPageDetailData({ data: params });
 		if (!data) throw notFound();

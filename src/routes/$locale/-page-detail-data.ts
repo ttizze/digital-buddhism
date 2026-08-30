@@ -3,7 +3,6 @@ import { setResponseHeaders } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
-import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { readPageContentData } from "@/app/[locale]/_infrastructure/tipitaka-read-model/reader.server";
 
 const pageDetailInput = z.object({
@@ -14,7 +13,6 @@ const pageDetailInput = z.object({
 				supportedLocaleOptions.some((option) => option.code === locale),
 			"対応していないlocaleです",
 		),
-	handle: z.string().min(1),
 	pageSlug: z.string().min(1),
 });
 
@@ -23,6 +21,5 @@ export const getPageDetailData = createServerFn({ method: "GET" })
 	.handler(async ({ data }) => {
 		setResponseHeaders(new Headers(PUBLIC_PAGE_CACHE_HEADERS));
 
-		if (data.handle !== TIPITAKA_SYSTEM_USER_HANDLE) return null;
 		return readPageContentData(data.pageSlug, data.locale);
 	});
