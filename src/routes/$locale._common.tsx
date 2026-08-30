@@ -1,7 +1,7 @@
 import { ClientOnly, createFileRoute, Outlet } from "@tanstack/react-router";
 import { Footer } from "@/app/[locale]/(common-layout)/_components/footer";
 import { HeaderFrame } from "@/app/[locale]/(common-layout)/_components/header";
-import { HeaderUserSlot } from "@/app/[locale]/(common-layout)/_components/header/user-slot.client";
+import { HeaderUserSlot } from "@/app/[locale]/(common-layout)/_components/header/user-slot";
 import { ViewScope } from "@/app/[locale]/(common-layout)/_components/view-scope";
 import { TranslationFormOnClick } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-form-on-click.client";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/json-ld";
@@ -20,11 +20,7 @@ function CommonLayout() {
 			<ViewScope>
 				<HeaderFrame
 					locale={locale}
-					userSlot={
-						<ClientOnly fallback={null}>
-							<HeaderUserSlot locale={locale} />
-						</ClientOnly>
-					}
+					userSlot={<HeaderUserSlot locale={locale} />}
 				/>
 				<main className="mb-5 mt-3 md:mt-5 grow tracking-wider">
 					<div className="container mx-auto px-4 max-w-4xl">
