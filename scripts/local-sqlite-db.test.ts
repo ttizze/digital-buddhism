@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { createClient } from "@libsql/client";
+import { readMigrationFiles } from "drizzle-orm/migrator";
 import { describe, expect, it } from "vitest";
 import {
 	buildLocalDatabaseEnv,
@@ -12,6 +13,12 @@ import {
 } from "./local-sqlite-db";
 
 const execFileAsync = promisify(execFile);
+
+const expectedMigrations = readMigrationFiles({
+	migrationsFolder: join(import.meta.dirname, "../src/drizzle/turso"),
+});
+const latestExpectedMigration = expectedMigrations.at(-1);
+if (!latestExpectedMigration) throw new Error("No Turso migrations found");
 
 describe("ローカルSQLiteのDrizzle migration", () => {
 	it("fixture作成時に正式なmigration journalを記録する", async () => {
@@ -23,9 +30,13 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			const migrations = await client.execute(
 				"SELECT hash, created_at FROM __drizzle_migrations ORDER BY created_at",
 			);
-			expect(migrations.rows).toHaveLength(10);
-			expect(String(migrations.rows[0]?.hash)).toMatch(/^[0-9a-f]{64}$/);
-			expect(Number(migrations.rows[9]?.created_at)).toBe(1788072824053);
+			expect(migrations.rows).toHaveLength(expectedMigrations.length);
+			expect(String(migrations.rows.at(-1)?.hash)).toBe(
+				latestExpectedMigration.hash,
+			);
+			expect(Number(migrations.rows.at(-1)?.created_at)).toBe(
+				latestExpectedMigration.folderMillis,
+			);
 		} finally {
 			client.close();
 			await database.cleanup();
@@ -215,9 +226,13 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			const first = await client.execute(
 				"SELECT hash, created_at FROM __drizzle_migrations ORDER BY created_at",
 			);
-			expect(first.rows).toHaveLength(10);
-			expect(String(first.rows[0]?.hash)).toMatch(/^[0-9a-f]{64}$/);
-			expect(Number(first.rows[9]?.created_at)).toBe(1788072824053);
+			expect(first.rows).toHaveLength(expectedMigrations.length);
+			expect(String(first.rows.at(-1)?.hash)).toBe(
+				latestExpectedMigration.hash,
+			);
+			expect(Number(first.rows.at(-1)?.created_at)).toBe(
+				latestExpectedMigration.folderMillis,
+			);
 
 			await execFileAsync("bun", ["run", "db:prod:migrate"], {
 				cwd: join(import.meta.dirname, ".."),
