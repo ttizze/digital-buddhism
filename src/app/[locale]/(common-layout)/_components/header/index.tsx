@@ -11,8 +11,15 @@ export function HeaderFrame({
 	return (
 		<HeaderScroll>
 			<div className="flex items-center gap-4">
-				<a className="flex items-center" href={`/${locale}`}>
-					<span className="font-semibold text-xl">Tipiṭaka</span>
+				<a
+					aria-label="Digital Buddhism"
+					className="flex items-center gap-2"
+					href={`/${locale}`}
+				>
+					<img alt="" className="size-8 shrink-0" src="/favicon.svg" />
+					<span className="hidden font-semibold text-xl sm:inline">
+						Digital Buddhism
+					</span>
 				</a>
 			</div>
 			<div className="flex items-center gap-4">{userSlot}</div>

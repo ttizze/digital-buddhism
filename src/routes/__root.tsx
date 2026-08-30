@@ -25,9 +25,12 @@ export const Route = createRootRoute({
 				name: "viewport",
 				content: "width=device-width, initial-scale=1",
 			},
-			{ title: "Tipiṭaka" },
+			{ title: "Digital Buddhism" },
 		],
-		links: [{ rel: "icon", href: "/favicon.svg", type: "image/svg+xml" }],
+		links: [
+			{ rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+			{ rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+		],
 	}),
 	shellComponent: RootDocument,
 });
