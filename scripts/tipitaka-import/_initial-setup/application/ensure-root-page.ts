@@ -14,18 +14,18 @@ export async function ensureRootPage(): Promise<number> {
 	const parsed = await markdownToMdastWithSegments({
 		header: ROOT_TITLE,
 		markdown: markdownContent,
+		autoUploadImages: false,
 	});
 
 	await upsertPageAndSegments({
+		catalogKey: ROOT_SLUG,
 		pageSlug: ROOT_SLUG,
 		mdastJson: parsed.mdastJson,
-		kind: "ROOT",
+		textLevel: null,
 		parentId: null,
 		position: 0,
-		isVisible: true,
+		importFileId: null,
 		segments: parsed.segments,
-		segmentTypeId: null,
-		anchorPageId: null,
 	});
 
 	const page = await db

@@ -16,42 +16,37 @@ describe("queryPageDetail", () => {
 		await resetDatabase();
 	});
 
-	it("非表示のTipitaka祖先を持つページは直URLでも取得しない", async () => {
-		const root = await createPage({
-			slug: "tipitaka",
-			kind: "ROOT",
-			isVisible: true,
-		});
-		const hiddenParent = await createPage({
+	it("構造ページ配下の本文ページを取得する", async () => {
+		const root = await createPage({ slug: "tipitaka", textLevel: null });
+		const category = await createPage({
 			parentId: root.id,
-			slug: "hidden-parent",
-			kind: "CATEGORY",
-			isVisible: false,
+			slug: "sutta",
+			textLevel: null,
 		});
-		await createPage({
-			parentId: hiddenParent.id,
+		const page = await createPage({
+			parentId: category.id,
 			slug: "visible-child",
-			kind: "TEXT",
-			isVisible: true,
+			textLevel: "MULA",
 		});
 
-		await expect(queryPageDetail("visible-child", "ja")).resolves.toBeNull();
+		await expect(queryPageDetail(page.slug, "ja")).resolves.toMatchObject({
+			id: page.id,
+			textLevel: "MULA",
+		});
 	});
 
 	it("対象セグメントごとに明示的な採用訳を選ぶ", async () => {
 		const curator = await createUser({ handle: "evame" });
 		const translator = await createUser({ handle: "translator" });
-		const root = await createPage({ slug: "tipitaka", kind: "ROOT" });
+		const root = await createPage({ slug: "tipitaka", textLevel: null });
 		const page = await createPageWithSegments({
 			slug: "translated-page",
-			kind: "TEXT",
 			parentId: root.id,
 			segments: [
 				{
 					number: 0,
 					text: "Hello",
 					textAndOccurrenceHash: "translated-page-title",
-					segmentTypeKey: "PRIMARY",
 				},
 			],
 		});

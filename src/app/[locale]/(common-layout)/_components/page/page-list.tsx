@@ -50,7 +50,7 @@ export function PageList({ PageForList, index, locale }: PageListProps) {
 				</div>
 
 				<div className="flex items-center gap-2 text-xs text-muted-foreground">
-					<span>{PageForList.kind.toLowerCase()}</span>
+					<span>{(PageForList.textLevel ?? "category").toLowerCase()}</span>
 					<time>{PageForList.createdAt.toLocaleDateString(locale)}</time>
 				</div>
 			</div>

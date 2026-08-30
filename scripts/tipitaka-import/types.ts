@@ -1,6 +1,8 @@
+import type { TipitakaTextLevel } from "@/drizzle/types";
+
 export interface TipitakaFileMeta {
 	fileKey: string;
-	primaryOrCommentary: string; // "Mula" | "Atthakatha" | "Tika" | "Other"
+	textLevel: TipitakaTextLevel;
 	dirSegments: string[];
-	mulaFileKey: string | null;
+	annotationTargetFileKeys: string[];
 }

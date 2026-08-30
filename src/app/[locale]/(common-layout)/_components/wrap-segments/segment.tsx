@@ -79,9 +79,10 @@ export function SegmentElement({
 			</SegmentPair>
 
 			{annotations.map(({ annotationSegment }) => {
-				const annotationType =
-					annotationSegment.segmentTypeLabel ||
-					annotationSegment.segmentTypeKey;
+				const annotationType = annotationSegment.textLevel
+					? annotationSegment.textLevel.charAt(0) +
+						annotationSegment.textLevel.slice(1).toLocaleLowerCase()
+					: "Other";
 				return (
 					<SegmentPair
 						className={`${baseClassName} seg-ann hidden ml-4 text-sm leading-relaxed`}

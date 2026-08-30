@@ -31,21 +31,20 @@ describe("TanStack StartのSEOルート生成", () => {
 		);
 	});
 
-	it("非表示ページをチャンク数とサイトマップURLに含めない", async () => {
-		const root = await createPage({ slug: "tipitaka", kind: "ROOT" });
+	it("保存済みページをチャンク数とサイトマップURLに含める", async () => {
+		const root = await createPage({ slug: "tipitaka", textLevel: null });
 		await createPage({
-			slug: "hidden",
+			slug: "stored",
 			parentId: root.id,
-			isVisible: false,
 		});
 
-		expect(await countPublicPages()).toBe(1);
+		expect(await countPublicPages()).toBe(2);
 		const entries = await generateSitemapEntries(0);
-		expect(entries.some((entry) => entry.url.includes("/hidden"))).toBe(false);
+		expect(entries.some((entry) => entry.url.includes("/stored"))).toBe(true);
 	});
 
 	it("Tipitaka固定URLとXMLレスポンスを生成する", async () => {
-		const root = await createPage({ slug: "tipitaka", kind: "ROOT" });
+		const root = await createPage({ slug: "tipitaka", textLevel: null });
 		await createPage({ slug: "my-page", parentId: root.id });
 
 		const entries = await generateSitemapEntries(0);
@@ -60,22 +59,20 @@ describe("TanStack StartのSEOルート生成", () => {
 		expect(await response.text()).toContain("/pi/evame/my-page");
 	});
 
-	it("表示中のTipitaka階層だけをチャンク対象にする", async () => {
-		const root = await createPage({ slug: "tipitaka", kind: "ROOT" });
+	it("構造ページを含むTipitaka階層全体をチャンク対象にする", async () => {
+		const root = await createPage({ slug: "tipitaka", textLevel: null });
 		await createPage({ slug: "visible-tipitaka", parentId: root.id });
-		const hiddenParent = await createPage({
-			slug: "hidden-parent",
-			kind: "CATEGORY",
+		const category = await createPage({
+			slug: "category",
+			textLevel: null,
 			parentId: root.id,
-			isVisible: false,
 		});
 		await createPage({
-			slug: "blocked-child",
-			parentId: hiddenParent.id,
-			isVisible: true,
+			slug: "category-child",
+			parentId: category.id,
 		});
 
-		expect(await countPublicPages()).toBe(2);
+		expect(await countPublicPages()).toBe(4);
 		const entries = await generateSitemapEntries(0);
 		expect(entries.some((entry) => entry.url.endsWith("/evame/tipitaka"))).toBe(
 			true,
@@ -83,8 +80,8 @@ describe("TanStack StartのSEOルート生成", () => {
 		expect(
 			entries.some((entry) => entry.url.endsWith("/evame/visible-tipitaka")),
 		).toBe(true);
-		expect(entries.some((entry) => entry.url.includes("blocked-child"))).toBe(
-			false,
+		expect(entries.some((entry) => entry.url.includes("category-child"))).toBe(
+			true,
 		);
 
 		const firstChunk = await fetchTipitakaPagesWithTranslationsChunk({

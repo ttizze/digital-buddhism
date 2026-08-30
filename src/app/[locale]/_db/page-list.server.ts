@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import type { TipitakaPageKind } from "@/drizzle/types";
+import type { TipitakaTextLevel } from "@/drizzle/types";
 import type { PageForList, TitleSegment } from "../types";
 import { bestTranslationTextSubquery } from "./best-translation-subquery.server";
 
@@ -7,7 +7,7 @@ type PageListRow = {
 	id: number;
 	slug: string;
 	createdAt: Date;
-	kind: TipitakaPageKind;
+	textLevel: TipitakaTextLevel | null;
 	titleSegmentId: number;
 	titleText: string;
 	translationText: string | null;
@@ -28,7 +28,7 @@ export function toPageForList(row: PageListRow): PageForList {
 		id: row.id,
 		slug: row.slug,
 		createdAt: row.createdAt,
-		kind: row.kind,
+		textLevel: row.textLevel,
 		titleSegment: toTitleSegment(row),
 	};
 }
@@ -45,7 +45,7 @@ export function buildPageListQuery(locale: string) {
 			"tipitakaPages.id",
 			"tipitakaPages.slug",
 			"tipitakaPages.createdAt",
-			"tipitakaPages.kind",
+			"tipitakaPages.textLevel",
 			"titleSegment.id as titleSegmentId",
 			"titleSegment.text as titleText",
 		])
@@ -54,6 +54,5 @@ export function buildPageListQuery(locale: string) {
 				locale,
 				segmentId: eb.ref("titleSegment.id"),
 			}).as("translationText"),
-		)
-		.where("tipitakaPages.isVisible", "=", true);
+		);
 }

@@ -23,11 +23,7 @@ interface BookRecord {
 interface BookOutput {
 	level: CommentaryLevel;
 	dirSegments: string[];
-	mulaFileName: string | null;
-	mulaFileNames: string[];
-	// From Books.cs links
-	atthakathaIndices: number[];
-	tikaIndices: number[];
+	annotationTargetFileNames: string[];
 	chapterListTypes: string[];
 }
 
@@ -416,30 +412,32 @@ function buildOutputData(byFile: BookMap): Record<string, BookOutput> {
 	const output: Record<string, BookOutput> = {};
 	const navRoot = createOrderNode();
 	const records = [...byFile.values()].sort((a, b) => a.index - b.index);
+	const byIndex = new Map(records.map((record) => [record.index, record]));
 
 	for (const record of records) {
 		const navSegments = [...record.navSegmentsLatin];
 		const navSegmentOrders = assignOrders(navRoot, navSegments);
-		const dirSegments = navSegments.map((seg, i) => {
-			const order = navSegmentOrders[i] ?? i + 1;
-			return `${String(order).padStart(2, "0")}-${slugify(seg)}`;
+		const dirSegments = navSegments.map((segment, index) => {
+			const order = navSegmentOrders[index] ?? index + 1;
+			return `${String(order).padStart(2, "0")}-${slugify(segment)}`;
 		});
-
-		// Filter out invalid/sentinel indices
-		const atthakathaIndices = record.atthakathaIndices.filter(
-			(n) => Number.isFinite(n) && n >= 0 && n !== 99999,
-		);
-		const tikaIndices = record.tikaIndices.filter(
-			(n) => Number.isFinite(n) && n >= 0 && n !== 99999,
-		);
+		const annotationTargetFileNames = [...record.mulaFileNames];
+		if (record.level === "Tika") {
+			for (const index of record.atthakathaIndices) {
+				const target = byIndex.get(index);
+				if (
+					target?.level === "Atthakatha" &&
+					!annotationTargetFileNames.includes(target.fileName)
+				) {
+					annotationTargetFileNames.push(target.fileName);
+				}
+			}
+		}
 
 		output[record.fileName] = {
 			level: record.level,
 			dirSegments,
-			mulaFileName: record.mulaFileName,
-			mulaFileNames: [...record.mulaFileNames],
-			atthakathaIndices,
-			tikaIndices,
+			annotationTargetFileNames,
 			chapterListTypes: [...record.chapterListTypes],
 		};
 	}

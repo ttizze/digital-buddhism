@@ -23,32 +23,14 @@ async function fetchPagesByIds(
 	});
 }
 
-async function searchVisiblePageIds(
+async function searchPageIds(
 	query: string,
 	titleOnly: boolean,
 ): Promise<number[]> {
 	let resultQuery = db
-		.withRecursive("visibleTipitakaPages", (qb) =>
-			qb
-				.selectFrom("tipitakaPages")
-				.select("id")
-				.where("kind", "=", "ROOT")
-				.where("isVisible", "=", true)
-				.unionAll(
-					qb
-						.selectFrom("tipitakaPages")
-						.innerJoin(
-							"visibleTipitakaPages",
-							"tipitakaPages.parentId",
-							"visibleTipitakaPages.id",
-						)
-						.select("tipitakaPages.id")
-						.where("tipitakaPages.isVisible", "=", true),
-				),
-		)
-		.selectFrom("visibleTipitakaPages")
-		.innerJoin("segments", "segments.tipitakaPageId", "visibleTipitakaPages.id")
-		.select("visibleTipitakaPages.id as pageId")
+		.selectFrom("segments")
+		.innerJoin("tipitakaPages", "tipitakaPages.id", "segments.tipitakaPageId")
+		.select("tipitakaPages.id as pageId")
 		.distinct()
 		.where("segments.text", "like", `%${query}%`);
 
@@ -56,7 +38,7 @@ async function searchVisiblePageIds(
 		resultQuery = resultQuery.where("segments.number", "=", 0);
 	}
 
-	const rows = await resultQuery.orderBy("visibleTipitakaPages.id").execute();
+	const rows = await resultQuery.orderBy("tipitakaPages.id").execute();
 	return rows.map((row) => row.pageId);
 }
 
@@ -67,7 +49,7 @@ async function searchPages(
 	locale: string,
 	titleOnly: boolean,
 ): Promise<SearchResult> {
-	const allPageIds = await searchVisiblePageIds(query, titleOnly);
+	const allPageIds = await searchPageIds(query, titleOnly);
 	const pageIds = allPageIds.slice(skip, skip + take);
 	return {
 		pageForLists: await fetchPagesByIds(pageIds, locale),

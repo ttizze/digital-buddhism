@@ -7,7 +7,9 @@ import { DOMParser } from "@xmldom/xmldom";
 import { afterEach, describe, expect, test } from "vitest";
 import { getFileData } from "../books";
 import { convertXmlFileToMarkdown } from "../cli";
-import { ELEMENT_NODE, TEXT_NODE } from "../tei";
+import { writeBookMarkdown } from "../render";
+import { ELEMENT_NODE, getChildElements, TEXT_NODE } from "../tei";
+import type { BookDoc } from "../types";
 
 // ESM環境で__dirnameを取得する
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -211,6 +213,30 @@ afterEach(() => {
 // });
 
 describe("convertXmlFileToMarkdownNoSplit", () => {
+	test("book境界を非表示マーカーとしてMarkdownへ保持する", () => {
+		const parser = new DOMParser();
+		const document = parser.parseFromString(
+			'<body><div id="an2" type="book"><p n="1">本文</p></div></body>',
+			"application/xml",
+		);
+		const body = document.getElementsByTagName("body").item(0);
+		if (!body) throw new Error("<body> element is required");
+		const doc: BookDoc = {
+			nodes: getChildElements(body),
+			dirSegments: ["book-marker"],
+		};
+		const outputDir = createTempDir("book-marker-");
+
+		writeBookMarkdown(doc, outputDir, "book.md");
+
+		const markdown = fs.readFileSync(
+			path.join(outputDir, "book-marker", "book.md"),
+			"utf8",
+		);
+		expect(markdown).toContain("<!--book:an2-->");
+		expect(markdown).toContain("{para:1} 本文");
+	});
+
 	// 実際の ROMN XML を 1 書籍 1 Markdown として出力し、分類パスが維持されることを確認する。
 	test("ROMN XML を単一 Markdown に変換する", async () => {
 		const sampleFile = path.resolve(__dirname, "fixtures", "abh01m.mul.xml");

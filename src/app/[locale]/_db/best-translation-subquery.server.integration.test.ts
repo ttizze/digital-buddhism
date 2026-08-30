@@ -15,7 +15,6 @@ async function createTestSegment() {
 				number: 0,
 				text: "Hello",
 				textAndOccurrenceHash: "hash0",
-				segmentTypeKey: "PRIMARY",
 			},
 		],
 	});

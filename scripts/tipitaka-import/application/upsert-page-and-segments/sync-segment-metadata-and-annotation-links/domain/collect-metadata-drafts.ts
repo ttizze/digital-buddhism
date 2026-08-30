@@ -32,14 +32,6 @@ export function collectMetadataDrafts(
 			...(segment.metadata?.items ?? []),
 		];
 
-		// 段落番号がある場合はメタデータとして追加（PRIMARYセグメントとCOMMENTARYセグメントの両方）
-		if (segment.paragraphNumber) {
-			items.push({
-				typeKey: "PARAGRAPH_NUMBER",
-				value: segment.paragraphNumber,
-			});
-		}
-
 		// メタデータアイテムがある場合のみドラフトに追加
 		if (items.length > 0) {
 			metadataDrafts.push({ segmentId, items });

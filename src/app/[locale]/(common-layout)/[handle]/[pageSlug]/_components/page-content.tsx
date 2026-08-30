@@ -9,17 +9,17 @@ import { ContentWithTranslations } from "./content-with-translations";
 import { PageNavigation } from "./page-navigation";
 
 export function collectAnnotationTypes(segments: PageDetail["segments"]) {
-	const typeByLabel = new Map<string, { key: string; label: string }>();
+	const typeByLevel = new Map<string, { key: string; label: string }>();
 	for (const segment of segments) {
 		for (const link of segment.annotations ?? []) {
-			const { segmentTypeKey, segmentTypeLabel } = link.annotationSegment;
-			typeByLabel.set(segmentTypeLabel, {
-				key: segmentTypeKey,
-				label: segmentTypeLabel,
-			});
+			const { textLevel } = link.annotationSegment;
+			if (!textLevel) continue;
+			const label =
+				textLevel.charAt(0) + textLevel.slice(1).toLocaleLowerCase();
+			typeByLevel.set(textLevel, { key: textLevel, label });
 		}
 	}
-	return Array.from(typeByLabel.values()).sort((left, right) =>
+	return Array.from(typeByLevel.values()).sort((left, right) =>
 		left.label.localeCompare(right.label),
 	);
 }

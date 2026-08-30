@@ -6,7 +6,6 @@ export type { TransactionClient } from "./types";
 import {
 	deleteStaleSegments,
 	fetchExistingSegments,
-	getSegmentTypeId,
 	offsetSegmentNumbers,
 	upsertSegmentBatch,
 } from "./db/mutations.server";
@@ -17,20 +16,14 @@ export async function syncSegments(
 	tx: TransactionClient,
 	pageId: number,
 	drafts: SegmentDraft[],
-	segmentTypeId: number | null,
 ): Promise<Map<string, number>> {
-	const resolvedSegmentTypeId = await getSegmentTypeId(tx, segmentTypeId);
-	const existingSegments = await fetchExistingSegments(
-		tx,
-		pageId,
-		resolvedSegmentTypeId,
-	);
+	const existingSegments = await fetchExistingSegments(tx, pageId);
 	const staleHashes = new Set(
 		existingSegments.map((segment) => segment.textAndOccurrenceHash),
 	);
 
 	if (existingSegments.length > 0) {
-		await offsetSegmentNumbers(tx, pageId, resolvedSegmentTypeId);
+		await offsetSegmentNumbers(tx, pageId);
 	}
 
 	const hashToSegmentId = new Map<string, number>();
@@ -40,18 +33,13 @@ export async function syncSegments(
 		index += SEGMENT_UPSERT_CHUNK_SIZE
 	) {
 		const chunk = drafts.slice(index, index + SEGMENT_UPSERT_CHUNK_SIZE);
-		const upsertedSegmentIds = await upsertSegmentBatch(
-			tx,
-			pageId,
-			resolvedSegmentTypeId,
-			chunk,
-		);
+		const upsertedSegmentIds = await upsertSegmentBatch(tx, pageId, chunk);
 		for (const [hash, segmentId] of upsertedSegmentIds) {
 			hashToSegmentId.set(hash, segmentId);
 			staleHashes.delete(hash);
 		}
 	}
 
-	await deleteStaleSegments(tx, pageId, resolvedSegmentTypeId, staleHashes);
+	await deleteStaleSegments(tx, pageId, staleHashes);
 	return hashToSegmentId;
 }

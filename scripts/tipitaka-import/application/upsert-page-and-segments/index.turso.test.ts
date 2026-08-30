@@ -25,26 +25,30 @@ let upsertPageAndSegments: typeof import("./index")["upsertPageAndSegments"];
 
 async function createImportTables() {
 	await setupClient.execute(`
-		CREATE TABLE tipitaka_pages (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			parent_id INTEGER,
-			slug TEXT NOT NULL UNIQUE,
-			kind TEXT NOT NULL,
-			position INTEGER NOT NULL,
-			mdast_json TEXT NOT NULL,
-			is_visible INTEGER NOT NULL
+		CREATE TABLE import_runs (
+			id INTEGER PRIMARY KEY AUTOINCREMENT
 		)
 	`);
 	await setupClient.execute(`
-		CREATE TABLE segment_types (
+		CREATE TABLE import_files (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			key TEXT NOT NULL,
-			label TEXT NOT NULL
+			import_run_id INTEGER NOT NULL,
+			FOREIGN KEY (import_run_id) REFERENCES import_runs(id)
 		)
 	`);
-	await setupClient.execute(
-		"INSERT INTO segment_types (id, key, label) VALUES (1, 'PRIMARY', 'Primary')",
-	);
+	await setupClient.execute(`
+		CREATE TABLE tipitaka_pages (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			parent_id INTEGER,
+			import_file_id INTEGER,
+			catalog_key TEXT NOT NULL UNIQUE,
+			slug TEXT NOT NULL UNIQUE,
+			text_level TEXT,
+			position INTEGER NOT NULL,
+			mdast_json TEXT NOT NULL,
+			FOREIGN KEY (import_file_id) REFERENCES import_files(id)
+		)
+	`);
 	await setupClient.execute(`
 		CREATE TABLE segments (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,7 +56,9 @@ async function createImportTables() {
 			number INTEGER NOT NULL,
 			text TEXT NOT NULL,
 			text_and_occurrence_hash TEXT NOT NULL,
-			segment_type_id INTEGER NOT NULL,
+			source_book_code TEXT,
+			source_paragraph_number TEXT,
+			source_paragraph_occurrence INTEGER,
 			UNIQUE (tipitaka_page_id, number),
 			UNIQUE (tipitaka_page_id, text_and_occurrence_hash)
 		)
@@ -73,7 +79,7 @@ async function createImportTables() {
 	`);
 	await setupClient.execute(`
 		CREATE TABLE segment_annotation_links (
-			main_segment_id INTEGER NOT NULL,
+			target_segment_id INTEGER NOT NULL,
 			annotation_segment_id INTEGER NOT NULL
 		)
 	`);
@@ -93,8 +99,9 @@ describe("upsertPageAndSegments の libSQL トランザクション", () => {
 		await setupClient.execute("DROP TABLE IF EXISTS segment_metadata");
 		await setupClient.execute("DROP TABLE IF EXISTS segment_metadata_types");
 		await setupClient.execute("DROP TABLE IF EXISTS segments");
-		await setupClient.execute("DROP TABLE IF EXISTS segment_types");
 		await setupClient.execute("DROP TABLE IF EXISTS tipitaka_pages");
+		await setupClient.execute("DROP TABLE IF EXISTS import_files");
+		await setupClient.execute("DROP TABLE IF EXISTS import_runs");
 		await createImportTables();
 	});
 
@@ -106,26 +113,37 @@ describe("upsertPageAndSegments の libSQL トランザクション", () => {
 	});
 
 	const params = {
+		catalogKey: "tipitaka-page",
 		pageSlug: "tipitaka-page",
 		mdastJson: JSON.stringify({ type: "root", children: [] }) as JsonValue,
-		kind: "TEXT" as const,
+		textLevel: "MULA" as const,
 		parentId: null,
 		position: 0,
-		isVisible: true,
+		importFileId: null,
 		segments: [],
-		segmentTypeId: null,
-		anchorPageId: null,
 	};
 
 	it("Tipitakaページを作成し後続処理までcommitする", async () => {
-		const result = await upsertPageAndSegments(params);
+		await setupClient.execute("INSERT INTO import_runs DEFAULT VALUES");
+		await setupClient.execute(
+			"INSERT INTO import_files (import_run_id) VALUES (1)",
+		);
+		const result = await upsertPageAndSegments({
+			...params,
+			importFileId: 1,
+		});
 
 		expect(result.slug).toBe("tipitaka-page");
 		const pages = await setupClient.execute(
-			"SELECT slug, kind, is_visible FROM tipitaka_pages",
+			"SELECT catalog_key, slug, text_level, import_file_id FROM tipitaka_pages",
 		);
 		expect(pages.rows).toEqual([
-			{ slug: "tipitaka-page", kind: "TEXT", is_visible: 1 },
+			{
+				catalog_key: "tipitaka-page",
+				slug: "tipitaka-page",
+				text_level: "MULA",
+				import_file_id: 1,
+			},
 		]);
 	});
 

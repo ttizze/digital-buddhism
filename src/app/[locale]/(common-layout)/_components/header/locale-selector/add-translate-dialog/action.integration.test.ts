@@ -145,9 +145,9 @@ describe("translateAction", () => {
 	it("ページに注釈がある場合、注釈も翻訳ジョブに含まれる", async () => {
 		// Arrange: メインページと注釈を作成
 		const user = await createUser();
-		const { mainPage, annotationPage } = await createPageWithAnnotations({
-			mainPageSlug: "page-with-annotations",
-			mainPageSegments: [
+		const { targetPage, annotationPage } = await createPageWithAnnotations({
+			targetPageSlug: "page-with-annotations",
+			targetPageSegments: [
 				{
 					number: 0,
 					text: "Page Title",
@@ -164,7 +164,7 @@ describe("translateAction", () => {
 					number: 0,
 					text: "Annotation text",
 					textAndOccurrenceHash: "hash-anno-0",
-					linkedToMainSegmentNumber: 1,
+					linkedToTargetSegmentNumber: 1,
 				},
 			],
 		});
@@ -172,7 +172,7 @@ describe("translateAction", () => {
 		vi.mocked(getCurrentUser).mockResolvedValue(toSessionUser(user));
 
 		const formData = new FormData();
-		formData.append("pageSlug", mainPage.slug);
+		formData.append("pageSlug", targetPage.slug);
 		formData.append("aiModel", "gemini-pro");
 		formData.append("targetLocale", "ja");
 
@@ -184,7 +184,7 @@ describe("translateAction", () => {
 		const jobs = await db
 			.selectFrom("translationJobs")
 			.selectAll()
-			.where("pageId", "=", mainPage.id)
+			.where("pageId", "=", targetPage.id)
 			.execute();
 		expect(jobs.length).toBeGreaterThanOrEqual(2);
 
@@ -193,7 +193,7 @@ describe("translateAction", () => {
 			.mock.calls.find(([body]) => body.annotationPageId === annotationPage.id);
 		expect(annotationCall?.[0]).toMatchObject({
 			annotationPageId: annotationPage.id,
-			pageId: mainPage.id,
+			pageId: targetPage.id,
 			targetLocale: "ja",
 		});
 	});

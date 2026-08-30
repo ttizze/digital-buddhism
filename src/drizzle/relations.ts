@@ -11,9 +11,9 @@ import {
 	segmentMetadataTypes,
 	segments,
 	segmentTranslations,
-	segmentTypes,
 	selectedSegmentTranslations,
 	sessions,
+	tipitakaPageAnnotationTargets,
 	tipitakaPages,
 	translationJobs,
 	translationVotes,
@@ -45,11 +45,12 @@ export const usersRelations = relations(users, ({ many }) => ({
 	userSettings: many(userSettings),
 }));
 
-export const importFilesRelations = relations(importFiles, ({ one }) => ({
+export const importFilesRelations = relations(importFiles, ({ one, many }) => ({
 	importRun: one(importRuns, {
 		fields: [importFiles.importRunId],
 		references: [importRuns.id],
 	}),
+	pages: many(tipitakaPages),
 }));
 
 export const importRunsRelations = relations(importRuns, ({ many }) => ({
@@ -73,6 +74,18 @@ export const tipitakaPagesRelations = relations(
 		}),
 		children: many(tipitakaPages, {
 			relationName: "tipitaka_pages_parent_id",
+		}),
+		importFile: one(importFiles, {
+			fields: [tipitakaPages.importFileId],
+			references: [importFiles.id],
+		}),
+		annotationTargets: many(tipitakaPageAnnotationTargets, {
+			relationName:
+				"tipitakaPageAnnotationTargets_annotationPageId_tipitakaPages_id",
+		}),
+		annotationSources: many(tipitakaPageAnnotationTargets, {
+			relationName:
+				"tipitakaPageAnnotationTargets_targetPageId_tipitakaPages_id",
 		}),
 		segments: many(segments),
 		translationJobs: many(translationJobs),
@@ -112,9 +125,6 @@ export const segmentTranslationsRelations = relations(
 		translationVotes: many(translationVotes),
 	}),
 );
-export const segmentTypesRelations = relations(segmentTypes, ({ many }) => ({
-	segments: many(segments),
-}));
 
 export const selectedSegmentTranslationsRelations = relations(
 	selectedSegmentTranslations,
@@ -157,17 +167,13 @@ export const segmentsRelations = relations(segments, ({ one, many }) => ({
 		fields: [segments.pageId],
 		references: [tipitakaPages.id],
 	}),
-	segmentType: one(segmentTypes, {
-		fields: [segments.segmentTypeId],
-		references: [segmentTypes.id],
-	}),
 	segmentTranslations: many(segmentTranslations),
 	segmentMetadata: many(segmentMetadata),
 	annotationLinks: many(segmentAnnotationLinks, {
 		relationName: "segmentAnnotationLinks_annotationSegmentId_segments_id",
 	}),
-	mainLinks: many(segmentAnnotationLinks, {
-		relationName: "segmentAnnotationLinks_mainSegmentId_segments_id",
+	targetLinks: many(segmentAnnotationLinks, {
+		relationName: "segmentAnnotationLinks_targetSegmentId_segments_id",
 	}),
 }));
 
@@ -229,6 +235,23 @@ export const userSettingsRelations = relations(userSettings, ({ one }) => ({
 		references: [users.id],
 	}),
 }));
+export const tipitakaPageAnnotationTargetsRelations = relations(
+	tipitakaPageAnnotationTargets,
+	({ one }) => ({
+		annotationPage: one(tipitakaPages, {
+			fields: [tipitakaPageAnnotationTargets.annotationPageId],
+			references: [tipitakaPages.id],
+			relationName:
+				"tipitakaPageAnnotationTargets_annotationPageId_tipitakaPages_id",
+		}),
+		targetPage: one(tipitakaPages, {
+			fields: [tipitakaPageAnnotationTargets.targetPageId],
+			references: [tipitakaPages.id],
+			relationName:
+				"tipitakaPageAnnotationTargets_targetPageId_tipitakaPages_id",
+		}),
+	}),
+);
 
 export const segmentAnnotationLinksRelations = relations(
 	segmentAnnotationLinks,
@@ -238,10 +261,10 @@ export const segmentAnnotationLinksRelations = relations(
 			references: [segments.id],
 			relationName: "segmentAnnotationLinks_annotationSegmentId_segments_id",
 		}),
-		mainSegment: one(segments, {
-			fields: [segmentAnnotationLinks.mainSegmentId],
+		targetSegment: one(segments, {
+			fields: [segmentAnnotationLinks.targetSegmentId],
 			references: [segments.id],
-			relationName: "segmentAnnotationLinks_mainSegmentId_segments_id",
+			relationName: "segmentAnnotationLinks_targetSegmentId_segments_id",
 		}),
 	}),
 );

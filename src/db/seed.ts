@@ -4,16 +4,8 @@ import { createId } from "@paralleldrive/cuid2";
 import { db, disposeDb } from ".";
 
 async function seed() {
-	await ensurePrimarySegmentType();
 	await ensureEvameUser();
 	console.log("Seed completed");
-}
-async function ensurePrimarySegmentType(): Promise<void> {
-	await db
-		.insertInto("segmentTypes")
-		.values({ key: "PRIMARY", label: "Primary" })
-		.onConflict((conflict) => conflict.columns(["key", "label"]).doNothing())
-		.execute();
 }
 
 async function ensureEvameUser(): Promise<string> {

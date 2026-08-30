@@ -34,7 +34,7 @@ describe("loadPageContentData", () => {
 			id: 1,
 			slug: "article",
 			title: "Article",
-			kind: "TEXT",
+			textLevel: "MULA",
 			parentId: null,
 			position: 0,
 			mdastJson: {

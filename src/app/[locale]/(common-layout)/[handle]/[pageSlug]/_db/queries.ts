@@ -31,7 +31,6 @@ export async function queryPageNavigationData(
 						.select("parentId")
 						.where("id", "=", pageId),
 				)
-				.where("isVisible", "=", true)
 				.unionAll(
 					qb
 						.selectFrom("tipitakaPages")
@@ -41,8 +40,7 @@ export async function queryPageNavigationData(
 							"tipitakaPages.slug",
 							"tipitakaPages.parentId",
 							"tipitakaPages.position",
-						])
-						.where("tipitakaPages.isVisible", "=", true),
+						]),
 				),
 		)
 		.selectFrom("ancestors")
@@ -72,7 +70,7 @@ export async function queryPageNavigationData(
 	const rootNode = breadcrumb[0];
 	if (!rootNode) return null;
 
-	const descendantRows = await fetchVisibleDescendants(rootNode.id, locale);
+	const descendantRows = await fetchDescendants(rootNode.id, locale);
 	return {
 		rootNode,
 		treeNodes: buildTree(descendantRows, rootNode.id),
@@ -84,11 +82,11 @@ export async function queryChildPagesTree(
 	parentId: number,
 	locale: string,
 ): Promise<PageTitleTree[]> {
-	const rows = await fetchVisibleDescendants(parentId, locale);
+	const rows = await fetchDescendants(parentId, locale);
 	return buildTitleTree(rows, parentId);
 }
 
-async function fetchVisibleDescendants(
+async function fetchDescendants(
 	parentId: number,
 	locale: string,
 ): Promise<PageForTree[]> {
@@ -98,7 +96,6 @@ async function fetchVisibleDescendants(
 				.selectFrom("tipitakaPages")
 				.select(["id", "slug", "parentId", "position"])
 				.where("parentId", "=", parentId)
-				.where("isVisible", "=", true)
 				.unionAll(
 					qb
 						.selectFrom("tipitakaPages")
@@ -112,8 +109,7 @@ async function fetchVisibleDescendants(
 							"tipitakaPages.slug",
 							"tipitakaPages.parentId",
 							"tipitakaPages.position",
-						])
-						.where("tipitakaPages.isVisible", "=", true),
+						]),
 				),
 		)
 		.selectFrom("descendants")

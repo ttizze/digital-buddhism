@@ -17,15 +17,17 @@ import { createCategoryPage } from "./create-category-page";
  * - タイトルのみのMarkdownページ（本文なし）
  * - スラグ形式: `tipitaka-{dirPath}` (例: `tipitaka-01-sutta/02-diggha-nikaya`)
  * - 親ページとの階層関係が設定される
- * - 同じ親の下で順序が自動的に割り当てられる（0, 1, 2...）
+ * - 同じ親の下ではディレクトリ名の番号を表示順として使用する
  *
  * @param tipitakaFileMetas - Tipitakaファイルのメタデータ配列
  * @param rootPageId - ルートページのID
+ * @param importFileId - カテゴリ構造の出典となるbooks.jsonの記録ID
  * @returns カテゴリページのパス → ページIDのルックアップマップ
  */
 export async function createCategoryPages(
 	tipitakaFileMetas: TipitakaFileMeta[],
 	rootPageId: number,
+	importFileId: number,
 ): Promise<Map<string, number>> {
 	// すべてのユニークなパスを抽出（子ノードがある場合のみ）
 	const pathSet = extractUniqueCategoryPaths(tipitakaFileMetas);
@@ -53,6 +55,7 @@ export async function createCategoryPages(
 			dirPath,
 			parentId,
 			position,
+			importFileId,
 		});
 
 		categoryPageLookup.set(dirPath, pageId);

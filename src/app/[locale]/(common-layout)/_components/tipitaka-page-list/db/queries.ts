@@ -14,8 +14,7 @@ export async function fetchTipitakaPageTree(
 		.selectFrom("tipitakaPages")
 		.select("id")
 		.where("slug", "=", TIPITAKA_ROOT_SLUG)
-		.where("kind", "=", "ROOT")
-		.where("isVisible", "=", true)
+		.where("parentId", "is", null)
 		.executeTakeFirst();
 	if (!rootPage) return [];
 
@@ -25,7 +24,6 @@ export async function fetchTipitakaPageTree(
 				.selectFrom("tipitakaPages")
 				.select(["id", "slug", "parentId", "position"])
 				.where("parentId", "=", rootPage.id)
-				.where("isVisible", "=", true)
 				.unionAll(
 					qb
 						.selectFrom("tipitakaPages")
@@ -39,8 +37,7 @@ export async function fetchTipitakaPageTree(
 							"tipitakaPages.slug",
 							"tipitakaPages.parentId",
 							"tipitakaPages.position",
-						])
-						.where("tipitakaPages.isVisible", "=", true),
+						]),
 				),
 		)
 		.selectFrom("tipitakaDescendants")

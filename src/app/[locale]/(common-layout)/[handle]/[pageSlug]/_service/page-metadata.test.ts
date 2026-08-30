@@ -7,7 +7,7 @@ const pageDetail: PageDetail = {
 	id: 1,
 	slug: "vinaya-pitaka",
 	title: "Vinayapiṭaka",
-	kind: "TEXT",
+	textLevel: "MULA",
 	parentId: 0,
 	position: 1,
 	mdastJson: { type: "root", children: [] },

@@ -1,37 +1,11 @@
-import { TIPITAKA_ROOT_SLUG } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { db } from "@/db";
 
-function buildVisibleTipitakaPagesQuery() {
-	return db
-		.withRecursive("visibleTipitakaPages", (qb) =>
-			qb
-				.selectFrom("tipitakaPages")
-				.select("id")
-				.where("slug", "=", TIPITAKA_ROOT_SLUG)
-				.where("kind", "=", "ROOT")
-				.where("isVisible", "=", true)
-				.unionAll(
-					qb
-						.selectFrom("tipitakaPages")
-						.innerJoin(
-							"visibleTipitakaPages",
-							"tipitakaPages.parentId",
-							"visibleTipitakaPages.id",
-						)
-						.select("tipitakaPages.id")
-						.where("tipitakaPages.isVisible", "=", true),
-				),
-		)
-		.selectFrom("tipitakaPages")
-		.innerJoin(
-			"visibleTipitakaPages",
-			"visibleTipitakaPages.id",
-			"tipitakaPages.id",
-		);
+function buildTipitakaPagesQuery() {
+	return db.selectFrom("tipitakaPages");
 }
 
 export async function countPublicPages(): Promise<number> {
-	const result = await buildVisibleTipitakaPagesQuery()
+	const result = await buildTipitakaPagesQuery()
 		.select((eb) => eb.fn.countAll<number>().as("count"))
 		.executeTakeFirst();
 	return Number(result?.count ?? 0);
@@ -44,7 +18,7 @@ export async function fetchTipitakaPagesWithTranslationsChunk({
 	limit: number;
 	offset: number;
 }) {
-	const pages = await buildVisibleTipitakaPagesQuery()
+	const pages = await buildTipitakaPagesQuery()
 		.select([
 			"tipitakaPages.id as pageId",
 			"tipitakaPages.slug",

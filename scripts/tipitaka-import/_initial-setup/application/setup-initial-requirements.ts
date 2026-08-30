@@ -1,5 +1,4 @@
 import { ensureMetadataTypes } from "../db/metadata-types";
-import { ensureSegmentTypes } from "../db/segment-types";
 import { ensureRootPage } from "./ensure-root-page";
 
 /**
@@ -10,9 +9,6 @@ import { ensureRootPage } from "./ensure-root-page";
 export async function setupInitialRequirements(): Promise<{
 	rootPageId: number;
 }> {
-	// メタデータタイプを確保
-	await ensureSegmentTypes();
-
 	await ensureMetadataTypes();
 
 	// ルートページを確保

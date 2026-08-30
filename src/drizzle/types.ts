@@ -23,8 +23,6 @@ export type TipitakaPageInsert = InferInsertModel<typeof schema.tipitakaPages>;
 
 export type Segment = InferSelectModel<typeof schema.segments>;
 export type SegmentInsert = InferInsertModel<typeof schema.segments>;
-export type SegmentType = InferSelectModel<typeof schema.segmentTypes>;
-export type SegmentTypeInsert = InferInsertModel<typeof schema.segmentTypes>;
 
 export type SegmentTranslation = InferSelectModel<
 	typeof schema.segmentTranslations
@@ -90,6 +88,12 @@ export type SegmentAnnotationLink = InferSelectModel<
 export type SegmentAnnotationLinkInsert = InferInsertModel<
 	typeof schema.segmentAnnotationLinks
 >;
+export type TipitakaPageAnnotationTarget = InferSelectModel<
+	typeof schema.tipitakaPageAnnotationTargets
+>;
+export type TipitakaPageAnnotationTargetInsert = InferInsertModel<
+	typeof schema.tipitakaPageAnnotationTargets
+>;
 
 export type ImportRun = InferSelectModel<typeof schema.importRuns>;
 export type ImportRunInsert = InferInsertModel<typeof schema.importRuns>;
@@ -100,10 +104,14 @@ export type ImportFileInsert = InferInsertModel<typeof schema.importFiles>;
 export type Verification = InferSelectModel<typeof schema.verifications>;
 export type VerificationInsert = InferInsertModel<typeof schema.verifications>;
 
+export type ImportFileStatus =
+	(typeof schema.importFileStatus.enumValues)[number];
+export type ImportRunStatus =
+	(typeof schema.importRunStatus.enumValues)[number];
+
 // Enum型のエクスポート
-export type TipitakaPageKind =
-	(typeof schema.tipitakaPageKind.enumValues)[number];
-export type SegmentTypeKey = (typeof schema.segmentTypeKey.enumValues)[number];
+export type TipitakaTextLevel =
+	(typeof schema.tipitakaTextLevel.enumValues)[number];
 export type TranslationProofStatus =
 	(typeof schema.translationProofStatus.enumValues)[number];
 export type TranslationStatus =

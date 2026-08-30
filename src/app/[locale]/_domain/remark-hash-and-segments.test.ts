@@ -168,34 +168,53 @@ describe("remarkHashAndSegments", () => {
 		const segs = file.data.segments as SegmentDraft[];
 		expect(segs[0]).toMatchObject({
 			text: "Para text",
-			paragraphNumber: "3",
+			sourceParagraphNumber: "3",
+			sourceParagraphOccurrence: 1,
 		});
 		expect(String(file)).toContain("Para text");
 		expect(String(file)).not.toContain("{para:3}");
 	});
 
-	it("chapter見出し（###）ごとに段落番号を区別する", async () => {
+	it("bookと同じ段落番号の出現順を別々の位置として保存する", async () => {
 		const md =
-			"### 1. Chapter\n\n{para:1} A\n\n{para:1} B\n\n### 2. Chapter\n\n{para:1} C";
+			"<!--book:an2-->\n\n### 1. Chapter\n\n{para:1} A\n\n{para:1} B\n\n### 2. Chapter\n\n{para:1} C\n\n<!--book:an3-->\n\n### 1. Chapter\n\n{para:1} D";
 		const file = (await remark()
 			.use(remarkHashAndSegments())
 			.process(md)) as VFile & { data: { segments: SegmentDraft[] } };
-		const segs = file.data.segments as SegmentDraft[];
-		const paraSegs = segs.filter((s) => s.paragraphNumber);
-		expect(paraSegs.map((s) => s.paragraphNumber)).toEqual([
-			"1__ch1",
-			"1__ch1",
-			"1__ch2",
+		const paraSegs = file.data.segments.filter(
+			(segment) => segment.sourceParagraphNumber,
+		);
+		expect(
+			paraSegs.map((segment) => ({
+				book: segment.sourceBookCode,
+				chapter: segment.sourceChapterNumber,
+				paragraph: segment.sourceParagraphNumber,
+				occurrence: segment.sourceParagraphOccurrence,
+			})),
+		).toEqual([
+			{ book: "an2", chapter: 1, paragraph: "1", occurrence: 1 },
+			{ book: "an2", chapter: 1, paragraph: "1", occurrence: 2 },
+			{ book: "an2", chapter: 2, paragraph: "1", occurrence: 3 },
+			{ book: "an3", chapter: 1, paragraph: "1", occurrence: 1 },
 		]);
 	});
 
-	it("chapter見出しが無い場合は段落番号にサフィックスを付けない", async () => {
+	it("book見出しが無くても段落番号と出現順を保存する", async () => {
 		const md = "{para:1} A\n\n{para:2} B";
 		const file = (await remark()
 			.use(remarkHashAndSegments())
 			.process(md)) as VFile & { data: { segments: SegmentDraft[] } };
-		const segs = file.data.segments as SegmentDraft[];
-		const paraSegs = segs.filter((s) => s.paragraphNumber);
-		expect(paraSegs.map((s) => s.paragraphNumber)).toEqual(["1", "2"]);
+		const paraSegs = file.data.segments.filter(
+			(segment) => segment.sourceParagraphNumber,
+		);
+		expect(
+			paraSegs.map((segment) => [
+				segment.sourceParagraphNumber,
+				segment.sourceParagraphOccurrence,
+			]),
+		).toEqual([
+			["1", 1],
+			["2", 1],
+		]);
 	});
 });

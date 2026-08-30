@@ -8,6 +8,7 @@ interface CategoryPageParams {
 	dirPath: string;
 	parentId: number;
 	position: number;
+	importFileId: number;
 }
 
 export async function createCategoryPage({
@@ -15,23 +16,24 @@ export async function createCategoryPage({
 	dirPath,
 	parentId,
 	position,
+	importFileId,
 }: CategoryPageParams): Promise<number> {
 	const mdast = await markdownToMdastWithSegments({
 		header: title,
 		markdown: "",
+		autoUploadImages: false,
 	});
 
 	const slug = slugify(`tipitaka-${dirPath}`);
 	await upsertPageAndSegments({
+		catalogKey: slug,
 		pageSlug: slug,
 		mdastJson: mdast.mdastJson,
-		kind: "CATEGORY",
+		textLevel: null,
 		parentId,
 		position,
-		isVisible: true,
+		importFileId,
 		segments: mdast.segments,
-		segmentTypeId: null,
-		anchorPageId: null,
 	});
 
 	const page = await db

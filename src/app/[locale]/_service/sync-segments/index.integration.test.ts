@@ -23,7 +23,7 @@ describe("syncSegments", () => {
 
 		// Act
 		const result = await db.transaction().execute(async (tx) => {
-			return await syncSegments(tx, page.id, drafts, null);
+			return await syncSegments(tx, page.id, drafts);
 		});
 
 		// Assert: マッピングが正しく返される
@@ -70,7 +70,7 @@ describe("syncSegments", () => {
 
 		// Act
 		await db.transaction().execute(async (tx) => {
-			return await syncSegments(tx, page.id, drafts, null);
+			return await syncSegments(tx, page.id, drafts);
 		});
 
 		// Assert: 番号が更新されている
@@ -122,7 +122,7 @@ describe("syncSegments", () => {
 
 		// Act
 		await db.transaction().execute(async (tx) => {
-			return await syncSegments(tx, page.id, drafts, null);
+			return await syncSegments(tx, page.id, drafts);
 		});
 
 		// Assert: セグメントが2つに減っている
@@ -167,7 +167,7 @@ describe("syncSegments", () => {
 
 		// Act
 		const result = await db.transaction().execute(async (tx) => {
-			return await syncSegments(tx, page.id, drafts, null);
+			return await syncSegments(tx, page.id, drafts);
 		});
 
 		// Assert: マッピングが正しい
@@ -220,7 +220,7 @@ describe("syncSegments", () => {
 
 		// Act
 		const result = await db.transaction().execute(async (tx) => {
-			return await syncSegments(tx, page.id, [], null);
+			return await syncSegments(tx, page.id, []);
 		});
 
 		// Assert
@@ -244,7 +244,7 @@ describe("syncSegments", () => {
 
 		// Act
 		const result = await db.transaction().execute(async (tx) => {
-			return await syncSegments(tx, page.id, drafts, null);
+			return await syncSegments(tx, page.id, drafts);
 		});
 
 		// Assert

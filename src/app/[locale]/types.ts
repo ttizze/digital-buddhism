@@ -1,8 +1,4 @@
-import type {
-	JsonValue,
-	SegmentTypeKey,
-	TipitakaPageKind,
-} from "@/drizzle/types";
+import type { JsonValue, TipitakaTextLevel } from "@/drizzle/types";
 
 export type SegmentForPage = {
 	id: number;
@@ -10,14 +6,10 @@ export type SegmentForPage = {
 	number: number;
 	text: string;
 	translationText: string | null;
-	segmentTypeKey: SegmentTypeKey;
-	segmentTypeLabel: string;
+	textLevel: TipitakaTextLevel | null;
 };
 
-export type TitleSegment = Omit<
-	SegmentForPage,
-	"segmentTypeKey" | "segmentTypeLabel"
->;
+export type TitleSegment = Omit<SegmentForPage, "textLevel">;
 
 export type SegmentForDetail = SegmentForPage & {
 	annotations: Array<{
@@ -36,7 +28,7 @@ export type PageDetail = {
 	id: number;
 	slug: string;
 	title: string;
-	kind: TipitakaPageKind;
+	textLevel: TipitakaTextLevel | null;
 	parentId: number | null;
 	position: number;
 	mdastJson: JsonValue;
@@ -49,7 +41,7 @@ export type PageForList = {
 	id: number;
 	slug: string;
 	createdAt: Date;
-	kind: TipitakaPageKind;
+	textLevel: TipitakaTextLevel | null;
 	titleSegment: TitleSegment;
 };
 

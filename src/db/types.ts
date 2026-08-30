@@ -5,9 +5,10 @@
 
 import type { ColumnType } from "kysely";
 import type {
+	ImportFileStatus,
+	ImportRunStatus,
 	JsonValue,
-	SegmentTypeKey,
-	TipitakaPageKind,
+	TipitakaTextLevel,
 	TranslationProofStatus,
 	TranslationStatus,
 } from "../drizzle/types";
@@ -40,20 +41,22 @@ export interface GeminiApiKeys {
 }
 
 export interface ImportFiles {
-	checksum: string;
-	createdAt: Generated<Date>;
+	checksum: string | null;
+	finishedAt: Date | null;
 	id: Generated<number>;
 	importRunId: number;
 	message: Generated<string>;
 	path: string;
-	status: Generated<string>;
+	startedAt: Generated<Date>;
+	status: Generated<ImportFileStatus>;
 }
 
 export interface ImportRuns {
 	finishedAt: Date | null;
 	id: Generated<number>;
+	message: Generated<string>;
 	startedAt: Generated<Date>;
-	status: Generated<string>;
+	status: Generated<ImportRunStatus>;
 }
 
 export interface Notifications {
@@ -74,8 +77,7 @@ export interface PageLocaleTranslationProofs {
 
 export interface SegmentAnnotationLinks {
 	annotationSegmentId: number;
-	createdAt: Generated<Date>;
-	mainSegmentId: number;
+	targetSegmentId: number;
 }
 
 export interface SegmentMetadata {
@@ -96,7 +98,10 @@ export interface Segments {
 	createdAt: Generated<Date>;
 	id: Generated<number>;
 	number: number;
-	segmentTypeId: number;
+	sourceBookCode: string | null;
+	sourceChapterNumber: number | null;
+	sourceParagraphNumber: string | null;
+	sourceParagraphOccurrence: number | null;
 	text: string;
 	textAndOccurrenceHash: string;
 	tipitakaPageId: number;
@@ -110,12 +115,6 @@ export interface SegmentTranslations {
 	segmentId: number;
 	text: string;
 	userId: string;
-}
-
-export interface SegmentTypes {
-	id: Generated<number>;
-	key: SegmentTypeKey;
-	label: string;
 }
 
 export interface SelectedSegmentTranslations {
@@ -137,15 +136,22 @@ export interface Sessions {
 	userId: string;
 }
 
+export interface TipitakaPageAnnotationTargets {
+	annotationPageId: number;
+	position: Generated<number>;
+	targetPageId: number;
+}
+
 export interface TipitakaPages {
+	catalogKey: string;
 	createdAt: Generated<Date>;
 	id: Generated<number>;
-	isVisible: Generated<boolean>;
-	kind: TipitakaPageKind;
+	importFileId: number | null;
 	mdastJson: JsonValue;
 	parentId: number | null;
 	position: Generated<number>;
 	slug: string;
+	textLevel: TipitakaTextLevel | null;
 	updatedAt: Generated<Date>;
 }
 
@@ -216,9 +222,9 @@ export interface DB {
 	segmentMetadataTypes: SegmentMetadataTypes;
 	segments: Segments;
 	segmentTranslations: SegmentTranslations;
-	segmentTypes: SegmentTypes;
 	selectedSegmentTranslations: SelectedSegmentTranslations;
 	sessions: Sessions;
+	tipitakaPageAnnotationTargets: TipitakaPageAnnotationTargets;
 	tipitakaPages: TipitakaPages;
 	translationJobs: TranslationJobs;
 	translationVotes: TranslationVotes;

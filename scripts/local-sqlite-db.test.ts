@@ -23,16 +23,16 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			const migrations = await client.execute(
 				"SELECT hash, created_at FROM __drizzle_migrations ORDER BY created_at",
 			);
-			expect(migrations.rows).toHaveLength(6);
+			expect(migrations.rows).toHaveLength(9);
 			expect(String(migrations.rows[0]?.hash)).toMatch(/^[0-9a-f]{64}$/);
-			expect(Number(migrations.rows[5]?.created_at)).toBe(1788044085966);
+			expect(Number(migrations.rows[8]?.created_at)).toBe(1788063256486);
 		} finally {
 			client.close();
 			await database.cleanup();
 		}
 	});
 
-	it("Tipitakaだけを専用schemaへ移し翻訳選定と参照整合性を保持する", async () => {
+	it("Tipitakaを正規化schemaへ移し翻訳選定と参照整合性を保持する", async () => {
 		const directory = await mkdtemp(
 			join(tmpdir(), "digital-buddshim-tipitaka-cutover-"),
 		);
@@ -101,15 +101,14 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			const preserved = await client.execute(`
 				SELECT
 					tipitaka_pages.id AS page_id,
-					tipitaka_pages.kind,
+					tipitaka_pages.catalog_key,
+					tipitaka_pages.text_level,
 					segments.tipitaka_page_id AS segment_page_id,
-					segment_types.key AS segment_type_key,
-					segment_types.label AS segment_type_label,
+					segments.source_paragraph_number,
 					segment_translations.id AS translation_id,
 					notifications.id AS notification_id
 				FROM tipitaka_pages
 				JOIN segments ON segments.tipitaka_page_id = tipitaka_pages.id
-				JOIN segment_types ON segment_types.id = segments.segment_type_id
 				JOIN segment_translations ON segment_translations.segment_id = segments.id
 				JOIN notifications
 					ON notifications.segment_translation_id = segment_translations.id
@@ -117,12 +116,12 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			`);
 			expect(preserved.rows).toEqual([
 				expect.objectContaining({
-					kind: "TEXT",
+					catalog_key: "vinaya-pitaka",
+					text_level: "MULA",
 					notification_id: 101,
 					page_id: 101,
 					segment_page_id: 101,
-					segment_type_key: "PRIMARY",
-					segment_type_label: "Primary",
+					source_paragraph_number: null,
 					translation_id: 101,
 				}),
 			]);
@@ -159,9 +158,6 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			expect(
 				segmentForeignKeys.rows.some((row) => row.table === "tipitaka_pages"),
 			).toBe(true);
-			expect(
-				segmentForeignKeys.rows.some((row) => row.table === "segment_types"),
-			).toBe(true);
 			expect((await client.execute("PRAGMA foreign_key_check")).rows).toEqual(
 				[],
 			);
@@ -180,7 +176,8 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 						'personal_access_tokens',
 						'tag_pages',
 						'tags',
-						'translation_contexts'
+						'translation_contexts',
+						'segment_types'
 					)
 			`);
 			expect(removedTables.rows).toEqual([]);
@@ -207,9 +204,9 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			const first = await client.execute(
 				"SELECT hash, created_at FROM __drizzle_migrations ORDER BY created_at",
 			);
-			expect(first.rows).toHaveLength(6);
+			expect(first.rows).toHaveLength(9);
 			expect(String(first.rows[0]?.hash)).toMatch(/^[0-9a-f]{64}$/);
-			expect(Number(first.rows[5]?.created_at)).toBe(1788044085966);
+			expect(Number(first.rows[8]?.created_at)).toBe(1788063256486);
 
 			await execFileAsync("bun", ["run", "db:prod:migrate"], {
 				cwd: join(import.meta.dirname, ".."),
