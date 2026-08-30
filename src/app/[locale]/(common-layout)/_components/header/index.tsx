@@ -19,7 +19,7 @@ export function HeaderFrame({
 					<img
 						alt=""
 						className="size-8 shrink-0 dark:invert"
-						src="/apple-touch-icon.png"
+						src="/brand-icon.png"
 					/>
 					<span className="hidden font-semibold text-xl sm:inline">
 						Digital Buddhism
