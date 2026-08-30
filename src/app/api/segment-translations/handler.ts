@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
 import { parseFormData } from "@/app/[locale]/_utils/parse-form-data";
-import { findPageIdBySegmentTranslationId } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-section/_db/queries.server";
 import { addTranslationService } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-section/add-translation-form/service/add-translation.server";
 import {
 	createNotificationPageSegmentTranslationVote,
@@ -116,43 +115,37 @@ export async function getSegmentTranslations(
 	}
 }
 
-export async function postSegmentTranslation(request: Request) {
+export async function postSegmentTranslation(
+	request: Request,
+): Promise<Response> {
 	if (!isSameOriginRequest(request)) {
-		return {
-			response: Response.json({ error: "Forbidden" }, { status: 403 }),
-		};
+		return Response.json({ error: "Forbidden" }, { status: 403 });
 	}
 
 	const currentUser = await getCurrentUserFromHeaders(request.headers);
 	if (!currentUser) {
-		return {
-			response: Response.json({ error: "Unauthorized" }, { status: 401 }),
-		};
+		return Response.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
 	let formData: FormData;
 	try {
 		formData = await request.formData();
 	} catch {
-		return {
-			response: Response.json(
-				{ success: false, message: "Invalid form data" },
-				{ status: 400 },
-			),
-		};
+		return Response.json(
+			{ success: false, message: "Invalid form data" },
+			{ status: 400 },
+		);
 	}
 
 	const parsed = await parseFormData(postSchema, formData);
 	if (!parsed.success) {
-		return {
-			response: Response.json(
-				{
-					success: false,
-					zodErrors: parsed.error.flatten().fieldErrors,
-				},
-				{ status: 400 },
-			),
-		};
+		return Response.json(
+			{
+				success: false,
+				zodErrors: parsed.error.flatten().fieldErrors,
+			},
+			{ status: 400 },
+		);
 	}
 
 	const result = await addTranslationService(
@@ -163,54 +156,43 @@ export async function postSegmentTranslation(request: Request) {
 	);
 
 	if (!result.success) {
-		return {
-			response: Response.json({ success: false, message: result.message }),
-		};
+		return Response.json({ success: false, message: result.message });
 	}
 
-	return {
-		response: Response.json({ success: true }),
-		pageId: result.pageId,
-	};
+	return Response.json({ success: true });
 }
 
-export async function patchSegmentTranslationVote(request: Request) {
+export async function patchSegmentTranslationVote(
+	request: Request,
+): Promise<Response> {
 	if (!isSameOriginRequest(request)) {
-		return {
-			response: Response.json({ error: "Forbidden" }, { status: 403 }),
-		};
+		return Response.json({ error: "Forbidden" }, { status: 403 });
 	}
 
 	const currentUser = await getCurrentUserFromHeaders(request.headers);
 	if (!currentUser) {
-		return {
-			response: Response.json({ error: "Unauthorized" }, { status: 401 }),
-		};
+		return Response.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
 	let formData: FormData;
 	try {
 		formData = await request.formData();
 	} catch {
-		return {
-			response: Response.json(
-				{ success: false, message: "Invalid form data" },
-				{ status: 400 },
-			),
-		};
+		return Response.json(
+			{ success: false, message: "Invalid form data" },
+			{ status: 400 },
+		);
 	}
 
 	const parsed = await parseFormData(patchSchema, formData);
 	if (!parsed.success) {
-		return {
-			response: Response.json(
-				{
-					success: false,
-					zodErrors: parsed.error.flatten().fieldErrors,
-				},
-				{ status: 400 },
-			),
-		};
+		return Response.json(
+			{
+				success: false,
+				zodErrors: parsed.error.flatten().fieldErrors,
+			},
+			{ status: 400 },
+		);
 	}
 
 	const { segmentTranslationId, isUpvote } = parsed.data;
@@ -228,58 +210,44 @@ export async function patchSegmentTranslationVote(request: Request) {
 		vote.locale,
 		currentUser.id,
 	);
-	return {
-		response: Response.json({ success: true, data: { translations } }),
-		pageId: vote.pageId,
-	};
+	return Response.json({ success: true, data: { translations } });
 }
 
-export async function deleteSegmentTranslation(request: Request) {
+export async function deleteSegmentTranslation(
+	request: Request,
+): Promise<Response> {
 	if (!isSameOriginRequest(request)) {
-		return {
-			response: Response.json({ error: "Forbidden" }, { status: 403 }),
-		};
+		return Response.json({ error: "Forbidden" }, { status: 403 });
 	}
 
 	const currentUser = await getCurrentUserFromHeaders(request.headers);
 	if (!currentUser) {
-		return {
-			response: Response.json({ error: "Unauthorized" }, { status: 401 }),
-		};
+		return Response.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
 	let formData: FormData;
 	try {
 		formData = await request.formData();
 	} catch {
-		return {
-			response: Response.json(
-				{ success: false, message: "Invalid form data" },
-				{ status: 400 },
-			),
-		};
+		return Response.json(
+			{ success: false, message: "Invalid form data" },
+			{ status: 400 },
+		);
 	}
 
 	const parsed = await parseFormData(deleteSchema, formData);
 	if (!parsed.success) {
-		return {
-			response: Response.json(
-				{
-					success: false,
-					zodErrors: parsed.error.flatten().fieldErrors,
-				},
-				{ status: 400 },
-			),
-		};
+		return Response.json(
+			{
+				success: false,
+				zodErrors: parsed.error.flatten().fieldErrors,
+			},
+			{ status: 400 },
+		);
 	}
 
 	const { translationId } = parsed.data;
-	// Resolve page info BEFORE deletion, matching the former Server Action.
-	const pageId = await findPageIdBySegmentTranslationId(translationId);
 	await deleteOwnTranslation(currentUser.handle, translationId);
 
-	return {
-		response: Response.json({ success: true }),
-		pageId,
-	};
+	return Response.json({ success: true });
 }

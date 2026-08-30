@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/cloudflare";
 import handler from "@tanstack/react-start/server-entry";
-import { processPendingTipitakaReadModelJobs } from "./app/[locale]/_infrastructure/tipitaka-read-model/jobs.server";
+import { projectPendingTipitakaReadModels } from "./app/[locale]/_infrastructure/tipitaka-read-model/jobs.server";
 import {
 	createKvReadModelStore,
 	type KvNamespaceBinding,
@@ -21,6 +21,20 @@ type WorkerExecutionContext = {
 type DefaultCacheStorage = CacheStorage & {
 	default?: Cache;
 };
+
+function runTipitakaProjector(env: WorkerEnv): Promise<number> {
+	return runWithTipitakaReadModelStore(
+		createKvReadModelStore(env.TIPITAKA_READ_MODELS),
+		() =>
+			runWithDatabaseRequestContext(
+				{
+					url: env.TURSO_DATABASE_URL,
+					authToken: env.TURSO_AUTH_TOKEN,
+				},
+				() => projectPendingTipitakaReadModels(),
+			),
+	);
+}
 
 const workerEntry = {
 	async fetch(
@@ -74,19 +88,7 @@ const workerEntry = {
 		}
 
 		if (request.method !== "GET" && ctx) {
-			ctx.waitUntil(
-				runWithTipitakaReadModelStore(
-					createKvReadModelStore(env.TIPITAKA_READ_MODELS),
-					() =>
-						runWithDatabaseRequestContext(
-							{
-								url: env.TURSO_DATABASE_URL,
-								authToken: env.TURSO_AUTH_TOKEN,
-							},
-							() => processPendingTipitakaReadModelJobs(),
-						),
-				),
-			);
+			ctx.waitUntil(runTipitakaProjector(env));
 		}
 
 		return securedResponse;
@@ -96,19 +98,7 @@ const workerEntry = {
 		env: WorkerEnv,
 		ctx: WorkerExecutionContext,
 	) {
-		ctx.waitUntil(
-			runWithTipitakaReadModelStore(
-				createKvReadModelStore(env.TIPITAKA_READ_MODELS),
-				() =>
-					runWithDatabaseRequestContext(
-						{
-							url: env.TURSO_DATABASE_URL,
-							authToken: env.TURSO_AUTH_TOKEN,
-						},
-						() => processPendingTipitakaReadModelJobs(),
-					),
-			),
-		);
+		ctx.waitUntil(runTipitakaProjector(env));
 	},
 };
 

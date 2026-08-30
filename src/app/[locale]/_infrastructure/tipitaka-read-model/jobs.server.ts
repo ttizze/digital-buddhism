@@ -1,12 +1,8 @@
 import { serverLogger } from "@/app/_service/logger.server";
 import { db } from "@/db";
-import {
-	publishHomeTranslationOverlay,
-	publishPageState,
-	publishPageTranslationOverlay,
-} from "./publisher.server";
+import { publishTipitakaProjection } from "./publisher.server";
 
-export async function processPendingTipitakaReadModelJobs(
+export async function projectPendingTipitakaReadModels(
 	limit = 10,
 ): Promise<number> {
 	const jobs = await db
@@ -19,11 +15,7 @@ export async function processPendingTipitakaReadModelJobs(
 
 	for (const job of jobs) {
 		try {
-			await Promise.all([
-				publishPageTranslationOverlay(job.pageId, job.locale),
-				publishPageState(job.pageId),
-				publishHomeTranslationOverlay(job.locale),
-			]);
+			await publishTipitakaProjection(job.pageId, job.locale);
 			await db
 				.deleteFrom("tipitakaReadModelJobs")
 				.where("pageId", "=", job.pageId)

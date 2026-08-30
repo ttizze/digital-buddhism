@@ -41,8 +41,6 @@ describe("handleVoteのSQLite互換性", () => {
 					expect(await handleVote(1, true, "reviewer")).toStrictEqual({
 						isUpvote: true,
 						locale: "ja",
-						pageId: 1,
-						point: 1,
 						segmentId: 1,
 					});
 

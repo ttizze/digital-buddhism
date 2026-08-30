@@ -231,13 +231,13 @@ describe("/api/segment-translations GET", () => {
 			const formData = new FormData();
 			formData.set("segmentTranslationId", String(translationId));
 			formData.set("isUpvote", "true");
-			const result = await patchSegmentTranslationVote(
+			const response = await patchSegmentTranslationVote(
 				new Request("http://localhost/api/segment-translations", {
 					method: "PATCH",
 					body: formData,
 				}),
 			);
-			const body = (await result.response.json()) as {
+			const body = (await response.json()) as {
 				data: { translations: SegmentTranslation[] };
 			};
 			return body.data.translations;

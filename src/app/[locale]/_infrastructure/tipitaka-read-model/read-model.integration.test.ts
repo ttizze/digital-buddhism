@@ -7,7 +7,7 @@ import {
 	createUser,
 } from "@/tests/factories";
 import { setupDbPerFile } from "@/tests/test-db-manager";
-import { processPendingTipitakaReadModelJobs } from "./jobs.server";
+import { projectPendingTipitakaReadModels } from "./jobs.server";
 import { pageTranslationKey, pageTranslationPointerKey } from "./model";
 import {
 	publishHomeBase,
@@ -197,7 +197,7 @@ describe("Tipitaka read model", () => {
 
 		await expect(
 			runWithTipitakaReadModelStore(store, () =>
-				processPendingTipitakaReadModelJobs(),
+				projectPendingTipitakaReadModels(),
 			),
 		).resolves.toBe(1);
 		await expect(

@@ -235,6 +235,18 @@ export async function publishHomeTranslationOverlay(
 	await store.put(pointerKey, JSON.stringify(pointer));
 }
 
+export async function publishTipitakaProjection(
+	pageId: number,
+	locale: string,
+	store: TipitakaReadModelStore = getTipitakaReadModelStore(),
+): Promise<void> {
+	await Promise.all([
+		publishPageTranslationOverlay(pageId, locale, store),
+		publishPageState(pageId, store),
+		publishHomeTranslationOverlay(locale, store),
+	]);
+}
+
 export async function publishAllTipitakaReadModels(
 	store: TipitakaReadModelStore = getTipitakaReadModelStore(),
 ): Promise<void> {

@@ -55,7 +55,6 @@ export async function handleVote(
 			.innerJoin("tipitakaPages", "segments.tipitakaPageId", "tipitakaPages.id")
 			.select([
 				"segmentTranslations.segmentId",
-				"segmentTranslations.point",
 				"segmentTranslations.locale",
 				"tipitakaPages.id as pageId",
 			])
@@ -66,11 +65,13 @@ export async function handleVote(
 			throw new Error("Translation not found");
 		}
 
-		if (result.pageId) {
-			await updateProofStatus(tx, result.pageId, result.locale);
-		}
+		await updateProofStatus(tx, result.pageId, result.locale);
 
-		return { ...result, isUpvote: finalIsUpvote };
+		return {
+			segmentId: result.segmentId,
+			locale: result.locale,
+			isUpvote: finalIsUpvote,
+		};
 	});
 }
 

@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
 	handlerFetchMock,
-	processPendingReadModelJobsMock,
+	projectPendingReadModelsMock,
 	runWithDatabaseRequestContextMock,
 	withSentryMock,
 } = vi.hoisted(() => ({
 	handlerFetchMock: vi.fn(),
-	processPendingReadModelJobsMock: vi.fn(),
+	projectPendingReadModelsMock: vi.fn(),
 	runWithDatabaseRequestContextMock: vi.fn(
 		(_connection: unknown, callback: () => unknown) => callback(),
 	),
@@ -40,7 +40,7 @@ vi.mock("./db/request-context", () => ({
 vi.mock(
 	"./app/[locale]/_infrastructure/tipitaka-read-model/jobs.server",
 	() => ({
-		processPendingTipitakaReadModelJobs: processPendingReadModelJobsMock,
+		projectPendingTipitakaReadModels: projectPendingReadModelsMock,
 	}),
 );
 
@@ -59,7 +59,7 @@ beforeEach(() => {
 		},
 	});
 	handlerFetchMock.mockReset();
-	processPendingReadModelJobsMock.mockReset().mockResolvedValue(0);
+	projectPendingReadModelsMock.mockReset().mockResolvedValue(0);
 	runWithDatabaseRequestContextMock.mockClear();
 });
 
@@ -171,7 +171,7 @@ describe("Cloudflare WorkerのRead Model更新", () => {
 		);
 
 		expect(response.status).toBe(200);
-		expect(processPendingReadModelJobsMock).toHaveBeenCalledOnce();
+		expect(projectPendingReadModelsMock).toHaveBeenCalledOnce();
 		expect(waitUntilMock).toHaveBeenCalledWith(expect.any(Promise));
 	});
 });
