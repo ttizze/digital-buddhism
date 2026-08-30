@@ -45,7 +45,7 @@ export function LoginDialog({
 			{/* We set max-w because the underlying <Login /> already has its own container width. */}
 			<DialogContent className="max-w-md ">
 				<DialogTitle className="text-center font-bold text-2xl">
-					Login to Evame
+					Login to Tipiṭaka
 					<DialogDescription className="mt-2">
 						Read and translate the Tipitaka.
 					</DialogDescription>

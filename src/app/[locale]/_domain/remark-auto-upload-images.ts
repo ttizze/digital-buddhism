@@ -13,8 +13,7 @@ export const remarkAutoUploadImages: Plugin<[]> = () => {
 		const tasks: Promise<void>[] = [];
 		const internalImageHosts = new Set<string>(
 			[
-				"images.evame.tech",
-				"images.eveeve.org",
+				process.env.PUBLIC_IMAGE_HOST?.trim(),
 				process.env.NEXT_PUBLIC_CF_IMAGE_HOST?.trim(),
 			].filter(
 				(host): host is string => typeof host === "string" && host !== "",
@@ -30,9 +29,6 @@ export const remarkAutoUploadImages: Plugin<[]> = () => {
 				url.startsWith("data:") ||
 				url.startsWith("blob:")
 			) {
-				return;
-			}
-			if (url.includes("evame/uploads") || url.includes("eveeve/uploads")) {
 				return;
 			}
 			try {

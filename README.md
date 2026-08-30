@@ -1,8 +1,6 @@
-# Evame
+# Digital Buddhism
 
-[日本語版はこちら](README.ja.md)
-
-Evame is a project for sharing user-submitted texts with translations, annotations, and explanations.
+A Cloudflare Worker for reading and translating the Pali Tipiṭaka with annotations.
 
 ## Quick start (development)
 Run all project toolchain commands below inside `nix develop`.

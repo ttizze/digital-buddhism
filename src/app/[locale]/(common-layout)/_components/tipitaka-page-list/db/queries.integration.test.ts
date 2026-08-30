@@ -13,7 +13,7 @@ describe("fetchTipitakaPageTree", () => {
 	});
 
 	it("子孫をposition順に取得し採用済みタイトル訳を返す", async () => {
-		const curator = await createUser({ handle: "evame" });
+		const curator = await createUser({ handle: "tipitaka" });
 		const translator = await createUser({ handle: "translator" });
 		const root = await createPage({ slug: "tipitaka", textLevel: null });
 		const second = await createPage({

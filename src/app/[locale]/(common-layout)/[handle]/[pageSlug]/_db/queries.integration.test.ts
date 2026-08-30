@@ -13,7 +13,7 @@ describe("page detail navigation queries", () => {
 	});
 
 	it("子ページのタイトルに明示的な採用訳を使う", async () => {
-		const curator = await createUser({ handle: "evame" });
+		const curator = await createUser({ handle: "tipitaka" });
 		const translator = await createUser({ handle: "translator" });
 		const root = await createPage({ slug: "tipitaka", textLevel: null });
 		const child = await createPage({

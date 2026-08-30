@@ -45,7 +45,6 @@ vi.mock("@cloudflare/pages-plugin-vercel-og/api", () => ({
 const assetPaths = {
 	"inter-semi-bold.ttf": "../../../../public/inter-semi-bold.ttf",
 	"BIZUDPGothic-Bold.ttf": "../../../../public/BIZUDPGothic-Bold.ttf",
-	"logo.png": "../../../../public/logo.png",
 };
 
 beforeAll(async () => {
@@ -92,7 +91,7 @@ describe("GET /api/og", () => {
 		expect(fetchAsset).not.toHaveBeenCalled();
 	});
 
-	it("通常ページにはserver assetから取得したフォントとロゴを使ったPNG画像を返す", async () => {
+	it("通常ページにはserver assetから取得したフォントを使ったPNG画像を返す", async () => {
 		await createPageWithSegments({
 			slug: "og-page",
 			segments: [
@@ -112,20 +111,17 @@ describe("GET /api/og", () => {
 		expect(response.headers.get("cache-control")).toBe(
 			"public, max-age=0, s-maxage=86400, stale-while-revalidate=604800",
 		);
-		expect(fetchAsset).toHaveBeenCalledTimes(3);
+		expect(fetchAsset).toHaveBeenCalledTimes(2);
 		expect(fetchAsset).toHaveBeenCalledWith(
 			new URL("http://localhost/inter-semi-bold.ttf"),
 		);
 		expect(fetchAsset).toHaveBeenCalledWith(
 			new URL("http://localhost/BIZUDPGothic-Bold.ttf"),
 		);
-		expect(fetchAsset).toHaveBeenCalledWith(
-			new URL("http://localhost/logo.png"),
-		);
 	});
 
 	it("server assetが欠落している場合は欠落した名前を含むエラーを返す", async () => {
-		ogAssetStore.delete("logo.png");
+		ogAssetStore.delete("BIZUDPGothic-Bold.ttf");
 		await createPageWithSegments({
 			slug: "asset-error-page",
 			segments: [
@@ -141,6 +137,6 @@ describe("GET /api/og", () => {
 			getOgImage(
 				new Request("http://localhost/api/og?locale=en&slug=asset-error-page"),
 			),
-		).rejects.toThrow("Missing OG server asset: logo.png");
+		).rejects.toThrow("Missing OG server asset: BIZUDPGothic-Bold.ttf");
 	});
 });

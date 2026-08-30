@@ -612,7 +612,7 @@ export const verifications = sqliteTable("verifications", {
 export const users = sqliteTable(
 	"users",
 	{
-		image: text().default("https://evame.tech/avatar.png").notNull(),
+		image: text().default("/avatar.png").notNull(),
 		plan: text().default("free").notNull(),
 		totalPoints: integer("total_points").default(0).notNull(),
 		isAi: integer("is_ai", { mode: "boolean" }).default(false).notNull(),

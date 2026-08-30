@@ -12,8 +12,8 @@ describe("buildAlternateLocales", () => {
 		});
 
 		expect(result).toEqual({
-			ja: `${BASE_URL}/ja/evame/my-page`,
-			pi: `${BASE_URL}/pi/evame/my-page`,
+			ja: `${BASE_URL}/ja/tipitaka/my-page`,
+			pi: `${BASE_URL}/pi/tipitaka/my-page`,
 		});
 	});
 
@@ -24,9 +24,9 @@ describe("buildAlternateLocales", () => {
 		});
 
 		expect(result).toEqual({
-			pi: `${BASE_URL}/pi/evame/my-page`,
-			ja: `${BASE_URL}/ja/evame/my-page`,
-			fr: `${BASE_URL}/fr/evame/my-page`,
+			pi: `${BASE_URL}/pi/tipitaka/my-page`,
+			ja: `${BASE_URL}/ja/tipitaka/my-page`,
+			fr: `${BASE_URL}/fr/tipitaka/my-page`,
 		});
 	});
 
@@ -37,7 +37,7 @@ describe("buildAlternateLocales", () => {
 		});
 
 		expect(result).toEqual({
-			pi: `${BASE_URL}/pi/evame/my-page`,
+			pi: `${BASE_URL}/pi/tipitaka/my-page`,
 		});
 	});
 });

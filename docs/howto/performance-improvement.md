@@ -4,11 +4,11 @@
 
 ## 1. 変更ごとにログフォルダーを作る
 
-- 例: `/tmp/evame-perf/20260205-change-xx-<slug>/`
+- 例: `/tmp/digital-buddhism-perf/20260205-change-xx-<slug>/`
 - 変更前/後を分ける
 
 ```
-/tmp/evame-perf/20260205-change-xx-<slug>/
+/tmp/digital-buddhism-perf/20260205-change-xx-<slug>/
   before/
     build.log
     server.log
@@ -40,7 +40,7 @@
 
 ```bash
 CHANGE_ID=20260205-change-xx-<slug>
-LOG_ROOT=/tmp/evame-perf/$CHANGE_ID
+LOG_ROOT=/tmp/digital-buddhism-perf/$CHANGE_ID
 PORT=3105
 
 mkdir -p $LOG_ROOT/before

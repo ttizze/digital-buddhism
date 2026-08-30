@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
-export const analyticsConsentStorageKey = "evame.analytics-consent";
+export const analyticsConsentStorageKey = "digital-buddhism.analytics-consent";
 const analyticsConsentStates = ["accepted", "rejected"] as const;
 type AnalyticsConsentState = (typeof analyticsConsentStates)[number];
 

@@ -8,7 +8,7 @@ import {
 
 const message = {
 	title: "Analytics cookies",
-	description: "Allow analytics to improve Evame.",
+	description: "Allow analytics to improve Tipiṭaka.",
 	accept: "Accept analytics",
 	decline: "Decline analytics",
 	privacyLink: "Read privacy policy",

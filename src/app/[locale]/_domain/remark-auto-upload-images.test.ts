@@ -1,5 +1,5 @@
 import { remark } from "remark";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { uploadImage } from "../_service/upload/upload-image";
 import { fileFromUrl } from "../_utils/file-from-url";
 import { remarkAutoUploadImages } from "./remark-auto-upload-images";
@@ -23,33 +23,36 @@ vi.mock("../_utils/file-from-url", () => {
 vi.mock("../_service/upload/upload-image", () => ({
 	uploadImage: vi.fn(async () => ({
 		success: true,
-		data: { imageUrl: "https://evame/uploads/uploaded.jpg" },
+		data: {
+			imageUrl: "https://images.digital-buddhism.example/uploads/uploaded.jpg",
+		},
 	})),
 }));
 
 describe("remarkAutoUploadImages", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		vi.stubEnv("PUBLIC_IMAGE_HOST", "images.digital-buddhism.example");
+	});
+
+	afterEach(() => {
+		vi.unstubAllEnvs();
 	});
 
 	describe("自前ホストの画像", () => {
 		it("既にアップロード済みの画像はスキップする", async () => {
 			const md = `
-![cf](https://images.evame.tech/uploads/already.jpg)
-![legacy](https://images.eveeve.org/uploads/already.jpg)
-![minio](http://localhost:9000/evame/uploads/already.jpg)
+![hosted](https://images.digital-buddhism.example/uploads/already.jpg)
+![minio](http://localhost:9000/tipitaka/uploads/already.jpg)
 `;
 
 			const vfile = await remark().use(remarkAutoUploadImages).process(md);
 
 			expect(vfile.toString()).toContain(
-				"https://images.evame.tech/uploads/already.jpg",
+				"https://images.digital-buddhism.example/uploads/already.jpg",
 			);
 			expect(vfile.toString()).toContain(
-				"https://images.eveeve.org/uploads/already.jpg",
-			);
-			expect(vfile.toString()).toContain(
-				"http://localhost:9000/evame/uploads/already.jpg",
+				"http://localhost:9000/tipitaka/uploads/already.jpg",
 			);
 			expect(fileFromUrl).not.toHaveBeenCalled();
 			expect(uploadImage).not.toHaveBeenCalled();
@@ -64,7 +67,9 @@ describe("remarkAutoUploadImages", () => {
 
 			expect(fileFromUrl).toHaveBeenCalledTimes(1);
 			expect(uploadImage).toHaveBeenCalledTimes(1);
-			expect(vfile.toString()).toContain("https://evame/uploads/uploaded.jpg");
+			expect(vfile.toString()).toContain(
+				"https://images.digital-buddhism.example/uploads/uploaded.jpg",
+			);
 			expect(vfile.toString()).not.toContain("https://example.com/picture.png");
 		});
 	});
@@ -72,7 +77,7 @@ describe("remarkAutoUploadImages", () => {
 	describe("混在コンテンツ", () => {
 		it("ローカル画像はスキップし、外部画像のみアップロードする", async () => {
 			const md = `
-![local](https://images.evame.tech/uploads/local.jpg)
+![local](https://images.digital-buddhism.example/uploads/local.jpg)
 ![remote1](https://foo.com/a.png)
 ![remote2](https://bar.com/b.png)
 `;

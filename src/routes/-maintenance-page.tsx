@@ -17,7 +17,7 @@ export default function MaintenancePage() {
 				We appreciate your patience—please try again in a little while.
 			</p>
 
-			<p className="text-sm text-gray-500">&copy; 2026 Evame</p>
+			<p className="text-sm text-gray-500">&copy; 2026 Tipiṭaka</p>
 		</main>
 	);
 }

@@ -23,7 +23,7 @@ export function Footer() {
 					<a
 						aria-label="GitHub"
 						className="transition-colors"
-						href="https://github.com/ttizze/eveeve"
+						href="https://github.com/ttizze/digital-buddhism"
 						rel="noopener noreferrer"
 						target="_blank"
 					>

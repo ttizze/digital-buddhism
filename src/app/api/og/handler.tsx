@@ -49,14 +49,10 @@ export async function getOgImage(request: Request): Promise<Response> {
 		return response;
 	}
 
-	const [interFontSemiBold, bizUDPGothicFontBold, logoData] = await Promise.all(
-		[
-			readOgAsset(request, "inter-semi-bold.ttf"),
-			readOgAsset(request, "BIZUDPGothic-Bold.ttf"),
-			readOgAsset(request, "logo.png"),
-		],
-	);
-	const logoSrc = `data:image/png;base64,${Buffer.from(logoData).toString("base64")}`;
+	const [interFontSemiBold, bizUDPGothicFontBold] = await Promise.all([
+		readOgAsset(request, "inter-semi-bold.ttf"),
+		readOgAsset(request, "BIZUDPGothic-Bold.ttf"),
+	]);
 	const response = new ImageResponse(
 		<div
 			style={{
@@ -92,13 +88,6 @@ export async function getOgImage(request: Request): Promise<Response> {
 					}}
 				>
 					<p style={{ fontSize: "60px", lineHeight: 1 }}>Tipitaka</p>
-					<img
-						alt="logo"
-						src={logoSrc}
-						style={{
-							width: "200px",
-						}}
-					/>
 				</div>
 				<p style={{ fontSize: "60px", lineHeight: 1, marginTop: "56px" }}>
 					{pageDetail.title}

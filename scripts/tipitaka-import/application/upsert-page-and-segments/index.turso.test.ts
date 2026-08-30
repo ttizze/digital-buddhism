@@ -17,7 +17,7 @@ import type { JsonValue } from "@/drizzle/types";
 
 const databasePath = join(
 	tmpdir(),
-	`evame-tipitaka-transaction-${randomUUID()}.db`,
+	`digital-buddhism-tipitaka-transaction-${randomUUID()}.db`,
 );
 
 let setupClient: Client;

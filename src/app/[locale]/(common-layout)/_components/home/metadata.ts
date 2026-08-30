@@ -3,29 +3,27 @@ import { buildAlternates } from "@/app/_lib/seo-helpers";
 const metadataByLocale: Record<string, { title: string; description: string }> =
 	{
 		ja: {
-			title: "Evame — 言葉の壁がないインターネット",
+			title: "Tipiṭaka — パーリ仏典を読む・翻訳する",
 			description:
-				"母国語で書く。世界が読む。Evameは言葉の壁を越えて、あなたの記事を世界に届けます。",
+				"パーリ仏典Tipiṭakaの原文、翻訳、注釈を読むためのデジタルアーカイブです。",
 		},
 		en: {
-			title: "Evame — Internet Without Language Barriers",
+			title: "Tipiṭaka — Read and Translate the Pali Canon",
 			description:
-				"Write in your language. The world reads. Evame breaks language barriers to share your articles globally.",
+				"A digital archive for reading the Pali Tipiṭaka with translations and annotations.",
 		},
 		zh: {
-			title: "Evame — 没有语言障碍的互联网",
-			description:
-				"用母语写作，世界阅读。Evame打破语言壁垒，将您的文章传递给全世界。",
+			title: "Tipiṭaka — 阅读与翻译巴利三藏",
+			description: "阅读巴利三藏原文、译文与注释的数字档案。",
 		},
 		ko: {
-			title: "Evame — 언어 장벽 없는 인터넷",
-			description:
-				"모국어로 쓰세요. 세계가 읽습니다. Evame은 언어의 벽을 넘어 당신의 글을 세계에 전달합니다.",
+			title: "Tipiṭaka — 팔리 삼장 읽기와 번역",
+			description: "팔리 삼장의 원문, 번역, 주석을 읽는 디지털 아카이브입니다.",
 		},
 		es: {
-			title: "Evame — Internet Sin Barreras Idiomáticas",
+			title: "Tipiṭaka — Leer y traducir el Canon Pali",
 			description:
-				"Escribe en tu idioma. El mundo lee. Evame rompe las barreras del idioma para compartir tus artículos globalmente.",
+				"Un archivo digital para leer el Tipiṭaka pali con traducciones y anotaciones.",
 		},
 	};
 

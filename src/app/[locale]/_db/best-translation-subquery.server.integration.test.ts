@@ -45,7 +45,7 @@ describe("bestTranslationTextSubquery", () => {
 	});
 
 	it("明示的な採用訳をポイントより優先する", async () => {
-		const curator = await createUser({ handle: "evame" });
+		const curator = await createUser({ handle: "tipitaka" });
 		const translator = await createUser({ handle: "translator" });
 		const segment = await createTestSegment();
 		await db

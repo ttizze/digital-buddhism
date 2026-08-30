@@ -236,7 +236,7 @@ export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 						}
 						name="twitterHandle"
 						pattern="@[A-Za-z0-9_]+"
-						placeholder="start with @. e.g. @evame"
+						placeholder="start with @. e.g. @tipitaka"
 					/>
 					{!editState.success && editState.zodErrors?.twitterHandle && (
 						<div className="text-red-500 text-sm mt-1">

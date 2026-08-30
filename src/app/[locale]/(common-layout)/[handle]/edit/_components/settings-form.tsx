@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Loader2, SaveIcon } from "lucide-react";
 import { type FormEvent, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { BASE_URL } from "@/app/_constants/base-url";
 import { GeminiApiKeyDialog } from "@/app/[locale]/(common-layout)/_components/gemini-api-key-dialog/gemini-api-key-dialog";
 import type { SanitizedUser } from "@/app/types";
 import { Button } from "@/components/ui/button";
@@ -92,7 +93,7 @@ export function SettingsForm({ currentUser, locale }: SettingsFormProps) {
 					<div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-3">
 						<div className="flex items-center justify-between">
 							<code className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-sm font-mono">
-								evame.tech/{currentUser.handle}
+								{new URL(BASE_URL).host}/{currentUser.handle}
 							</code>
 							<Button
 								onClick={() => setShowHandleInput(!showHandleInput)}
@@ -120,7 +121,7 @@ export function SettingsForm({ currentUser, locale }: SettingsFormProps) {
 									</Label>
 									<div className="flex items-center gap-2">
 										<code className="text-sm text-gray-600 dark:text-gray-400">
-											evame.tech/
+											{new URL(BASE_URL).host}/
 										</code>
 										<Input
 											className="flex-1 max-w-[200px]"

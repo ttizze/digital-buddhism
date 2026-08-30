@@ -50,13 +50,13 @@ describe("TanStack StartのSEOルート生成", () => {
 		const entries = await generateSitemapEntries(0);
 		expect(
 			entries.find((entry) => entry.url.includes("/my-page"))?.url,
-		).toMatch(/\/pi\/evame\/my-page$/);
+		).toMatch(/\/pi\/tipitaka\/my-page$/);
 		const response = await generateSitemapResponse(0);
 		expect(response.headers.get("Content-Type")).toContain("application/xml");
 		expect(response.headers.get("Cache-Control")).toBe(
 			"public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
 		);
-		expect(await response.text()).toContain("/pi/evame/my-page");
+		expect(await response.text()).toContain("/pi/tipitaka/my-page");
 	});
 
 	it("構造ページを含むTipitaka階層全体をチャンク対象にする", async () => {
@@ -74,11 +74,11 @@ describe("TanStack StartのSEOルート生成", () => {
 
 		expect(await countPublicPages()).toBe(4);
 		const entries = await generateSitemapEntries(0);
-		expect(entries.some((entry) => entry.url.endsWith("/evame/tipitaka"))).toBe(
-			true,
-		);
 		expect(
-			entries.some((entry) => entry.url.endsWith("/evame/visible-tipitaka")),
+			entries.some((entry) => entry.url.endsWith("/tipitaka/tipitaka")),
+		).toBe(true);
+		expect(
+			entries.some((entry) => entry.url.endsWith("/tipitaka/visible-tipitaka")),
 		).toBe(true);
 		expect(entries.some((entry) => entry.url.includes("category-child"))).toBe(
 			true,

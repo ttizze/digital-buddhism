@@ -179,7 +179,7 @@ describe("htmlToMdastWithSegments", () => {
         <li>Ordered list item 1</li>
         <li>Ordered list item 2</li>
       </ol>
-      <p>Paragraph with <img src="https://evame/uploads/test.jpg" alt="Test image" /> embedded image</p>
+      <p>Paragraph with <img src="http://localhost:9000/tipitaka/uploads/test.jpg" alt="Test image" /> embedded image</p>
       <hr>
       <p>Paragraph after horizontal rule</p>
     `;
@@ -269,7 +269,7 @@ describe("htmlToMdastWithSegments", () => {
 		expect(
 			imageNodes.some(
 				(img) =>
-					img.url === "https://evame/uploads/test.jpg" &&
+					img.url === "http://localhost:9000/tipitaka/uploads/test.jpg" &&
 					img.alt === "Test image",
 			),
 		).toBeTruthy();

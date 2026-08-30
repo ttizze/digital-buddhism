@@ -1,7 +1,7 @@
 export const metadata = {
-	title: "Terms of Service | Evame",
+	title: "Terms of Service | Tipiṭaka",
 	description:
-		"Evame Terms of Service. Learn about user responsibilities, content licensing, and platform usage guidelines.",
+		"Tipiṭaka Terms of Service. Learn about user responsibilities, content licensing, and platform usage guidelines.",
 	robots: { index: true, follow: true },
 };
 
@@ -14,8 +14,8 @@ export default function TermsPage() {
 				<section className="mb-8">
 					<p>
 						These Terms of Service (“Terms”) govern your access to and use of
-						Evame (the “Service”). By clicking “I agree” or using the Service,
-						you accept these Terms and our{" "}
+						Tipiṭaka (the “Service”). By clicking “I agree” or using the
+						Service, you accept these Terms and our{" "}
 						<a className="text-blue-600" href="/privacy-policy">
 							Privacy Policy
 						</a>
@@ -112,10 +112,11 @@ export default function TermsPage() {
 						5. Copyright Infringement (DMCA)
 					</h2>
 					<p>
-						If you believe content infringes your copyright, send a notice to
-						<a href="mailto:dmca@evame.tech">dmca@evame.tech</a>
-						with the information required by 17 U.S.C. § 512. We will respond
-						and, where appropriate, remove or disable access to the material.
+						If you believe content infringes your copyright, send a written
+						notice containing the information required by 17 U.S.C. § 512 to
+						REIMEI LLC at the controller address in the Privacy Policy. We will
+						respond and, where appropriate, remove or disable access to the
+						material.
 					</p>
 				</section>
 
@@ -159,11 +160,10 @@ export default function TermsPage() {
 					</h2>
 					<p>
 						EU users may appeal content-moderation decisions or submit
-						illegal-content notices by emailing
-						<a href="mailto:legal@evame.tech">legal@evame.tech</a>
-						with the subject line <code>[DSA Appeal]</code> or
-						<code>[Illegal Content]</code>. We publish an annual transparency
-						report in accordance with Regulation (EU) 2022/2065.
+						illegal-content notices in writing to REIMEI LLC at the controller
+						address in the Privacy Policy. Include <code>[DSA Appeal]</code> or
+						<code>[Illegal Content]</code> in the subject. We publish an annual
+						transparency report in accordance with Regulation (EU) 2022/2065.
 					</p>
 				</section>
 
@@ -195,11 +195,8 @@ export default function TermsPage() {
 				<section className="mb-8">
 					<h2 className="text-2xl font-semibold mb-4">12. Contact</h2>
 					<p>
-						For any questions, email us at
-						<a className="text-blue-600" href="mailto:support@evame.tech">
-							support@evame.tech
-						</a>
-						.
+						Questions about these Terms may be sent in writing to REIMEI LLC at
+						the controller address in the Privacy Policy.
 					</p>
 				</section>
 

@@ -14,7 +14,10 @@ import {
 } from "vitest";
 import { disposeDb } from "@/db";
 
-const databasePath = join(tmpdir(), `evame-transaction-${randomUUID()}.db`);
+const databasePath = join(
+	tmpdir(),
+	`digital-buddhism-transaction-${randomUUID()}.db`,
+);
 
 let setupClient: Client;
 let incrementTranslationProgress: typeof import("./mutations.server")["incrementTranslationProgress"];

@@ -23,9 +23,9 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			const migrations = await client.execute(
 				"SELECT hash, created_at FROM __drizzle_migrations ORDER BY created_at",
 			);
-			expect(migrations.rows).toHaveLength(9);
+			expect(migrations.rows).toHaveLength(10);
 			expect(String(migrations.rows[0]?.hash)).toMatch(/^[0-9a-f]{64}$/);
-			expect(Number(migrations.rows[8]?.created_at)).toBe(1788063256486);
+			expect(Number(migrations.rows[9]?.created_at)).toBe(1788072824053);
 		} finally {
 			client.close();
 			await database.cleanup();
@@ -65,11 +65,11 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			});
 			await client.batch(
 				[
-					"INSERT INTO users (id, handle, email) VALUES ('evame-user', 'evame', 'evame@example.com')",
+					"INSERT INTO users (id, handle, email) VALUES ('legacy-system-user', 'evame', 'evame@example.com')",
 					"INSERT INTO users (id, handle, email) VALUES ('translator', 'translator', 'translator@example.com')",
 					"INSERT INTO contents (id, kind) VALUES (100, 'PAGE'), (101, 'PAGE'), (200, 'PAGE')",
-					"INSERT INTO pages (id, slug, user_id, mdast_json, status, parent_id, \"order\") VALUES (100, 'tipitaka', 'evame-user', '{}', 'PUBLIC', NULL, 0)",
-					"INSERT INTO pages (id, slug, user_id, mdast_json, status, parent_id, \"order\") VALUES (101, 'vinaya-pitaka', 'evame-user', '{}', 'PUBLIC', 100, 1)",
+					"INSERT INTO pages (id, slug, user_id, mdast_json, status, parent_id, \"order\") VALUES (100, 'tipitaka', 'legacy-system-user', '{}', 'PUBLIC', NULL, 0)",
+					"INSERT INTO pages (id, slug, user_id, mdast_json, status, parent_id, \"order\") VALUES (101, 'vinaya-pitaka', 'legacy-system-user', '{}', 'PUBLIC', 100, 1)",
 					"INSERT INTO pages (id, slug, user_id, mdast_json, status, parent_id, \"order\") VALUES (200, 'about', 'translator', '{}', 'PUBLIC', NULL, 0)",
 					"INSERT INTO segment_types (id, label, key) VALUES (100, 'Primary', 'PRIMARY')",
 					"INSERT INTO segments (id, content_id, number, text, text_and_occurrence_hash, segment_type_id) VALUES (100, 100, 0, 'Tipitaka', 'tipitaka-title', 100)",
@@ -78,9 +78,9 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 					"INSERT INTO segment_translations (id, segment_id, locale, text, point, user_id) VALUES (101, 101, 'ja', '採用訳', 1, 'translator')",
 					"INSERT INTO segment_translations (id, segment_id, locale, text, point, user_id) VALUES (102, 101, 'ja', '高得点訳', 100, 'translator')",
 					"INSERT INTO segment_translations (id, segment_id, locale, text, point, user_id) VALUES (200, 200, 'ja', 'About訳', 1, 'translator')",
-					"INSERT INTO translation_votes (translation_id, user_id, is_upvote) VALUES (101, 'evame-user', 1)",
-					"INSERT INTO notifications (id, user_id, type, actor_id, segment_translation_id) VALUES (101, 'translator', 'PAGE_SEGMENT_TRANSLATION_VOTE', 'evame-user', 101)",
-					"INSERT INTO notifications (id, user_id, type, actor_id, segment_translation_id) VALUES (200, 'translator', 'PAGE_SEGMENT_TRANSLATION_VOTE', 'evame-user', 200)",
+					"INSERT INTO translation_votes (translation_id, user_id, is_upvote) VALUES (101, 'legacy-system-user', 1)",
+					"INSERT INTO notifications (id, user_id, type, actor_id, segment_translation_id) VALUES (101, 'translator', 'PAGE_SEGMENT_TRANSLATION_VOTE', 'legacy-system-user', 101)",
+					"INSERT INTO notifications (id, user_id, type, actor_id, segment_translation_id) VALUES (200, 'translator', 'PAGE_SEGMENT_TRANSLATION_VOTE', 'legacy-system-user', 200)",
 					"INSERT INTO translation_jobs (id, page_id, user_id, locale, ai_model) VALUES (101, 101, 'translator', 'ja', 'test-model')",
 					"INSERT INTO translation_jobs (id, page_id, user_id, locale, ai_model) VALUES (200, 200, 'translator', 'ja', 'test-model')",
 					"INSERT INTO page_locale_translation_proofs (id, page_id, locale) VALUES (101, 101, 'ja')",
@@ -133,8 +133,19 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 				{
 					locale: "ja",
 					segment_id: 101,
-					selected_by_user_id: "evame-user",
+					selected_by_user_id: "legacy-system-user",
 					translation_id: 101,
+				},
+			]);
+
+			const systemUser = await client.execute(
+				"SELECT handle, name, image FROM users WHERE id = 'legacy-system-user'",
+			);
+			expect(systemUser.rows).toEqual([
+				{
+					handle: "tipitaka",
+					image: "/favicon.svg",
+					name: "Tipiṭaka",
 				},
 			]);
 
@@ -204,9 +215,9 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			const first = await client.execute(
 				"SELECT hash, created_at FROM __drizzle_migrations ORDER BY created_at",
 			);
-			expect(first.rows).toHaveLength(9);
+			expect(first.rows).toHaveLength(10);
 			expect(String(first.rows[0]?.hash)).toMatch(/^[0-9a-f]{64}$/);
-			expect(Number(first.rows[8]?.created_at)).toBe(1788063256486);
+			expect(Number(first.rows[9]?.created_at)).toBe(1788072824053);
 
 			await execFileAsync("bun", ["run", "db:prod:migrate"], {
 				cwd: join(import.meta.dirname, ".."),

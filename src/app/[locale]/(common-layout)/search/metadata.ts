@@ -3,24 +3,24 @@ import { buildAlternates } from "@/app/_lib/seo-helpers";
 const metadataByLocale: Record<string, { title: string; description: string }> =
 	{
 		ja: {
-			title: "検索 | Evame",
-			description: "Evameでティピタカのページ、本文、ユーザーを検索できます。",
+			title: "検索 | Tipiṭaka",
+			description: "Tipiṭakaのページと本文を検索できます。",
 		},
 		en: {
-			title: "Search | Evame",
-			description: "Search Tipitaka pages, text, and users on Evame.",
+			title: "Search | Tipiṭaka",
+			description: "Search Tipiṭaka pages and text.",
 		},
 		zh: {
-			title: "搜索 | Evame",
-			description: "在Evame搜索三藏页面、正文和用户。",
+			title: "搜索 | Tipiṭaka",
+			description: "搜索三藏页面和正文。",
 		},
 		ko: {
-			title: "검색 | Evame",
-			description: "Evame에서 티피타카 페이지, 본문, 사용자를 검색하세요.",
+			title: "검색 | Tipiṭaka",
+			description: "Tipiṭaka 페이지와 본문을 검색합니다.",
 		},
 		es: {
-			title: "Buscar | Evame",
-			description: "Busca páginas del Tipitaka, texto y usuarios en Evame.",
+			title: "Buscar | Tipiṭaka",
+			description: "Busca páginas y texto del Tipiṭaka.",
 		},
 	};
 

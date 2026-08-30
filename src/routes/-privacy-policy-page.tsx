@@ -1,7 +1,7 @@
 export const metadata = {
-	title: "Privacy Policy | Evame",
+	title: "Privacy Policy | Tipiṭaka",
 	description:
-		"Evame Privacy Policy. Learn how we collect, use, and protect your personal data.",
+		"Tipiṭaka Privacy Policy. Learn how we collect, use, and protect your personal data.",
 	robots: { index: true, follow: true },
 };
 
@@ -32,8 +32,8 @@ export default function PrivacyPolicyPage() {
 						<br />
 						Managing Member: Takate Tomoki
 						<br />
-						Data Protection Officer:
-						<a href="mailto:privacy@evame.tech">privacy@evame.tech</a>
+						Privacy and data-protection requests may be sent in writing to the
+						address above.
 					</p>
 				</section>
 
@@ -143,10 +143,10 @@ export default function PrivacyPolicyPage() {
 					<p className="mb-4">
 						Subject to applicable law, you have the right to access, correct,
 						delete, restrict, or object to the processing of your Personal Data,
-						and to receive a portable copy. Requests can be sent to
-						<a href="mailto:privacy@evame.tech">privacy@evame.tech</a>. You may
-						also lodge a complaint with the Personal Information Protection
-						Commission (Japan) or your local supervisory authority.
+						and to receive a portable copy. Requests may be sent in writing to
+						the controller address above. You may also lodge a complaint with
+						the Personal Information Protection Commission (Japan) or your local
+						supervisory authority.
 					</p>
 				</section>
 
@@ -176,11 +176,8 @@ export default function PrivacyPolicyPage() {
 				<section className="mb-8">
 					<h2 className="text-2xl font-semibold mb-4">10. Contact</h2>
 					<p>
-						Questions about this Policy? Contact us at
-						<a className="text-blue-600" href="mailto:support@evame.tech">
-							support@evame.tech
-						</a>
-						.
+						Questions about this Policy may be sent in writing to the controller
+						address above.
 					</p>
 				</section>
 

@@ -1,6 +1,6 @@
 # アーキテクチャ概要
 
-Evame は TanStack Start を中心に構成された翻訳・注釈プラットフォームです。
+Digital Buddhism は、Tipiṭakaの原文・翻訳・注釈を配信するCloudflare Workerです。
 このドキュメントは、全体像と主要な責務を短く確認するための入口です。
 
 ## 技術スタック（現行）

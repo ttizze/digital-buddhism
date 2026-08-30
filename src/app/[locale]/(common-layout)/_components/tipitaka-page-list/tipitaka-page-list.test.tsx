@@ -10,7 +10,7 @@ vi.mock("@tanstack/react-router", () => ({
 		children: ReactNode;
 		className: string;
 	}) => (
-		<a className={className} href="/ja/evame/tipitaka">
+		<a className={className} href="/ja/tipitaka/tipitaka">
 			{children}
 		</a>
 	),

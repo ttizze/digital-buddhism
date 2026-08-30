@@ -41,7 +41,7 @@
 	},
 	"CookieConsent": {
 		"title": "是否允许 Cookie？",
-		"description": "我们使用 Cookie 来提供并改进 Evame。",
+		"description": "我们使用 Cookie 来提供并改进 Tipiṭaka。",
 		"accept": "允许",
 		"decline": "不允许",
 		"privacyLink": "隐私政策"

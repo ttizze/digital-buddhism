@@ -26,7 +26,7 @@ describe("buildPageMetadata", () => {
 		});
 
 		expect(metadata.title).toBe("Vinayapiṭaka");
-		expect(metadata.canonicalUrl).toBe(`${BASE_URL}/ja/evame/vinaya-pitaka`);
+		expect(metadata.canonicalUrl).toBe(`${BASE_URL}/ja/tipitaka/vinaya-pitaka`);
 		expect(metadata.openGraph.images[0]?.url).toBe(
 			`${BASE_URL}/api/og?locale=ja&slug=vinaya-pitaka`,
 		);

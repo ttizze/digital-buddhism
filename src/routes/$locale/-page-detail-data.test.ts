@@ -70,7 +70,7 @@ describe("getPageDetailData", () => {
 
 		await expect(
 			getPageDetailData({
-				data: { locale: "ja", handle: "evame", pageSlug: "vinaya-pitaka" },
+				data: { locale: "ja", handle: "tipitaka", pageSlug: "vinaya-pitaka" },
 			}),
 		).resolves.toEqual({ pageDetail: { id: 1 } });
 		expect(getCurrentUserFromHeadersMock).not.toHaveBeenCalled();

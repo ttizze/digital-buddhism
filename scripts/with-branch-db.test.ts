@@ -28,7 +28,7 @@ describe("ローカルSQLiteテストDB", () => {
 				"--",
 				"bun",
 				"-e",
-				'import { createClient } from "@libsql/client"; const client = createClient({ url: process.env.TURSO_DATABASE_URL }); const result = await client.execute("SELECT id FROM users WHERE handle = \'evame\'"); client.close(); if (result.rows.length !== 1) process.exit(1);',
+				'import { createClient } from "@libsql/client"; const client = createClient({ url: process.env.TURSO_DATABASE_URL }); const result = await client.execute("SELECT id FROM users WHERE handle = \'tipitaka\'"); client.close(); if (result.rows.length !== 1) process.exit(1);',
 			],
 			{ encoding: "utf8" },
 		);

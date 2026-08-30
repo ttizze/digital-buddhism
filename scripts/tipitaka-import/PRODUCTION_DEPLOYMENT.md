@@ -23,7 +23,7 @@ Tipitakaインポートスクリプトは冪等性を持ちます。同じスク
    各migrationとjournal更新は同じtransactionで確定するため、失敗時は最後に
    完了したmigrationから再開します。
 
-2. **システムユーザー**: `evame` というハンドルのユーザーが存在することを
+2. **システムユーザー**: `tipitaka` というハンドルのユーザーが存在することを
    確認します。初期セットアップ時は、シードを本番DBへ明示的に実行します。
 
    ```bash
@@ -90,7 +90,7 @@ Cloudflare Workersのビルド・デプロイやリクエスト処理にイン�
 
 ## トラブルシューティング
 
-### エラー: `User with handle evame not found`
+### エラー: `User with handle tipitaka not found`
 
 システムユーザーが本番Turso DBに存在しません。接続先を確認したうえで、初期
 セットアップなら以下を実行します。

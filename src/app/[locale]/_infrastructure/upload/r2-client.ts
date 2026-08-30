@@ -6,7 +6,8 @@ const isProduction = process.env.NODE_ENV === "production";
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
 const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
 const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
-const R2_BUCKET_NAME = isProduction ? "eveeve" : "evame";
+const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME ?? "tipitaka";
+const R2_PUBLIC_BASE_URL = process.env.R2_PUBLIC_BASE_URL;
 
 const s3Client = new S3Client(
 	isProduction
@@ -30,6 +31,10 @@ const s3Client = new S3Client(
 );
 
 export async function uploadToR2(file: File): Promise<string> {
+	const publicBaseUrl = isProduction ? R2_PUBLIC_BASE_URL : undefined;
+	if (isProduction && !publicBaseUrl) {
+		throw new Error("R2_PUBLIC_BASE_URL is not defined");
+	}
 	const key = `uploads/${Date.now()}-${randomUUID()}`;
 	const arrayBuffer = await file.arrayBuffer();
 
@@ -41,7 +46,8 @@ export async function uploadToR2(file: File): Promise<string> {
 	});
 
 	await s3Client.send(command);
-	return isProduction
-		? `https://images.evame.tech/${key}`
-		: `http://localhost:9000/${R2_BUCKET_NAME}/${key}`;
+	if (!publicBaseUrl) {
+		return `http://localhost:9000/${R2_BUCKET_NAME}/${key}`;
+	}
+	return new URL(key, `${publicBaseUrl.replace(/\/$/, "")}/`).toString();
 }

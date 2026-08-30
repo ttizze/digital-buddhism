@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export const SYSTEM_USER_HANDLE = "evame" as const;
 export const ROOT_SLUG = "tipitaka" as const;
 export const ROOT_TITLE = "Tipiṭaka" as const;
 

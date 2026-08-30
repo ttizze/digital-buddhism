@@ -42,7 +42,7 @@ describe("Cloudflare Workerのセキュリティヘッダー", () => {
 		handlerFetchMock.mockResolvedValueOnce(originalResponse);
 
 		const response = await worker.fetch(
-			new Request("https://evame.test/"),
+			new Request("https://digital-buddhism.test/"),
 			{
 				SENTRY_DSN: "https://sentry.test/1",
 				TURSO_DATABASE_URL: "https://db.test",

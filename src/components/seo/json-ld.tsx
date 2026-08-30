@@ -13,7 +13,7 @@ import { BASE_URL } from "@/app/_constants/base-url";
 const ORGANIZATION_ID = `${BASE_URL}/#organization`;
 const ORGANIZATION_LOGO: ImageObject = {
 	"@type": "ImageObject",
-	url: `${BASE_URL}/logo.png`,
+	url: `${BASE_URL}/favicon.svg`,
 };
 
 function JsonLd<T extends Thing>({ data }: { data: WithContext<T> }) {
@@ -25,7 +25,7 @@ export function OrganizationJsonLd() {
 		"@context": "https://schema.org",
 		"@type": "Organization",
 		"@id": ORGANIZATION_ID,
-		name: "Evame",
+		name: "Tipiṭaka",
 		url: BASE_URL,
 		logo: ORGANIZATION_LOGO,
 	};
@@ -36,7 +36,7 @@ export function WebSiteJsonLd({ locale }: { locale: string }) {
 	const data: WithContext<WebSite> = {
 		"@context": "https://schema.org",
 		"@type": "WebSite",
-		name: "Evame",
+		name: "Tipiṭaka",
 		url: BASE_URL,
 		potentialAction: {
 			"@type": "SearchAction",
@@ -77,7 +77,7 @@ export function ArticleJsonLd(props: ArticleJsonLdProps) {
 		publisher: {
 			"@type": "Organization",
 			"@id": ORGANIZATION_ID,
-			name: "Evame",
+			name: "Tipiṭaka",
 			logo: ORGANIZATION_LOGO,
 		},
 		datePublished: props.datePublished,

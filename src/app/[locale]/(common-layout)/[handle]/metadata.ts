@@ -9,10 +9,10 @@ export function getProfileMetadata(
 		profile: string;
 	},
 ) {
-	const title = `${pageOwner.name} (@${pageOwner.handle}) | Evame`;
+	const title = `${pageOwner.name} (@${pageOwner.handle}) | Tipiṭaka`;
 	const description =
 		pageOwner.profile ||
-		`${pageOwner.name}さんのEvameプロフィール。記事と翻訳をチェック。`;
+		`${pageOwner.name}さんのTipiṭakaプロフィール。翻訳活動を確認できます。`;
 
 	return {
 		title,
