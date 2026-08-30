@@ -74,6 +74,28 @@ const secondTranslation = {
 } satisfies SegmentTranslation;
 
 describe("AddAndVoteTranslations", () => {
+	it("初回取得した先頭訳を本文へ通知する", async () => {
+		vi.mocked(useSegmentTranslations).mockReturnValue({
+			data: [firstTranslation, secondTranslation],
+			error: undefined,
+			isLoading: false,
+			mutate: vi.fn(),
+		});
+		const onBestTranslationChanged = vi.fn();
+
+		render(
+			<AddAndVoteTranslations
+				onBestTranslationChanged={onBestTranslationChanged}
+				open
+				segmentId={10}
+			/>,
+		);
+
+		await waitFor(() => {
+			expect(onBestTranslationChanged).toHaveBeenCalledWith("first");
+		});
+	});
+
 	it("投票ごとに再ランキングし、確定した先頭訳を本文へ通知する", async () => {
 		const mutate = vi
 			.fn()

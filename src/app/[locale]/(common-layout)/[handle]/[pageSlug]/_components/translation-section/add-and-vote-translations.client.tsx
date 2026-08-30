@@ -1,7 +1,7 @@
 "use client";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronUp, Languages } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocale } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { AddTranslationForm } from "./add-translation-form/client";
@@ -33,6 +33,13 @@ export function AddAndVoteTranslations({
 	const translations = data ?? [];
 	const bestTranslation = translations[0];
 	const alternativeTranslations = translations.slice(1);
+	const bestTranslationText = bestTranslation?.text;
+
+	useEffect(() => {
+		if (bestTranslationText !== undefined) {
+			onBestTranslationChanged?.(bestTranslationText);
+		}
+	}, [bestTranslationText, onBestTranslationChanged]);
 
 	const displayedTranslations = showAll
 		? alternativeTranslations
