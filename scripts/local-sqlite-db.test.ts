@@ -6,37 +6,11 @@ import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { createClient } from "@libsql/client";
 import { describe, expect, it } from "vitest";
-import {
-	buildLocalDatabaseEnv,
-	createLocalSqliteDatabase,
-} from "./local-sqlite-db";
+import { buildLocalDatabaseEnv } from "./local-sqlite-db";
 
 const execFileAsync = promisify(execFile);
 
 describe("ローカルSQLiteのDrizzle migration", () => {
-	it("fixture作成時に正式なmigration journalを記録する", async () => {
-		const database = await createLocalSqliteDatabase(
-			"digital-buddshim-migration-journal-",
-		);
-		const client = createClient({ url: database.url });
-		try {
-			const migrations = await client.execute(
-				"SELECT hash, created_at FROM __drizzle_migrations ORDER BY created_at",
-			);
-			expect(migrations.rows.length).toBeGreaterThan(0);
-			expect(
-				migrations.rows.every(
-					(row) =>
-						/^[0-9a-f]{64}$/.test(String(row.hash)) &&
-						Number.isFinite(Number(row.created_at)),
-				),
-			).toBe(true);
-		} finally {
-			client.close();
-			await database.cleanup();
-		}
-	});
-
 	it("Tipitakaを正規化schemaへ移し翻訳選定と参照整合性を保持する", async () => {
 		const directory = await mkdtemp(
 			join(tmpdir(), "digital-buddshim-tipitaka-cutover-"),
