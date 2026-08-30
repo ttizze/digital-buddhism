@@ -16,7 +16,7 @@ export function HeaderFrame({
 					className="flex items-center gap-2"
 					href={`/${locale}`}
 				>
-					<img alt="" className="size-8 shrink-0" src="/favicon.svg" />
+					<img alt="" className="size-8 shrink-0" src="/apple-touch-icon.png" />
 					<span className="hidden font-semibold text-xl sm:inline">
 						Digital Buddhism
 					</span>
