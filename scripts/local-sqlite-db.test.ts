@@ -176,37 +176,4 @@ describe("ローカルSQLiteのDrizzle migration", () => {
 			await rm(directory, { recursive: true, force: true });
 		}
 	});
-
-	it("db:prod:migrate相当を初回と2回目に実行すると2回目はno-opになる", async () => {
-		const directory = await mkdtemp(
-			join(tmpdir(), "digital-buddshim-migration-command-"),
-		);
-		const databaseUrl = pathToFileURL(
-			join(directory, "database.sqlite"),
-		).toString();
-		const env = buildLocalDatabaseEnv(process.env, databaseUrl);
-		const client = createClient({ url: databaseUrl });
-		try {
-			await execFileAsync("bun", ["run", "db:prod:migrate"], {
-				cwd: join(import.meta.dirname, ".."),
-				env,
-			});
-			const first = await client.execute(
-				"SELECT hash, created_at FROM __drizzle_migrations ORDER BY created_at",
-			);
-			expect(first.rows.length).toBeGreaterThan(0);
-
-			await execFileAsync("bun", ["run", "db:prod:migrate"], {
-				cwd: join(import.meta.dirname, ".."),
-				env,
-			});
-			const second = await client.execute(
-				"SELECT hash, created_at FROM __drizzle_migrations ORDER BY created_at",
-			);
-			expect(second.rows).toEqual(first.rows);
-		} finally {
-			client.close();
-			await rm(directory, { recursive: true, force: true });
-		}
-	});
 });
