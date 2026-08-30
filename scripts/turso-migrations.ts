@@ -8,8 +8,9 @@ const migrationDirectory = join(import.meta.dirname, "../src/drizzle/turso");
 /** Drizzle Kitと同じlibSQL migratorでschemaとmigration journalを同期した接続を返す。 */
 export async function openMigratedTursoDatabase(
 	databaseUrl: string,
+	authToken?: string,
 ): Promise<Client> {
-	const client = createClient({ url: databaseUrl });
+	const client = createClient({ url: databaseUrl, authToken });
 	try {
 		// Drizzle's SQLite table rebuilds run inside a transaction, where its
 		// migration-level PRAGMA statements cannot change foreign key enforcement.
@@ -41,6 +42,9 @@ if (import.meta.main) {
 	if (!databaseUrl) {
 		throw new Error("TURSO_DATABASE_URL is not defined");
 	}
-	const client = await openMigratedTursoDatabase(databaseUrl);
+	const client = await openMigratedTursoDatabase(
+		databaseUrl,
+		process.env.TURSO_AUTH_TOKEN,
+	);
 	client.close();
 }
