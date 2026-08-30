@@ -10,20 +10,13 @@ import {
 export async function fetchTipitakaPageTree(
 	locale: string,
 ): Promise<TipitakaPageTreeNode[]> {
-	const rootPage = await db
-		.selectFrom("tipitakaPages")
-		.select("id")
-		.where("slug", "=", TIPITAKA_ROOT_SLUG)
-		.where("parentId", "is", null)
-		.executeTakeFirst();
-	if (!rootPage) return [];
-
 	const rows = await db
 		.withRecursive("tipitakaDescendants", (qb) =>
 			qb
 				.selectFrom("tipitakaPages")
-				.select(["id", "slug", "parentId", "position"])
-				.where("parentId", "=", rootPage.id)
+				.select(["id", "slug", "parentId", "position", "id as rootPageId"])
+				.where("slug", "=", TIPITAKA_ROOT_SLUG)
+				.where("parentId", "is", null)
 				.unionAll(
 					qb
 						.selectFrom("tipitakaPages")
@@ -37,6 +30,7 @@ export async function fetchTipitakaPageTree(
 							"tipitakaPages.slug",
 							"tipitakaPages.parentId",
 							"tipitakaPages.position",
+							"tipitakaDescendants.rootPageId",
 						]),
 				),
 		)
@@ -51,6 +45,7 @@ export async function fetchTipitakaPageTree(
 			"tipitakaDescendants.slug",
 			"tipitakaDescendants.parentId",
 			"tipitakaDescendants.position",
+			"tipitakaDescendants.rootPageId",
 			"segments.id as titleSegmentId",
 			"segments.text as titleText",
 			bestTranslationTextSubquery({
@@ -62,9 +57,12 @@ export async function fetchTipitakaPageTree(
 		.orderBy("tipitakaDescendants.position")
 		.execute();
 
+	const rootPageId = rows[0]?.rootPageId;
+	if (rootPageId === undefined) return [];
+
 	return extractTipitakaPageTree(
 		rows satisfies readonly TipitakaPageRow[],
-		rootPage.id,
+		rootPageId,
 	);
 }
 

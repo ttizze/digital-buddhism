@@ -8,21 +8,13 @@ type SegmentWithAnnotations = SegmentForPage & {
 	annotations: Array<{ annotationSegment: SegmentForPage }>;
 };
 
-async function fetchPageBasicBySlug(slug: string) {
+async function fetchVisiblePageBySlug(slug: string) {
 	return db
-		.selectFrom("tipitakaPages")
-		.selectAll()
-		.where("slug", "=", slug)
-		.executeTakeFirst();
-}
-
-async function isTipitakaPageInHierarchy(pageId: number): Promise<boolean> {
-	const ancestors = await db
 		.withRecursive("ancestors", (qb) =>
 			qb
 				.selectFrom("tipitakaPages")
 				.select(["id", "slug", "parentId"])
-				.where("id", "=", pageId)
+				.where("slug", "=", slug)
 				.unionAll(
 					qb
 						.selectFrom("tipitakaPages")
@@ -34,134 +26,126 @@ async function isTipitakaPageInHierarchy(pageId: number): Promise<boolean> {
 						]),
 				),
 		)
-		.selectFrom("ancestors")
-		.selectAll()
-		.execute();
-	return ancestors.some(
-		(ancestor) =>
-			ancestor.slug === TIPITAKA_ROOT_SLUG && ancestor.parentId === null,
-	);
-}
-
-async function fetchSegments(
-	pageId: number,
-	locale: string,
-): Promise<SegmentForPage[]> {
-	return db
-		.selectFrom("segments")
-		.innerJoin("tipitakaPages", "segments.tipitakaPageId", "tipitakaPages.id")
-		.select([
-			"segments.id",
-			"segments.tipitakaPageId as pageId",
-			"segments.number",
-			"segments.text",
-			"tipitakaPages.textLevel",
-		])
-		.select((eb) =>
-			bestTranslationTextSubquery({
-				locale,
-				segmentId: eb.ref("segments.id"),
-			}).as("translationText"),
+		.selectFrom("tipitakaPages as page")
+		.selectAll("page")
+		.where("page.slug", "=", slug)
+		.where(({ exists, selectFrom }) =>
+			exists(
+				selectFrom("ancestors")
+					.select("ancestors.id")
+					.where("ancestors.slug", "=", TIPITAKA_ROOT_SLUG)
+					.where("ancestors.parentId", "is", null),
+			),
 		)
-		.where("segments.tipitakaPageId", "=", pageId)
-		.orderBy("segments.number", "asc")
-		.execute();
+		.executeTakeFirst();
 }
 
-async function fetchSegmentsByIds(
-	segmentIds: number[],
-	locale: string,
-): Promise<SegmentForPage[]> {
-	if (segmentIds.length === 0) return [];
-	return db
-		.selectFrom("segments")
-		.innerJoin("tipitakaPages", "segments.tipitakaPageId", "tipitakaPages.id")
-		.select([
-			"segments.id",
-			"segments.tipitakaPageId as pageId",
-			"segments.number",
-			"segments.text",
-			"tipitakaPages.textLevel",
-		])
-		.select((eb) =>
-			bestTranslationTextSubquery({
-				locale,
-				segmentId: eb.ref("segments.id"),
-			}).as("translationText"),
-		)
-		.where("segments.id", "in", segmentIds)
-		.execute();
-}
-
-async function addAnnotations(
-	pageSegments: SegmentForPage[],
+async function fetchSegmentsWithAnnotations(
 	pageId: number,
 	locale: string,
 ): Promise<SegmentWithAnnotations[]> {
-	const segmentIds = pageSegments.map((segment) => segment.id);
-	if (segmentIds.length === 0) {
-		return pageSegments.map((segment) => ({ ...segment, annotations: [] }));
-	}
-
-	const links = await db
-		.selectFrom("segmentAnnotationLinks")
-		.select(["targetSegmentId", "annotationSegmentId"])
-		.where("targetSegmentId", "in", segmentIds)
+	const rows = await db
+		.selectFrom("segments as pageSegment")
+		.innerJoin("tipitakaPages as page", "pageSegment.tipitakaPageId", "page.id")
+		.leftJoin(
+			"segmentAnnotationLinks as annotationLink",
+			"annotationLink.targetSegmentId",
+			"pageSegment.id",
+		)
+		.leftJoin(
+			"segments as annotationSegment",
+			"annotationSegment.id",
+			"annotationLink.annotationSegmentId",
+		)
+		.leftJoin(
+			"tipitakaPages as annotationPage",
+			"annotationSegment.tipitakaPageId",
+			"annotationPage.id",
+		)
+		.select((eb) => [
+			"pageSegment.id as segmentId",
+			"pageSegment.tipitakaPageId as segmentPageId",
+			"pageSegment.number as segmentNumber",
+			"pageSegment.text as segmentText",
+			"page.textLevel as segmentTextLevel",
+			bestTranslationTextSubquery({
+				locale,
+				segmentId: eb.ref("pageSegment.id"),
+			}).as("segmentTranslationText"),
+			"annotationLink.annotationSegmentId as linkedAnnotationSegmentId",
+			"annotationSegment.id as annotationSegmentId",
+			"annotationSegment.tipitakaPageId as annotationPageId",
+			"annotationSegment.number as annotationNumber",
+			"annotationSegment.text as annotationText",
+			"annotationPage.textLevel as annotationTextLevel",
+			bestTranslationTextSubquery({
+				locale,
+				segmentId: eb.ref("annotationSegment.id").$castTo<number>(),
+			}).as("annotationTranslationText"),
+		])
+		.where("pageSegment.tipitakaPageId", "=", pageId)
+		.orderBy("pageSegment.number", "asc")
+		.orderBy("annotationSegment.id", "asc")
 		.execute();
-	const annotationSegmentIds = [
-		...new Set(links.map((link) => link.annotationSegmentId)),
-	];
-	if (annotationSegmentIds.length === 0) {
-		return pageSegments.map((segment) => ({ ...segment, annotations: [] }));
-	}
 
-	const annotationSegments = await fetchSegmentsByIds(
-		annotationSegmentIds,
-		locale,
-	);
-	const annotationById = new Map(
-		annotationSegments.map((segment) => [segment.id, segment]),
-	);
-	const annotationIdsByTargetSegmentId = new Map<number, number[]>();
-	for (const link of links) {
-		const annotationIds =
-			annotationIdsByTargetSegmentId.get(link.targetSegmentId) ?? [];
-		annotationIds.push(link.annotationSegmentId);
-		annotationIdsByTargetSegmentId.set(link.targetSegmentId, annotationIds);
-	}
+	const segmentsById = new Map<number, SegmentWithAnnotations>();
+	for (const row of rows) {
+		let segment = segmentsById.get(row.segmentId);
+		if (!segment) {
+			segment = {
+				id: row.segmentId,
+				pageId: row.segmentPageId,
+				number: row.segmentNumber,
+				text: row.segmentText,
+				translationText: row.segmentTranslationText,
+				textLevel: row.segmentTextLevel,
+				annotations: [],
+			};
+			segmentsById.set(segment.id, segment);
+		}
 
-	return pageSegments.map((segment) => ({
-		...segment,
-		annotations: (annotationIdsByTargetSegmentId.get(segment.id) ?? []).flatMap(
-			(annotationSegmentId) => {
-				const annotationSegment = annotationById.get(annotationSegmentId);
-				if (annotationSegment) return [{ annotationSegment }];
-				serverLogger.warn(
-					{ annotationSegmentId, targetSegmentId: segment.id, pageId },
-					"Annotation segment not found, skipping",
-				);
-				return [];
+		if (row.linkedAnnotationSegmentId === null) continue;
+		if (
+			row.annotationSegmentId === null ||
+			row.annotationPageId === null ||
+			row.annotationNumber === null ||
+			row.annotationText === null
+		) {
+			serverLogger.warn(
+				{
+					annotationSegmentId: row.linkedAnnotationSegmentId,
+					targetSegmentId: row.segmentId,
+					pageId,
+				},
+				"Annotation segment not found, skipping",
+			);
+			continue;
+		}
+
+		segment.annotations.push({
+			annotationSegment: {
+				id: row.annotationSegmentId,
+				pageId: row.annotationPageId,
+				number: row.annotationNumber,
+				text: row.annotationText,
+				translationText: row.annotationTranslationText,
+				textLevel: row.annotationTextLevel,
 			},
-		),
-	}));
+		});
+	}
+
+	return [...segmentsById.values()];
 }
 
 export async function queryPageDetail(
 	slug: string,
 	locale: string,
 ): Promise<PageDetail | null> {
-	const page = await fetchPageBasicBySlug(slug);
-	if (!page || !(await isTipitakaPageInHierarchy(page.id))) return null;
+	const page = await fetchVisiblePageBySlug(slug);
+	if (!page) return null;
 
-	const pageSegments = await fetchSegments(page.id, locale);
-	const segmentsWithAnnotations = await addAnnotations(
-		pageSegments,
-		page.id,
-		locale,
-	);
-	const titleSegment = segmentsWithAnnotations.find(
-		(segment) => segment.number === 0,
-	);
+	const segments = await fetchSegmentsWithAnnotations(page.id, locale);
+	const titleSegment = segments.find((segment) => segment.number === 0);
 	const title = titleSegment
 		? titleSegment.translationText
 			? `${titleSegment.text} - ${titleSegment.translationText}`
@@ -175,7 +159,7 @@ export async function queryPageDetail(
 		parentId: page.parentId,
 		position: page.position,
 		mdastJson: page.mdastJson,
-		segments: segmentsWithAnnotations,
+		segments,
 		createdAt: page.createdAt,
 		updatedAt: page.updatedAt,
 	};

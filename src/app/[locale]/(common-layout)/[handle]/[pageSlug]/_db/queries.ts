@@ -8,11 +8,10 @@ export type PageTreeNode = PageForTree & {
 
 export type NavigationData = {
 	rootNode: PageForTree;
-	treeNodes: PageTreeNode[];
 	breadcrumb: PageForTree[];
 };
 
-export type PageTitleTree = PageForTree & { children: PageTitleTree[] };
+export type PageTitleTree = PageTreeNode;
 
 export async function queryPageNavigationData(
 	pageId: number,
@@ -70,12 +69,15 @@ export async function queryPageNavigationData(
 	const rootNode = breadcrumb[0];
 	if (!rootNode) return null;
 
-	const descendantRows = await fetchDescendants(rootNode.id, locale);
-	return {
-		rootNode,
-		treeNodes: buildTree(descendantRows, rootNode.id),
-		breadcrumb,
-	};
+	return { rootNode, breadcrumb };
+}
+
+export async function queryPageTreeData(
+	rootPageId: number,
+	locale: string,
+): Promise<PageTreeNode[]> {
+	const rows = await fetchDescendants(rootPageId, locale);
+	return buildPageTree(rows, rootPageId);
 }
 
 export async function queryChildPagesTree(
@@ -83,7 +85,7 @@ export async function queryChildPagesTree(
 	locale: string,
 ): Promise<PageTitleTree[]> {
 	const rows = await fetchDescendants(parentId, locale);
-	return buildTitleTree(rows, parentId);
+	return buildPageTree(rows, parentId);
 }
 
 async function fetchDescendants(
@@ -150,39 +152,47 @@ export async function queryCompletedTranslationLocales(
 }
 
 function orderAncestorsFromRoot(nodes: PageForTree[]): PageForTree[] {
-	const byId = new Map(nodes.map((node) => [node.id, node]));
-	const root = nodes.find((node) => node.parentId === null);
+	const childByParentId = new Map<number | null, PageForTree>();
+	for (const node of nodes) {
+		childByParentId.set(node.parentId, node);
+	}
+
+	const root = childByParentId.get(null);
 	if (!root) return [];
+
 	const ordered = [root];
-	while (ordered.length < nodes.length) {
-		const child = nodes.find(
-			(node) => node.parentId === ordered[ordered.length - 1]?.id,
-		);
-		if (!child || byId.get(child.id) !== child) break;
+	for (
+		let child = childByParentId.get(root.id);
+		child;
+		child = childByParentId.get(child.id)
+	) {
 		ordered.push(child);
 	}
 	return ordered;
 }
 
-function buildTree(nodes: PageForTree[], parentId: number): PageTreeNode[] {
-	const children = nodes
-		.filter((node) => node.parentId === parentId)
-		.sort((a, b) => a.position - b.position);
-	return children.map((child) => ({
-		...child,
-		children: buildTree(nodes, child.id),
-	}));
-}
-
-function buildTitleTree(
+function buildPageTree(
 	nodes: PageForTree[],
-	parentId: number,
-): PageTitleTree[] {
-	const children = nodes
-		.filter((node) => node.parentId === parentId)
-		.sort((a, b) => a.position - b.position);
-	return children.map((child) => ({
-		...child,
-		children: buildTitleTree(nodes, child.id),
-	}));
+	rootPageId: number,
+): PageTreeNode[] {
+	const childrenByParentId = new Map<number, PageForTree[]>();
+	for (const node of nodes) {
+		if (node.parentId === null) continue;
+		const siblings = childrenByParentId.get(node.parentId) ?? [];
+		siblings.push(node);
+		childrenByParentId.set(node.parentId, siblings);
+	}
+	for (const siblings of childrenByParentId.values()) {
+		siblings.sort(
+			(left, right) => left.position - right.position || left.id - right.id,
+		);
+	}
+
+	const buildChildren = (parentId: number): PageTreeNode[] =>
+		(childrenByParentId.get(parentId) ?? []).map((child) => ({
+			...child,
+			children: buildChildren(child.id),
+		}));
+
+	return buildChildren(rootPageId);
 }
