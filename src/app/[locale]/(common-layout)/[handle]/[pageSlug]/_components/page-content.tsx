@@ -8,22 +8,6 @@ import { ChildPages } from "./child-pages";
 import { ContentWithTranslations } from "./content-with-translations";
 import { PageNavigation } from "./page-navigation";
 
-export function collectAnnotationTypes(segments: PageDetail["segments"]) {
-	const typeByLevel = new Map<string, { key: string; label: string }>();
-	for (const segment of segments) {
-		for (const link of segment.annotations ?? []) {
-			const { textLevel } = link.annotationSegment;
-			if (!textLevel) continue;
-			const label =
-				textLevel.charAt(0) + textLevel.slice(1).toLocaleLowerCase();
-			typeByLevel.set(textLevel, { key: textLevel, label });
-		}
-	}
-	return Array.from(typeByLevel.values()).sort((left, right) =>
-		left.label.localeCompare(right.label),
-	);
-}
-
 export function PageContent({
 	pageDetail,
 	locale,
@@ -67,7 +51,7 @@ export function PageContent({
 				locale={locale}
 				pageId={pageDetail.id}
 			/>
-			<ContentWithTranslations pageDetail={pageDetail} />
+			<ContentWithTranslations locale={locale} pageDetail={pageDetail} />
 			<ChildPages locale={locale} pages={childPages} />
 
 			{floatingControls}

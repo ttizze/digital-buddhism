@@ -29,9 +29,9 @@ nix develop
    Docker, PostgreSQL, and a manual seed are not required for local development.
 4. Open `http://localhost:3000`
 
-Production uses Turso (libSQL). Configure `TURSO_DATABASE_URL` and
-`TURSO_AUTH_TOKEN` through the deployment secret manager; do not commit either
-value.
+Production keeps the source of truth in Turso (libSQL) and serves public Tipiṭaka pages from the `TIPITAKA_READ_MODELS` Workers KV binding.
+Configure `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` through the deployment secret manager; do not commit either value.
+Run `bun run tipitaka:read-model` before local Tipiṭaka display work, or run `bun run tipitaka:read-model --remote` to update the production KV namespace.
 
 ## Key links
 

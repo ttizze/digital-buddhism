@@ -143,6 +143,33 @@ export const importRuns = sqliteTable(
 	],
 );
 
+export const tipitakaReadModelJobs = sqliteTable(
+	"tipitaka_read_model_jobs",
+	{
+		pageId: integer("page_id").notNull(),
+		locale: text().notNull(),
+		requestedAt: integer("requested_at", { mode: "timestamp_ms" })
+			.defaultNow()
+			.notNull(),
+		attempts: integer().default(0).notNull(),
+		lastError: text("last_error").default("").notNull(),
+	},
+	(table) => [
+		primaryKey({
+			columns: [table.pageId, table.locale],
+			name: "tipitaka_read_model_jobs_page_id_locale_pk",
+		}),
+		index("tipitaka_read_model_jobs_requested_at_idx").on(table.requestedAt),
+		foreignKey({
+			columns: [table.pageId],
+			foreignColumns: [tipitakaPages.id],
+			name: "tipitaka_read_model_jobs_page_id_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("cascade"),
+	],
+);
+
 export const notifications = sqliteTable(
 	"notifications",
 	{

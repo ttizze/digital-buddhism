@@ -1,18 +1,29 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { handlerFetchMock, runWithDatabaseRequestContextMock, withSentryMock } =
-	vi.hoisted(() => ({
-		handlerFetchMock: vi.fn(),
-		runWithDatabaseRequestContextMock: vi.fn(
-			(_connection: unknown, callback: () => unknown) => callback(),
-		),
-		withSentryMock: vi.fn(
-			(_options: unknown, workerEntry: unknown) => workerEntry,
-		),
-	}));
+const {
+	handlerFetchMock,
+	processPendingReadModelJobsMock,
+	runWithDatabaseRequestContextMock,
+	withSentryMock,
+} = vi.hoisted(() => ({
+	handlerFetchMock: vi.fn(),
+	processPendingReadModelJobsMock: vi.fn(),
+	runWithDatabaseRequestContextMock: vi.fn(
+		(_connection: unknown, callback: () => unknown) => callback(),
+	),
+	withSentryMock: vi.fn(
+		(_options: unknown, workerEntry: unknown) => workerEntry,
+	),
+}));
 const cacheMatchMock = vi.fn();
 const cachePutMock = vi.fn();
 const waitUntilMock = vi.fn();
+const kvGetMock = vi.fn();
+const kvPutMock = vi.fn();
+const readModelBinding = {
+	get: kvGetMock,
+	put: kvPutMock,
+};
 
 vi.mock("@sentry/cloudflare", () => ({
 	withSentry: withSentryMock,
@@ -26,12 +37,21 @@ vi.mock("./db/request-context", () => ({
 	runWithDatabaseRequestContext: runWithDatabaseRequestContextMock,
 }));
 
+vi.mock(
+	"./app/[locale]/_infrastructure/tipitaka-read-model/jobs.server",
+	() => ({
+		processPendingTipitakaReadModelJobs: processPendingReadModelJobsMock,
+	}),
+);
+
 import worker from "./server";
 
 beforeEach(() => {
 	cacheMatchMock.mockReset().mockResolvedValue(undefined);
 	cachePutMock.mockReset().mockResolvedValue(undefined);
 	waitUntilMock.mockReset();
+	kvGetMock.mockReset();
+	kvPutMock.mockReset();
 	vi.stubGlobal("caches", {
 		default: {
 			match: cacheMatchMock,
@@ -39,6 +59,7 @@ beforeEach(() => {
 		},
 	});
 	handlerFetchMock.mockReset();
+	processPendingReadModelJobsMock.mockReset().mockResolvedValue(0);
 	runWithDatabaseRequestContextMock.mockClear();
 });
 
@@ -59,6 +80,7 @@ describe("Cloudflare Workerのセキュリティヘッダー", () => {
 				SENTRY_DSN: "https://sentry.test/1",
 				TURSO_DATABASE_URL: "https://db.test",
 				TURSO_AUTH_TOKEN: "db-token",
+				TIPITAKA_READ_MODELS: readModelBinding,
 			},
 			{ waitUntil: waitUntilMock },
 		);
@@ -97,6 +119,7 @@ describe("Cloudflare Workerの公開レスポンスキャッシュ", () => {
 			{
 				TURSO_DATABASE_URL: "https://db.test",
 				TURSO_AUTH_TOKEN: "db-token",
+				TIPITAKA_READ_MODELS: readModelBinding,
 			},
 			{ waitUntil: waitUntilMock },
 		);
@@ -119,6 +142,7 @@ describe("Cloudflare Workerの公開レスポンスキャッシュ", () => {
 			{
 				TURSO_DATABASE_URL: "https://db.test",
 				TURSO_AUTH_TOKEN: "db-token",
+				TIPITAKA_READ_MODELS: readModelBinding,
 			},
 			{ waitUntil: waitUntilMock },
 		);
@@ -127,5 +151,27 @@ describe("Cloudflare Workerの公開レスポンスキャッシュ", () => {
 		expect(runWithDatabaseRequestContextMock).not.toHaveBeenCalled();
 		expect(handlerFetchMock).not.toHaveBeenCalled();
 		expect(cachePutMock).not.toHaveBeenCalled();
+	});
+});
+
+describe("Cloudflare WorkerのRead Model更新", () => {
+	it("更新リクエスト後に保留jobをwaitUntilで処理する", async () => {
+		handlerFetchMock.mockResolvedValueOnce(Response.json({ success: true }));
+
+		const response = await worker.fetch(
+			new Request("https://evame.test/api/segment-translations", {
+				method: "POST",
+			}),
+			{
+				TURSO_DATABASE_URL: "https://db.test",
+				TURSO_AUTH_TOKEN: "db-token",
+				TIPITAKA_READ_MODELS: readModelBinding,
+			},
+			{ waitUntil: waitUntilMock },
+		);
+
+		expect(response.status).toBe(200);
+		expect(processPendingReadModelJobsMock).toHaveBeenCalledOnce();
+		expect(waitUntilMock).toHaveBeenCalledWith(expect.any(Promise));
 	});
 });

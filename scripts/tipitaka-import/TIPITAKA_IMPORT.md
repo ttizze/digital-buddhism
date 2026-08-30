@@ -87,6 +87,10 @@ nix develop --command bun run db:migrate
 nix develop --command bun run tipitaka
 ```
 
+`bun run tipitaka` はTursoへの投入後、ローカルWorkers KVの表示用Read Modelも再生成する。
+
+本番KVを更新する場合は、`bun scripts/tipitaka-import.ts --remote-read-model`を使う。
+
 ## 原子性と失敗記録
 
 各ページとそのセグメントは、1トランザクションで更新する。

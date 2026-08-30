@@ -30,6 +30,7 @@
 		"seed": "bun run db:with-branch -- tsx src/db/seed.ts",
 		"mdast-json": "bunx tsx scripts/mdast-json.ts",
 		"tipitaka": "bun --env-file=.env scripts/tipitaka-import.ts",
+		"tipitaka:read-model": "bun --env-file=.env scripts/tipitaka-read-model.ts",
 		"translate": "bunx tsx scripts/translate.ts",
 		"convert:romn": "bun scripts/convert-romn-to-md.ts"
 	},

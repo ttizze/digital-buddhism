@@ -2,10 +2,7 @@ import { ClientOnly, createFileRoute, notFound } from "@tanstack/react-router";
 import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
 import { TIPITAKA_SOURCE_LOCALE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { FloatingControls } from "@/app/[locale]/(common-layout)/_components/floating-controls/floating-controls.client";
-import {
-	collectAnnotationTypes,
-	PageContent,
-} from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/page-content";
+import { PageContent } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/page-content";
 import { buildPageMetadata } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_service/page-metadata";
 import { getPageDetailData } from "./$locale/-page-detail-data";
 
@@ -62,7 +59,6 @@ export const Route = createFileRoute("/$locale/_common/$handle_/$pageSlug")({
 function PageDetailRoute() {
 	const { locale } = Route.useParams();
 	const data = Route.useLoaderData();
-	const annotationTypes = collectAnnotationTypes(data.pageDetail.segments);
 
 	return (
 		<PageContent
@@ -71,7 +67,7 @@ function PageDetailRoute() {
 			floatingControls={
 				<ClientOnly fallback={null}>
 					<FloatingControls
-						annotationTypes={annotationTypes}
+						annotationTypes={data.annotationTypes}
 						sourceLocale={TIPITAKA_SOURCE_LOCALE}
 						userLocale={locale}
 					/>

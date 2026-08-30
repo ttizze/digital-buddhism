@@ -1,12 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
 
-const { loadPageContentDataMock, queryPageDetailMock, setResponseHeadersMock } =
-	vi.hoisted(() => ({
-		loadPageContentDataMock: vi.fn(),
-		queryPageDetailMock: vi.fn(),
-		setResponseHeadersMock: vi.fn(),
-	}));
+const { readPageContentDataMock, setResponseHeadersMock } = vi.hoisted(() => ({
+	readPageContentDataMock: vi.fn(),
+	setResponseHeadersMock: vi.fn(),
+}));
 
 vi.mock("@tanstack/react-start", () => ({
 	createServerFn: () => {
@@ -20,12 +18,9 @@ vi.mock("@tanstack/react-start", () => ({
 vi.mock("@tanstack/react-start/server", () => ({
 	setResponseHeaders: setResponseHeadersMock,
 }));
-vi.mock("@/app/[locale]/_db/queries", () => ({
-	queryPageDetail: queryPageDetailMock,
-}));
 vi.mock(
-	"@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_service/load-page-content-data",
-	() => ({ loadPageContentData: loadPageContentDataMock }),
+	"@/app/[locale]/_infrastructure/tipitaka-read-model/reader.server",
+	() => ({ readPageContentData: readPageContentDataMock }),
 );
 
 const { getPageDetailData } = await import("./-page-detail-data");
@@ -34,17 +29,15 @@ const input = { locale: "en", handle: "owner", pageSlug: "not-tipitaka" };
 
 describe("getPageDetailData", () => {
 	beforeEach(() => {
-		queryPageDetailMock.mockReset().mockResolvedValue({
-			id: 1,
-			segments: [{ number: 0 }],
+		readPageContentDataMock.mockReset().mockResolvedValue({
+			pageDetail: { id: 1 },
 		});
-		loadPageContentDataMock.mockReset().mockResolvedValue({ pageDetail: {} });
 		setResponseHeadersMock.mockReset();
 	});
 
 	it("Tipitakaシステムhandle以外は取得しない", async () => {
 		await expect(getPageDetailData({ data: input })).resolves.toBeNull();
-		expect(queryPageDetailMock).not.toHaveBeenCalled();
+		expect(readPageContentDataMock).not.toHaveBeenCalled();
 		const headers = setResponseHeadersMock.mock.calls[0]?.[0] as Headers;
 		expect(headers.get("Cache-Control")).toBe(
 			PUBLIC_PAGE_CACHE_HEADERS["Cache-Control"],
@@ -55,17 +48,14 @@ describe("getPageDetailData", () => {
 	});
 
 	it("可視なTipitakaページを表示する", async () => {
-		queryPageDetailMock.mockResolvedValue({
-			id: 1,
-			segments: [{ number: 0 }],
-		});
-		loadPageContentDataMock.mockResolvedValue({ pageDetail: { id: 1 } });
+		readPageContentDataMock.mockResolvedValue({ pageDetail: { id: 1 } });
 
 		await expect(
 			getPageDetailData({
 				data: { locale: "ja", handle: "tipitaka", pageSlug: "vinaya-pitaka" },
 			}),
 		).resolves.toEqual({ pageDetail: { id: 1 } });
+		expect(readPageContentDataMock).toHaveBeenCalledWith("vinaya-pitaka", "ja");
 		expect(setResponseHeadersMock).toHaveBeenCalledOnce();
 	});
 });

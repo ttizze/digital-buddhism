@@ -10,8 +10,14 @@
 	"images": {
 		"binding": "IMAGES"
 	},
+	"kv_namespaces": [
+		{
+			"binding": "TIPITAKA_READ_MODELS",
+			"id": "b4d21330448b4df894181807f4481543"
+		}
+	],
 	"triggers": {
-		"crons": []
+		"crons": ["* * * * *"]
 	},
 	"observability": {
 		"enabled": true

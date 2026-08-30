@@ -5,9 +5,17 @@ if (!process.env.LOG_LEVEL) {
 	process.env.LOG_LEVEL = "debug";
 }
 
+import { publishTipitakaReadModelsWithWrangler } from "./tipitaka-import/application/publish-read-model";
 import { runTipitakaImport } from "./tipitaka-import/run";
 
-void runTipitakaImport().catch((error) => {
+async function main(): Promise<void> {
+	await runTipitakaImport();
+	await publishTipitakaReadModelsWithWrangler(
+		process.argv.includes("--remote-read-model"),
+	);
+}
+
+void main().catch((error) => {
 	console.error(error);
 	process.exit(1);
 });

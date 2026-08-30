@@ -1,11 +1,18 @@
 import * as Sentry from "@sentry/cloudflare";
 import handler from "@tanstack/react-start/server-entry";
+import { processPendingTipitakaReadModelJobs } from "./app/[locale]/_infrastructure/tipitaka-read-model/jobs.server";
+import {
+	createKvReadModelStore,
+	type KvNamespaceBinding,
+	runWithTipitakaReadModelStore,
+} from "./app/[locale]/_infrastructure/tipitaka-read-model/store";
 import { runWithDatabaseRequestContext } from "./db/request-context";
 
 type WorkerEnv = {
 	SENTRY_DSN?: string;
 	TURSO_DATABASE_URL?: string;
 	TURSO_AUTH_TOKEN?: string;
+	TIPITAKA_READ_MODELS: KvNamespaceBinding;
 };
 type WorkerExecutionContext = {
 	waitUntil(promise: Promise<unknown>): void;
@@ -28,12 +35,15 @@ const workerEntry = {
 		const cachedResponse = await cache?.match(request);
 		if (cachedResponse) return cachedResponse;
 
-		const response = await runWithDatabaseRequestContext(
-			{
-				url: env.TURSO_DATABASE_URL,
-				authToken: env.TURSO_AUTH_TOKEN,
-			},
-			() => handler.fetch(request),
+		const readModelStore = createKvReadModelStore(env.TIPITAKA_READ_MODELS);
+		const response = await runWithTipitakaReadModelStore(readModelStore, () =>
+			runWithDatabaseRequestContext(
+				{
+					url: env.TURSO_DATABASE_URL,
+					authToken: env.TURSO_AUTH_TOKEN,
+				},
+				() => handler.fetch(request),
+			),
 		);
 		const headers = new Headers(response.headers);
 		headers.set("X-Frame-Options", "DENY");
@@ -63,7 +73,42 @@ const workerEntry = {
 			ctx.waitUntil(cache.put(request, securedResponse.clone()));
 		}
 
+		if (request.method !== "GET" && ctx) {
+			ctx.waitUntil(
+				runWithTipitakaReadModelStore(
+					createKvReadModelStore(env.TIPITAKA_READ_MODELS),
+					() =>
+						runWithDatabaseRequestContext(
+							{
+								url: env.TURSO_DATABASE_URL,
+								authToken: env.TURSO_AUTH_TOKEN,
+							},
+							() => processPendingTipitakaReadModelJobs(),
+						),
+				),
+			);
+		}
+
 		return securedResponse;
+	},
+	async scheduled(
+		_controller: unknown,
+		env: WorkerEnv,
+		ctx: WorkerExecutionContext,
+	) {
+		ctx.waitUntil(
+			runWithTipitakaReadModelStore(
+				createKvReadModelStore(env.TIPITAKA_READ_MODELS),
+				() =>
+					runWithDatabaseRequestContext(
+						{
+							url: env.TURSO_DATABASE_URL,
+							authToken: env.TURSO_AUTH_TOKEN,
+						},
+						() => processPendingTipitakaReadModelJobs(),
+					),
+			),
+		);
 	},
 };
 

@@ -155,6 +155,14 @@ export interface TipitakaPages {
 	updatedAt: Generated<Date>;
 }
 
+export interface TipitakaReadModelJobs {
+	attempts: Generated<number>;
+	lastError: Generated<string>;
+	locale: string;
+	pageId: number;
+	requestedAt: Generated<Date>;
+}
+
 export interface TranslationJobs {
 	aiModel: string;
 	createdAt: Generated<Date>;
@@ -226,6 +234,7 @@ export interface DB {
 	sessions: Sessions;
 	tipitakaPageAnnotationTargets: TipitakaPageAnnotationTargets;
 	tipitakaPages: TipitakaPages;
+	tipitakaReadModelJobs: TipitakaReadModelJobs;
 	translationJobs: TranslationJobs;
 	translationVotes: TranslationVotes;
 	users: Users;

@@ -3,10 +3,9 @@ import { setResponseHeaders } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
-import { TIPITAKA_SYSTEM_USER_HANDLE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
-import { readPageContentData } from "@/app/[locale]/_infrastructure/tipitaka-read-model/reader.server";
+import { readPageAnnotations } from "@/app/[locale]/_infrastructure/tipitaka-read-model/reader.server";
 
-const pageDetailInput = z.object({
+const pageAnnotationsInput = z.object({
 	locale: z
 		.string()
 		.refine(
@@ -14,15 +13,15 @@ const pageDetailInput = z.object({
 				supportedLocaleOptions.some((option) => option.code === locale),
 			"対応していないlocaleです",
 		),
-	handle: z.string().min(1),
 	pageSlug: z.string().min(1),
 });
 
-export const getPageDetailData = createServerFn({ method: "GET" })
-	.validator(pageDetailInput)
+export const getPageAnnotationsData = createServerFn({ method: "GET" })
+	.validator(pageAnnotationsInput)
 	.handler(async ({ data }) => {
 		setResponseHeaders(new Headers(PUBLIC_PAGE_CACHE_HEADERS));
-
-		if (data.handle !== TIPITAKA_SYSTEM_USER_HANDLE) return null;
-		return readPageContentData(data.pageSlug, data.locale);
+		const annotations = await readPageAnnotations(data.pageSlug, data.locale);
+		if (!annotations)
+			throw new Error("Tipitaka annotation read model not found");
+		return annotations;
 	});

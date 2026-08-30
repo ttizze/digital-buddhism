@@ -3,7 +3,7 @@ import { setResponseHeaders } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
-import { queryPageTreeData } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_db/queries";
+import { readPageTree } from "@/app/[locale]/_infrastructure/tipitaka-read-model/reader.server";
 
 const pageTreeInput = z.object({
 	locale: z
@@ -20,5 +20,7 @@ export const getPageTreeData = createServerFn({ method: "GET" })
 	.validator(pageTreeInput)
 	.handler(async ({ data }) => {
 		setResponseHeaders(new Headers(PUBLIC_PAGE_CACHE_HEADERS));
-		return queryPageTreeData(data.rootPageId, data.locale);
+		const tree = await readPageTree(data.rootPageId, data.locale);
+		if (!tree) throw new Error("Tipitaka tree read model not found");
+		return tree;
 	});
