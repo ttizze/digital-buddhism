@@ -1,4 +1,6 @@
 import { render } from "@testing-library/react";
+import { vi } from "vitest";
+import { SegmentGlossVoteProvider } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/segment-glosses/vote-context";
 import type { SegmentForDetail, TitleSegment } from "@/app/[locale]/types";
 import { SegmentElement } from "./segment";
 
@@ -92,5 +94,71 @@ describe("SegmentElement", () => {
 		).not.toBeNull();
 		expect(container).toHaveTextContent("ann-src");
 		expect(container).toHaveTextContent("ann-tr");
+	});
+
+	test("語義があっても既存の原文要素・インライン装飾・訳文を維持する", () => {
+		const segment = makeDetailSegment({
+			id: 10,
+			text: "Karaṇīyam atthakusalena",
+			translationText: "なすべきこと",
+			glossUnits: [
+				{
+					id: 101,
+					segmentId: 10,
+					position: 0,
+					startOffset: 0,
+					endOffset: 9,
+					surface: "Karaṇīyam",
+					gloss: "なすべきこと",
+					point: 3,
+					currentUserVoteIsUpvote: null,
+				},
+			],
+		});
+
+		const { container } = render(
+			<SegmentGlossVoteProvider locale="ja" mutate={vi.fn()}>
+				<SegmentElement segment={segment}>
+					<strong>Karaṇīyam</strong> atthakusalena
+				</SegmentElement>
+			</SegmentGlossVoteProvider>,
+		);
+
+		const source = container.querySelector(".seg-src");
+		expect(source).toHaveTextContent("Karaṇīyam");
+		expect(source).toHaveTextContent("atthakusalena");
+		expect(source?.querySelector("strong button ruby rt")).toHaveTextContent(
+			"なすべきこと",
+		);
+		expect(source?.querySelector("[data-gloss-unit-id='101']")).not.toBeNull();
+		expect(container.querySelector(".seg-tr")).toHaveTextContent(
+			"なすべきこと",
+		);
+	});
+
+	test("語義のオフセットが原文と一致しない場合は原文を変更しない", () => {
+		const segment = makeDetailSegment({
+			text: "Karaṇīyam",
+			glossUnits: [
+				{
+					id: 101,
+					segmentId: 1,
+					position: 0,
+					startOffset: 0,
+					endOffset: 4,
+					surface: "wrong",
+					gloss: "誤り",
+					point: 0,
+					currentUserVoteIsUpvote: null,
+				},
+			],
+		});
+
+		const { container } = render(
+			<SegmentElement segment={segment}>Karaṇīyam</SegmentElement>,
+		);
+
+		expect(container.querySelector(".seg-src")).toHaveTextContent("Karaṇīyam");
+		expect(container.querySelector("[data-gloss-unit-id]")).toBeNull();
 	});
 });

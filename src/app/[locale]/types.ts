@@ -1,3 +1,4 @@
+import type { SegmentGlossUnit } from "@/app/api/segment-glosses/_domain/segment-glosses";
 import type { JsonValue, TipitakaTextLevel } from "@/drizzle/types";
 
 export type SegmentForPage = {
@@ -7,6 +8,7 @@ export type SegmentForPage = {
 	text: string;
 	translationText: string | null;
 	textLevel: TipitakaTextLevel | null;
+	glossUnits?: SegmentGlossUnit[];
 };
 
 export type TitleSegment = Omit<SegmentForPage, "textLevel">;

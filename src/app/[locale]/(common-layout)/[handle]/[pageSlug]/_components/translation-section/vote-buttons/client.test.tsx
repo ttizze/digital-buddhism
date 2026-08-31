@@ -43,7 +43,7 @@ describe("VoteButtons コンポーネント", () => {
 			<VoteButtons
 				isVoting={false}
 				onVote={vi.fn()}
-				translation={dummyTranslationUpvote}
+				voteTarget={dummyTranslationUpvote}
 			/>,
 		);
 
@@ -56,7 +56,7 @@ describe("VoteButtons コンポーネント", () => {
 			<VoteButtons
 				isVoting={false}
 				onVote={vi.fn()}
-				translation={dummyTranslationUpvote}
+				voteTarget={dummyTranslationUpvote}
 			/>,
 		);
 
@@ -78,7 +78,7 @@ describe("VoteButtons コンポーネント", () => {
 			<VoteButtons
 				isVoting={false}
 				onVote={vi.fn()}
-				translation={dummyTranslationDownvote}
+				voteTarget={dummyTranslationDownvote}
 			/>,
 		);
 
@@ -101,7 +101,7 @@ describe("VoteButtons コンポーネント", () => {
 			<VoteButtons
 				isVoting
 				onVote={vi.fn()}
-				translation={dummyTranslationUpvote}
+				voteTarget={dummyTranslationUpvote}
 			/>,
 		);
 
@@ -118,7 +118,7 @@ describe("VoteButtons コンポーネント", () => {
 			<VoteButtons
 				isVoting={false}
 				onVote={onVote}
-				translation={dummyTranslationUpvote}
+				voteTarget={dummyTranslationUpvote}
 			/>,
 		);
 

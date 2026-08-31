@@ -18,18 +18,18 @@ vi.mock("./add-translation-form/client", () => ({
 }));
 vi.mock("./vote-buttons/client", () => ({
 	VoteButtons: ({
-		translation,
+		voteTarget,
 		isVoting,
 		onVote,
 	}: {
-		translation: SegmentTranslation;
+		voteTarget: SegmentTranslation;
 		isVoting: boolean;
 		onVote: (translationId: number, isUpvote: boolean) => void;
 	}) => (
 		<button
-			data-testid={`vote-${translation.id}`}
+			data-testid={`vote-${voteTarget.id}`}
 			disabled={isVoting}
-			onClick={() => onVote(translation.id, true)}
+			onClick={() => onVote(voteTarget.id, true)}
 			type="button"
 		>
 			vote

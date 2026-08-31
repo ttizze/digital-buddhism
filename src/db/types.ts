@@ -80,6 +80,34 @@ export interface SegmentAnnotationLinks {
 	targetSegmentId: number;
 }
 
+export interface SegmentGlossSets {
+	aiModel: string | null;
+	createdAt: Generated<Date>;
+	id: Generated<number>;
+	locale: string;
+	segmentId: number;
+	userId: string;
+}
+
+export interface SegmentGlossUnits {
+	endOffset: number;
+	gloss: string;
+	glossSetId: number;
+	id: Generated<number>;
+	point: Generated<number>;
+	position: number;
+	startOffset: number;
+	surface: string;
+}
+
+export interface SegmentGlossUnitVotes {
+	createdAt: Generated<Date>;
+	glossUnitId: number;
+	isUpvote: boolean;
+	updatedAt: Generated<Date>;
+	userId: string;
+}
+
 export interface SegmentMetadata {
 	createdAt: Generated<Date>;
 	id: Generated<number>;
@@ -115,6 +143,14 @@ export interface SegmentTranslations {
 	segmentId: number;
 	text: string;
 	userId: string;
+}
+
+export interface SelectedSegmentGlossSets {
+	glossSetId: number;
+	locale: string;
+	segmentId: number;
+	selectedAt: Generated<Date>;
+	selectedByUserId: string | null;
 }
 
 export interface SelectedSegmentTranslations {
@@ -226,10 +262,14 @@ export interface DB {
 	notifications: Notifications;
 	pageLocaleTranslationProofs: PageLocaleTranslationProofs;
 	segmentAnnotationLinks: SegmentAnnotationLinks;
+	segmentGlossSets: SegmentGlossSets;
+	segmentGlossUnits: SegmentGlossUnits;
+	segmentGlossUnitVotes: SegmentGlossUnitVotes;
 	segmentMetadata: SegmentMetadata;
 	segmentMetadataTypes: SegmentMetadataTypes;
 	segments: Segments;
 	segmentTranslations: SegmentTranslations;
+	selectedSegmentGlossSets: SelectedSegmentGlossSets;
 	selectedSegmentTranslations: SelectedSegmentTranslations;
 	sessions: Sessions;
 	tipitakaPageAnnotationTargets: TipitakaPageAnnotationTargets;

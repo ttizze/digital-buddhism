@@ -114,7 +114,7 @@ export function TranslationListItem({
 				<VoteButtons
 					isVoting={isVoting}
 					onVote={onVote}
-					translation={translation}
+					voteTarget={translation}
 				/>
 			</span>
 		</span>

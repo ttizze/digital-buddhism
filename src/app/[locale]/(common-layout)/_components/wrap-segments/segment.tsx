@@ -1,5 +1,6 @@
 import type { JSX, ReactNode } from "react";
 import { sanitizeAndParseText } from "@/app/[locale]/_utils/sanitize-and-parse-text";
+import { renderGlossedChildren } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/segment-glosses/render-glossed-children";
 import type { Segment } from "@/app/[locale]/types";
 
 type SegmentElementProps = {
@@ -22,6 +23,15 @@ function SegmentPair({
 	children,
 }: SegmentElementProps) {
 	const hasTr = segment.translationText != null;
+	const sourceChildren = children ?? sanitizeAndParseText(segment.text ?? "");
+	const renderedSource =
+		segment.glossUnits && segment.glossUnits.length > 0
+			? renderGlossedChildren(
+					sourceChildren,
+					segment.text ?? "",
+					segment.glossUnits,
+				)
+			: sourceChildren;
 
 	return (
 		<>
@@ -30,7 +40,7 @@ function SegmentPair({
 				className={`${className} seg-src ${hasTr ? "seg-has-tr" : ""}`}
 				data-number-id={segment.number}
 			>
-				{children ?? sanitizeAndParseText(segment.text ?? "")}
+				{renderedSource}
 			</Tag>
 			{hasTr && (
 				<Tag

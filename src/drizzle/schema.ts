@@ -333,6 +333,155 @@ export const selectedSegmentTranslations = sqliteTable(
 	],
 );
 
+export const segmentGlossSets = sqliteTable(
+	"segment_gloss_sets",
+	{
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
+		segmentId: integer("segment_id").notNull(),
+		locale: text().notNull(),
+		aiModel: text("ai_model"),
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
+			.notNull(),
+		userId: text("user_id").notNull(),
+	},
+	(table) => [
+		index("segment_gloss_sets_segment_id_locale_idx").on(
+			table.segmentId,
+			table.locale,
+		),
+		uniqueIndex("segment_gloss_sets_id_segment_id_locale_key").on(
+			table.id,
+			table.segmentId,
+			table.locale,
+		),
+		index("segment_gloss_sets_user_id_idx").on(table.userId),
+		foreignKey({
+			columns: [table.segmentId],
+			foreignColumns: [segments.id],
+			name: "segment_gloss_sets_segment_id_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("cascade"),
+		foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "segment_gloss_sets_user_id_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("cascade"),
+	],
+);
+
+export const segmentGlossUnits = sqliteTable(
+	"segment_gloss_units",
+	{
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
+		glossSetId: integer("gloss_set_id").notNull(),
+		position: integer().notNull(),
+		startOffset: integer("start_offset").notNull(),
+		endOffset: integer("end_offset").notNull(),
+		surface: text().notNull(),
+		gloss: text().notNull(),
+		point: integer().default(0).notNull(),
+	},
+	(table) => [
+		check("segment_gloss_units_position_check", sql`${table.position} >= 0`),
+		check(
+			"segment_gloss_units_offset_check",
+			sql`${table.startOffset} >= 0 AND ${table.endOffset} > ${table.startOffset}`,
+		),
+		uniqueIndex("segment_gloss_units_gloss_set_id_position_key").on(
+			table.glossSetId,
+			table.position,
+		),
+		foreignKey({
+			columns: [table.glossSetId],
+			foreignColumns: [segmentGlossSets.id],
+			name: "segment_gloss_units_gloss_set_id_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("cascade"),
+	],
+);
+
+export const selectedSegmentGlossSets = sqliteTable(
+	"selected_segment_gloss_sets",
+	{
+		segmentId: integer("segment_id").notNull(),
+		locale: text().notNull(),
+		glossSetId: integer("gloss_set_id").notNull(),
+		selectedByUserId: text("selected_by_user_id"),
+		selectedAt: integer("selected_at", { mode: "timestamp_ms" })
+			.defaultNow()
+			.notNull(),
+	},
+	(table) => [
+		primaryKey({
+			columns: [table.segmentId, table.locale],
+			name: "selected_segment_gloss_sets_segment_id_locale_pk",
+		}),
+		uniqueIndex("selected_segment_gloss_sets_gloss_set_id_key").on(
+			table.glossSetId,
+		),
+		foreignKey({
+			columns: [table.glossSetId, table.segmentId, table.locale],
+			foreignColumns: [
+				segmentGlossSets.id,
+				segmentGlossSets.segmentId,
+				segmentGlossSets.locale,
+			],
+			name: "selected_segment_gloss_sets_gloss_segment_locale_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("cascade"),
+		foreignKey({
+			columns: [table.selectedByUserId],
+			foreignColumns: [users.id],
+			name: "selected_segment_gloss_sets_selected_by_user_id_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("set null"),
+	],
+);
+
+export const segmentGlossUnitVotes = sqliteTable(
+	"segment_gloss_unit_votes",
+	{
+		glossUnitId: integer("gloss_unit_id").notNull(),
+		userId: text("user_id").notNull(),
+		isUpvote: integer("is_upvote", { mode: "boolean" }).notNull(),
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.defaultNow()
+			.notNull(),
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+			.defaultNow()
+			.notNull(),
+	},
+	(table) => [
+		index("segment_gloss_unit_votes_gloss_unit_id_idx").on(table.glossUnitId),
+		uniqueIndex("segment_gloss_unit_votes_gloss_unit_id_user_id_key").on(
+			table.glossUnitId,
+			table.userId,
+		),
+		index("segment_gloss_unit_votes_user_id_idx").on(table.userId),
+		foreignKey({
+			columns: [table.glossUnitId],
+			foreignColumns: [segmentGlossUnits.id],
+			name: "segment_gloss_unit_votes_gloss_unit_id_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("cascade"),
+		foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "segment_gloss_unit_votes_user_id_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("cascade"),
+	],
+);
+
 export const sessions = sqliteTable(
 	"sessions",
 	{

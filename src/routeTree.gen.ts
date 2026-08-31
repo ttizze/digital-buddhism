@@ -20,6 +20,7 @@ import { Route as LocaleTermsRouteImport } from './routes/$locale.terms'
 import { Route as ApiLocaleInfoRouteImport } from './routes/api/locale-info'
 import { Route as ApiNotificationsRouteImport } from './routes/api/notifications'
 import { Route as ApiOgRouteImport } from './routes/api/og'
+import { Route as ApiSegmentGlossesRouteImport } from './routes/api/segment-glosses'
 import { Route as ApiSegmentTranslationsRouteImport } from './routes/api/segment-translations'
 import { Route as ApiSentryExampleApiRouteImport } from './routes/api/sentry-example-api'
 import { Route as ApiTranslateRouteImport } from './routes/api/translate'
@@ -88,6 +89,11 @@ const ApiNotificationsRoute = ApiNotificationsRouteImport.update({
 const ApiOgRoute = ApiOgRouteImport.update({
   id: '/api/og',
   path: '/api/og',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSegmentGlossesRoute = ApiSegmentGlossesRouteImport.update({
+  id: '/api/segment-glosses',
+  path: '/api/segment-glosses',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSegmentTranslationsRoute = ApiSegmentTranslationsRouteImport.update({
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/api/locale-info': typeof ApiLocaleInfoRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/og': typeof ApiOgRoute
+  '/api/segment-glosses': typeof ApiSegmentGlossesRoute
   '/api/segment-translations': typeof ApiSegmentTranslationsRoute
   '/api/sentry-example-api': typeof ApiSentryExampleApiRoute
   '/api/translate': typeof ApiTranslateRouteWithChildren
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/api/locale-info': typeof ApiLocaleInfoRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/og': typeof ApiOgRoute
+  '/api/segment-glosses': typeof ApiSegmentGlossesRoute
   '/api/segment-translations': typeof ApiSegmentTranslationsRoute
   '/api/sentry-example-api': typeof ApiSentryExampleApiRoute
   '/api/translate': typeof ApiTranslateRouteWithChildren
@@ -234,6 +242,7 @@ export interface FileRoutesById {
   '/api/locale-info': typeof ApiLocaleInfoRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/og': typeof ApiOgRoute
+  '/api/segment-glosses': typeof ApiSegmentGlossesRoute
   '/api/segment-translations': typeof ApiSegmentTranslationsRoute
   '/api/sentry-example-api': typeof ApiSentryExampleApiRoute
   '/api/translate': typeof ApiTranslateRouteWithChildren
@@ -263,6 +272,7 @@ export interface FileRouteTypes {
     | '/api/locale-info'
     | '/api/notifications'
     | '/api/og'
+    | '/api/segment-glosses'
     | '/api/segment-translations'
     | '/api/sentry-example-api'
     | '/api/translate'
@@ -290,6 +300,7 @@ export interface FileRouteTypes {
     | '/api/locale-info'
     | '/api/notifications'
     | '/api/og'
+    | '/api/segment-glosses'
     | '/api/segment-translations'
     | '/api/sentry-example-api'
     | '/api/translate'
@@ -317,6 +328,7 @@ export interface FileRouteTypes {
     | '/api/locale-info'
     | '/api/notifications'
     | '/api/og'
+    | '/api/segment-glosses'
     | '/api/segment-translations'
     | '/api/sentry-example-api'
     | '/api/translate'
@@ -342,6 +354,7 @@ export interface RootRouteChildren {
   ApiLocaleInfoRoute: typeof ApiLocaleInfoRoute
   ApiNotificationsRoute: typeof ApiNotificationsRoute
   ApiOgRoute: typeof ApiOgRoute
+  ApiSegmentGlossesRoute: typeof ApiSegmentGlossesRoute
   ApiSegmentTranslationsRoute: typeof ApiSegmentTranslationsRoute
   ApiSentryExampleApiRoute: typeof ApiSentryExampleApiRoute
   ApiTranslateRoute: typeof ApiTranslateRouteWithChildren
@@ -428,6 +441,13 @@ declare module '@tanstack/react-router' {
       path: '/api/og'
       fullPath: '/api/og'
       preLoaderRoute: typeof ApiOgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/segment-glosses': {
+      id: '/api/segment-glosses'
+      path: '/api/segment-glosses'
+      fullPath: '/api/segment-glosses'
+      preLoaderRoute: typeof ApiSegmentGlossesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/segment-translations': {
@@ -608,6 +628,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiLocaleInfoRoute: ApiLocaleInfoRoute,
   ApiNotificationsRoute: ApiNotificationsRoute,
   ApiOgRoute: ApiOgRoute,
+  ApiSegmentGlossesRoute: ApiSegmentGlossesRoute,
   ApiSegmentTranslationsRoute: ApiSegmentTranslationsRoute,
   ApiSentryExampleApiRoute: ApiSentryExampleApiRoute,
   ApiTranslateRoute: ApiTranslateRouteWithChildren,

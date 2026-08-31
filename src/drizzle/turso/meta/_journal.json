@@ -85,6 +85,13 @@
       "when": 1788091892165,
       "tag": "0011_remove_tipitaka_system_user",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1788150819157,
+      "tag": "0012_workable_shooting_star",
+      "breakpoints": true
     }
   ]
 }

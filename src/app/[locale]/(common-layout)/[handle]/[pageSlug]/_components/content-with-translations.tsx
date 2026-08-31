@@ -9,6 +9,8 @@ import type { PageDetail } from "@/app/[locale]/types";
 import { getPageAnnotationsData } from "@/routes/$locale/-page-annotations-data";
 import { extractTocItems } from "../_domain/extract-toc-items";
 import { mdastToReact } from "./mdast-to-react";
+import { usePageSegmentGlosses } from "./segment-glosses/use-page-segment-glosses";
+import { SegmentGlossVoteProvider } from "./segment-glosses/vote-context";
 import { SubHeader } from "./sub-header";
 
 interface ContentWithTranslationsProps {
@@ -39,16 +41,30 @@ export function ContentWithTranslations({
 			}),
 		{ revalidateOnFocus: false },
 	);
+	const { data: glossUnits, mutate: mutateGlossUnits } = usePageSegmentGlosses(
+		pageDetail.id,
+		locale,
+	);
 	const displayPageDetail = useMemo(() => {
-		if (!annotations) return pageDetail;
+		if (!annotations && !glossUnits) return pageDetail;
+		const glossUnitsBySegment = new Map<
+			number,
+			NonNullable<typeof glossUnits>
+		>();
+		for (const unit of glossUnits ?? []) {
+			const segmentGlossUnits = glossUnitsBySegment.get(unit.segmentId) ?? [];
+			segmentGlossUnits.push(unit);
+			glossUnitsBySegment.set(unit.segmentId, segmentGlossUnits);
+		}
 		return {
 			...pageDetail,
 			segments: pageDetail.segments.map((segment) => ({
 				...segment,
-				annotations: annotations[String(segment.id)] ?? [],
+				annotations: annotations?.[String(segment.id)] ?? segment.annotations,
+				glossUnits: glossUnitsBySegment.get(segment.id) ?? [],
 			})),
 		};
-	}, [annotations, pageDetail]);
+	}, [annotations, glossUnits, pageDetail]);
 	const tocItems = extractTocItems({
 		mdast: displayPageDetail.mdastJson,
 		segments: displayPageDetail.segments,
@@ -70,7 +86,7 @@ export function ContentWithTranslations({
 	const markdown = mdastToMarkdown(displayPageDetail.mdastJson);
 	if (!titleSegment) return null;
 	return (
-		<>
+		<SegmentGlossVoteProvider locale={locale} mutate={mutateGlossUnits}>
 			<h1 className="mb-0! ">
 				<SegmentElement segment={titleSegment} />
 			</h1>
@@ -80,6 +96,6 @@ export function ContentWithTranslations({
 				tocItems={tocItems}
 			/>
 			<div className="js-content">{content}</div>
-		</>
+		</SegmentGlossVoteProvider>
 	);
 }

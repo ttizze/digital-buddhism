@@ -12,6 +12,16 @@ export default defineConfig(({ command, mode }) => {
 	}
 
 	return {
+		optimizeDeps: {
+			exclude: ["@cloudflare/pages-plugin-vercel-og/api"],
+		},
+		environments: {
+			ssr: {
+				optimizeDeps: {
+					exclude: ["@cloudflare/pages-plugin-vercel-og/api"],
+				},
+			},
+		},
 		plugins: [
 			tsconfigPaths(),
 			tailwindcss(),

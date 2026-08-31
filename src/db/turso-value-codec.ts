@@ -74,6 +74,7 @@ const booleanResultColumns = new Set([
 	"isDeleted",
 	"isUpvote",
 	"ownerUpvote",
+	"previousIsUpvote",
 	"read",
 	"userIsAi",
 ]);

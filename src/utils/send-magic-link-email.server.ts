@@ -1,6 +1,12 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.AUTH_RESEND_KEY);
+const createResendClient = () => {
+	const apiKey = process.env.AUTH_RESEND_KEY;
+	if (!apiKey) {
+		throw new Error("AUTH_RESEND_KEY is required to send a magic-link email");
+	}
+	return new Resend(apiKey);
+};
 
 async function resendSendEmail(
 	email: string,
@@ -8,6 +14,7 @@ async function resendSendEmail(
 	html: string,
 	from?: string,
 ) {
+	const resend = createResendClient();
 	const { data, error } = await resend.emails.send({
 		from: from || process.env.EMAIL_FROM || "noreply@mail.reimei.dev",
 		to: [email],

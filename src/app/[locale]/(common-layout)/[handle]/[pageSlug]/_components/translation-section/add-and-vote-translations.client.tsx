@@ -132,7 +132,7 @@ export function AddAndVoteTranslations({
 					isVoting={isVoting}
 					key={bestTranslation.id}
 					onVote={vote}
-					translation={bestTranslation}
+					voteTarget={bestTranslation}
 				/>
 			</span>
 			<span className="flex mt-2 items-center justify-end text-gray-500 text-sm">

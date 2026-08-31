@@ -37,6 +37,31 @@ export type NewSelectedSegmentTranslation = Insertable<
 	DB["selectedSegmentTranslations"]
 >;
 
+// SegmentGlossSet
+export type SegmentGlossSet = Selectable<DB["segmentGlossSets"]>;
+export type NewSegmentGlossSet = Insertable<DB["segmentGlossSets"]>;
+export type SegmentGlossSetUpdate = Updateable<DB["segmentGlossSets"]>;
+
+// SegmentGlossUnit
+export type SegmentGlossUnit = Selectable<DB["segmentGlossUnits"]>;
+export type NewSegmentGlossUnit = Insertable<DB["segmentGlossUnits"]>;
+export type SegmentGlossUnitUpdate = Updateable<DB["segmentGlossUnits"]>;
+
+// SelectedSegmentGlossSet
+export type SelectedSegmentGlossSet = Selectable<
+	DB["selectedSegmentGlossSets"]
+>;
+export type NewSelectedSegmentGlossSet = Insertable<
+	DB["selectedSegmentGlossSets"]
+>;
+
+// SegmentGlossUnitVote
+export type SegmentGlossUnitVote = Selectable<DB["segmentGlossUnitVotes"]>;
+export type NewSegmentGlossUnitVote = Insertable<DB["segmentGlossUnitVotes"]>;
+export type SegmentGlossUnitVoteUpdate = Updateable<
+	DB["segmentGlossUnitVotes"]
+>;
+
 // TranslationVote
 export type TranslationVote = Selectable<DB["translationVotes"]>;
 export type NewTranslationVote = Insertable<DB["translationVotes"]>;

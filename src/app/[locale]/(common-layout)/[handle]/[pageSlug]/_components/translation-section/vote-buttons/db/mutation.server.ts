@@ -1,40 +1,12 @@
 import type { Transaction } from "kysely";
 import { sql } from "kysely";
+import {
+	computeVoteOutcome,
+	type VoteOutcome,
+} from "@/app/api/_domain/vote-outcome";
 import { db } from "@/db";
 import type { DB } from "@/db/types";
 import { calcProofStatus } from "../_lib/translation-proof-status";
-
-type VoteOutcome = {
-	finalIsUpvote: boolean | undefined;
-	pointDelta: number;
-	action: "create" | "update" | "delete";
-};
-
-/** 投票結果を計算する */
-function computeVoteOutcome(
-	previousIsUpvote: boolean | undefined,
-	newIsUpvote: boolean,
-): VoteOutcome {
-	if (previousIsUpvote === newIsUpvote) {
-		return {
-			finalIsUpvote: undefined,
-			pointDelta: newIsUpvote ? -1 : 1,
-			action: "delete",
-		};
-	}
-	if (previousIsUpvote === undefined) {
-		return {
-			finalIsUpvote: newIsUpvote,
-			pointDelta: newIsUpvote ? 1 : -1,
-			action: "create",
-		};
-	}
-	return {
-		finalIsUpvote: newIsUpvote,
-		pointDelta: newIsUpvote ? 2 : -2,
-		action: "update",
-	};
-}
 
 export async function handleVote(
 	segmentTranslationId: number,
