@@ -3,19 +3,12 @@
 import { useLocation } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { sanitizeTextToHtml } from "@/app/[locale]/_utils/sanitize-and-parse-text.client";
 import { AddAndVoteTranslations } from "./translation-section/add-and-vote-translations.client";
 
 type ActiveState = {
-	segmentId: number | null;
-	rootEl: HTMLElement | null;
-	translationEl: HTMLElement | null;
-};
-
-const emptyState: ActiveState = {
-	segmentId: null,
-	rootEl: null,
-	translationEl: null,
+	segmentId: number;
+	rootEl: HTMLElement;
+	translationEl: HTMLElement;
 };
 
 /** Portal用rootを.seg-trの直後に確保（既存があれば再利用） */
@@ -72,8 +65,8 @@ function getSegmentEl(target: EventTarget | null): HTMLElement | null {
  * - useRef で最新状態を保持し、リスナー再登録を防ぐ
  */
 export function TranslationFormOnClick() {
-	const [activeState, setActiveState] = useState<ActiveState>(emptyState);
-	const stateRef = useRef<ActiveState>(emptyState);
+	const [activeState, setActiveState] = useState<ActiveState | null>(null);
+	const stateRef = useRef<ActiveState | null>(null);
 	const pathname = useLocation({ select: (location) => location.pathname });
 
 	useEffect(() => {
@@ -85,9 +78,9 @@ export function TranslationFormOnClick() {
 			if (!Number.isFinite(segId)) return;
 
 			// 同じセグメントをクリック → 閉じる
-			if (stateRef.current.segmentId === segId) {
-				stateRef.current = emptyState;
-				setActiveState(emptyState);
+			if (stateRef.current?.segmentId === segId) {
+				stateRef.current = null;
+				setActiveState(null);
 				return;
 			}
 
@@ -135,21 +128,17 @@ export function TranslationFormOnClick() {
 
 	useEffect(() => {
 		void pathname;
-		stateRef.current = emptyState;
-		setActiveState(emptyState);
+		stateRef.current = null;
+		setActiveState(null);
 	}, [pathname]);
 
-	if (!activeState.segmentId || !activeState.rootEl) return null;
+	if (!activeState) return null;
 
 	return createPortal(
 		<AddAndVoteTranslations
-			onBestTranslationChanged={(text) => {
-				if (activeState.translationEl) {
-					activeState.translationEl.innerHTML = sanitizeTextToHtml(text);
-				}
-			}}
 			open
 			segmentId={activeState.segmentId}
+			translationElement={activeState.translationEl}
 		/>,
 		activeState.rootEl,
 	);

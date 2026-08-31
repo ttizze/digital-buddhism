@@ -251,4 +251,26 @@ describe("syncSegments", () => {
 		expect(result.size).toBe(1);
 		expect(result.has("hash-title")).toBe(true);
 	});
+
+	it("複数batchにまたがるセグメントを同期する", async () => {
+		const page = await createPage({ slug: "multi-batch-page" });
+		const drafts = Array.from({ length: 201 }, (_, number) => ({
+			number,
+			text: `Segment ${number}`,
+			textAndOccurrenceHash: `hash-${number}`,
+		}));
+
+		const result = await db
+			.transaction()
+			.execute((tx) => syncSegments(tx, page.id, drafts));
+
+		expect(result.size).toBe(201);
+		await expect(
+			db
+				.selectFrom("segments")
+				.select(({ fn }) => fn.countAll<number>().as("count"))
+				.where("tipitakaPageId", "=", page.id)
+				.executeTakeFirstOrThrow(),
+		).resolves.toEqual({ count: 201 });
+	});
 });

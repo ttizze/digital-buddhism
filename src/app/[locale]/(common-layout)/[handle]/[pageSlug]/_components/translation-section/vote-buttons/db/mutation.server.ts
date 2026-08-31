@@ -42,35 +42,50 @@ export async function handleVote(
 	currentUserId: string,
 ) {
 	return db.transaction().execute(async (tx) => {
-		const { finalIsUpvote } = await applyVote(
-			tx,
-			segmentTranslationId,
-			isUpvote,
-			currentUserId,
-		);
-
-		const result = await tx
+		const context = await tx
 			.selectFrom("segmentTranslations")
 			.innerJoin("segments", "segmentTranslations.segmentId", "segments.id")
 			.innerJoin("tipitakaPages", "segments.tipitakaPageId", "tipitakaPages.id")
+			.leftJoin("translationVotes", (join) =>
+				join
+					.onRef(
+						"translationVotes.translationId",
+						"=",
+						"segmentTranslations.id",
+					)
+					.on("translationVotes.userId", "=", currentUserId),
+			)
 			.select([
 				"segmentTranslations.segmentId",
 				"segmentTranslations.locale",
 				"tipitakaPages.id as pageId",
+				"translationVotes.isUpvote as previousIsUpvote",
 			])
 			.where("segmentTranslations.id", "=", segmentTranslationId)
 			.executeTakeFirst();
 
-		if (!result) {
+		if (!context) {
 			throw new Error("Translation not found");
 		}
 
-		await updateProofStatus(tx, result.pageId, result.locale);
+		const outcome = computeVoteOutcome(
+			context.previousIsUpvote ?? undefined,
+			isUpvote,
+		);
+		await applyVote(
+			tx,
+			segmentTranslationId,
+			isUpvote,
+			currentUserId,
+			outcome,
+			context.pageId,
+			context.locale,
+		);
 
 		return {
-			segmentId: result.segmentId,
-			locale: result.locale,
-			isUpvote: finalIsUpvote,
+			segmentId: context.segmentId,
+			locale: context.locale,
+			isUpvote: outcome.finalIsUpvote,
 		};
 	});
 }
@@ -80,15 +95,10 @@ async function applyVote(
 	segmentTranslationId: number,
 	isUpvote: boolean,
 	currentUserId: string,
+	outcome: VoteOutcome,
+	pageId: number,
+	locale: string,
 ) {
-	const existingVote = await tx
-		.selectFrom("translationVotes")
-		.select("isUpvote")
-		.where("translationId", "=", segmentTranslationId)
-		.where("userId", "=", currentUserId)
-		.executeTakeFirst();
-
-	const outcome = computeVoteOutcome(existingVote?.isUpvote, isUpvote);
 	if (outcome.action === "delete") {
 		await tx
 			.deleteFrom("translationVotes")
@@ -119,7 +129,7 @@ async function applyVote(
 		.where("id", "=", segmentTranslationId)
 		.execute();
 
-	return { finalIsUpvote: outcome.finalIsUpvote };
+	await updateProofStatus(tx, pageId, locale);
 }
 
 async function updateProofStatus(

@@ -10,6 +10,7 @@ import { setupDbPerFile } from "@/tests/test-db-manager";
 import { projectPendingTipitakaReadModels } from "./jobs.server";
 import { pageTranslationKey, pageTranslationPointerKey } from "./model";
 import {
+	publishAllTipitakaReadModels,
 	publishHomeBase,
 	publishHomeTranslationOverlay,
 	publishPageBase,
@@ -206,5 +207,43 @@ describe("Tipitaka read model", () => {
 				.select("pageId")
 				.executeTakeFirst(),
 		).resolves.toBeUndefined();
+	});
+
+	it("全read model生成でstore書き込みを直列化する", async () => {
+		const root = await createPageWithSegments({
+			slug: "tipitaka",
+			textLevel: null,
+			mdastJson: { type: "root", children: [] },
+			segments: [
+				{ number: 0, text: "Tipitaka", textAndOccurrenceHash: "root-title" },
+			],
+		});
+		await createPageWithSegments({
+			slug: "serialized-publish",
+			parentId: root.id,
+			mdastJson: { type: "root", children: [] },
+			segments: [
+				{ number: 0, text: "Page", textAndOccurrenceHash: "page-title" },
+			],
+		});
+		let activePuts = 0;
+		let maxActivePuts = 0;
+		const delayedStore: TipitakaReadModelStore = {
+			get: async (key) => values.get(key) ?? null,
+			put: async (key, value) => {
+				activePuts += 1;
+				maxActivePuts = Math.max(maxActivePuts, activePuts);
+				try {
+					await new Promise((resolve) => setTimeout(resolve, 1));
+					values.set(key, value);
+				} finally {
+					activePuts -= 1;
+				}
+			},
+		};
+
+		await publishAllTipitakaReadModels(delayedStore);
+
+		expect(maxActivePuts).toBe(1);
 	});
 });

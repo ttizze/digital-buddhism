@@ -27,6 +27,7 @@ export async function syncSegments(
 	}
 
 	const hashToSegmentId = new Map<string, number>();
+	// SQLiteのparameter上限を守り、同一transaction上のstatementを直列化する。
 	for (
 		let index = 0;
 		index < drafts.length;

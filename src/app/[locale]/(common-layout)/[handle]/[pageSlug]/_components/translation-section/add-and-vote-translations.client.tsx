@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronUp, Languages } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocale } from "use-intl";
+import { sanitizeTextToHtml } from "@/app/[locale]/_utils/sanitize-and-parse-text.client";
 import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
 import type { ActionResponse } from "@/app/types";
 import { Button } from "@/components/ui/button";
@@ -18,13 +19,13 @@ type VoteResponse = ActionResponse<{ translations: SegmentTranslation[] }>;
 interface AddAndVoteTranslationsProps {
 	segmentId: number;
 	open: boolean;
-	onBestTranslationChanged?: (text: string) => void;
+	translationElement: HTMLElement;
 }
 
 export function AddAndVoteTranslations({
 	segmentId,
 	open,
-	onBestTranslationChanged,
+	translationElement,
 }: AddAndVoteTranslationsProps) {
 	const [showAll, setShowAll] = useState(false);
 	const [isVoting, setIsVoting] = useState(false);
@@ -42,9 +43,9 @@ export function AddAndVoteTranslations({
 
 	useEffect(() => {
 		if (bestTranslationText !== undefined) {
-			onBestTranslationChanged?.(bestTranslationText);
+			translationElement.innerHTML = sanitizeTextToHtml(bestTranslationText);
 		}
-	}, [bestTranslationText, onBestTranslationChanged]);
+	}, [bestTranslationText, translationElement]);
 
 	const displayedTranslations = showAll
 		? alternativeTranslations

@@ -18,14 +18,16 @@ beforeEach(() => {
 vi.mock("./translation-section/add-and-vote-translations.client", () => ({
 	AddAndVoteTranslations: ({
 		segmentId,
-		onBestTranslationChanged,
+		translationElement,
 	}: {
 		segmentId: number;
-		onBestTranslationChanged?: (text: string) => void;
+		translationElement: HTMLElement;
 	}) => (
 		<button
 			data-testid="tr-ui"
-			onClick={() => onBestTranslationChanged?.("<strong>updated</strong>")}
+			onClick={() => {
+				translationElement.innerHTML = "<strong>updated</strong>";
+			}}
 			type="button"
 		>
 			segment:{segmentId}

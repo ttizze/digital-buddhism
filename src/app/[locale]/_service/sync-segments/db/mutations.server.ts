@@ -24,53 +24,47 @@ export async function offsetSegmentNumbers(
 		.execute();
 }
 
-async function upsertSingleSegment(
-	tx: TransactionClient,
-	pageId: number,
-	draft: SegmentDraft,
-): Promise<{ hash: string; segmentId: number }> {
-	const locator = {
-		sourceBookCode: draft.sourceBookCode ?? null,
-		sourceChapterNumber: draft.sourceChapterNumber ?? null,
-		sourceParagraphNumber: draft.sourceParagraphNumber ?? null,
-		sourceParagraphOccurrence: draft.sourceParagraphOccurrence ?? null,
-	};
-	const segment = await tx
-		.insertInto("segments")
-		.values({
-			tipitakaPageId: pageId,
-			text: draft.text,
-			number: draft.number,
-			textAndOccurrenceHash: draft.textAndOccurrenceHash,
-			...locator,
-		})
-		.onConflict((conflict) =>
-			conflict
-				.columns(["tipitakaPageId", "textAndOccurrenceHash"])
-				.doUpdateSet({
-					number: draft.number,
-					text: draft.text,
-					...locator,
-				}),
-		)
-		.returning("id")
-		.executeTakeFirstOrThrow();
-	return { hash: draft.textAndOccurrenceHash, segmentId: segment.id };
-}
-
 export async function upsertSegmentBatch(
 	tx: TransactionClient,
 	pageId: number,
 	drafts: SegmentDraft[],
 ): Promise<Map<string, number>> {
-	const segmentIdsByHash = new Map<string, number>();
-	const results = await Promise.all(
-		drafts.map((draft) => upsertSingleSegment(tx, pageId, draft)),
+	if (drafts.length === 0) return new Map();
+
+	const segments = await tx
+		.insertInto("segments")
+		.values(
+			drafts.map((draft) => ({
+				tipitakaPageId: pageId,
+				text: draft.text,
+				number: draft.number,
+				textAndOccurrenceHash: draft.textAndOccurrenceHash,
+				sourceBookCode: draft.sourceBookCode ?? null,
+				sourceChapterNumber: draft.sourceChapterNumber ?? null,
+				sourceParagraphNumber: draft.sourceParagraphNumber ?? null,
+				sourceParagraphOccurrence: draft.sourceParagraphOccurrence ?? null,
+			})),
+		)
+		.onConflict((conflict) =>
+			conflict
+				.columns(["tipitakaPageId", "textAndOccurrenceHash"])
+				.doUpdateSet((eb) => ({
+					number: eb.ref("excluded.number"),
+					text: eb.ref("excluded.text"),
+					sourceBookCode: eb.ref("excluded.sourceBookCode"),
+					sourceChapterNumber: eb.ref("excluded.sourceChapterNumber"),
+					sourceParagraphNumber: eb.ref("excluded.sourceParagraphNumber"),
+					sourceParagraphOccurrence: eb.ref(
+						"excluded.sourceParagraphOccurrence",
+					),
+				})),
+		)
+		.returning(["id", "textAndOccurrenceHash"])
+		.execute();
+
+	return new Map(
+		segments.map((segment) => [segment.textAndOccurrenceHash, segment.id]),
 	);
-	for (const { hash, segmentId } of results) {
-		segmentIdsByHash.set(hash, segmentId);
-	}
-	return segmentIdsByHash;
 }
 
 export async function deleteStaleSegments(

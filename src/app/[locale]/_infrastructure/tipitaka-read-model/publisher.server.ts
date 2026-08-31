@@ -1,3 +1,4 @@
+import pLimit from "p-limit";
 import { queryPageDetail } from "@/app/[locale]/_db/queries";
 import { fetchTipitakaPageTree } from "@/app/[locale]/(common-layout)/_components/tipitaka-page-list/db/queries";
 import { queryCompletedTranslationLocales } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_db/queries";
@@ -39,6 +40,31 @@ type TranslatableTreeNode = {
 };
 
 const READ_MODEL_SOURCE_LOCALE = "__tipitaka_source__";
+const PUBLISH_CONCURRENCY = 5;
+
+type PublishTask = () => Promise<void>;
+
+function serializeStoreWrites(
+	store: TipitakaReadModelStore,
+): TipitakaReadModelStore {
+	let writeQueue: Promise<void> = Promise.resolve();
+	return {
+		get: (key) => store.get(key),
+		put: (key, value) => {
+			writeQueue = writeQueue.then(() => store.put(key, value));
+			return writeQueue;
+		},
+	};
+}
+
+async function runPublishPhase(tasks: PublishTask[]): Promise<void> {
+	const limit = pLimit(PUBLISH_CONCURRENCY);
+	const results = await Promise.allSettled(tasks.map((task) => limit(task)));
+	const failure = results.find(
+		(result): result is PromiseRejectedResult => result.status === "rejected",
+	);
+	if (failure) throw failure.reason;
+}
 
 function clearTreeTranslations(nodes: TranslatableTreeNode[]): void {
 	for (const node of nodes) {
@@ -255,16 +281,28 @@ export async function publishAllTipitakaReadModels(
 		queryTranslationPageLocales(),
 		queryTranslationLocales(),
 	]);
+	const serializedStore = serializeStoreWrites(store);
 
-	await publishHomeBase(store);
-	for (const page of pages) {
-		await publishPageBase(page.slug, store);
-		await publishPageState(page.id, store);
-	}
-	for (const item of translationPageLocales) {
-		await publishPageTranslationOverlay(item.pageId, item.locale, store);
-	}
-	for (const locale of locales) {
-		await publishHomeTranslationOverlay(locale, store);
-	}
+	await publishHomeBase(serializedStore);
+	await runPublishPhase(
+		pages.flatMap((page) => [
+			() => publishPageBase(page.slug, serializedStore),
+			() => publishPageState(page.id, serializedStore),
+		]),
+	);
+	await runPublishPhase(
+		translationPageLocales.map(
+			(item) => () =>
+				publishPageTranslationOverlay(
+					item.pageId,
+					item.locale,
+					serializedStore,
+				),
+		),
+	);
+	await runPublishPhase(
+		locales.map(
+			(locale) => () => publishHomeTranslationOverlay(locale, serializedStore),
+		),
+	);
 }

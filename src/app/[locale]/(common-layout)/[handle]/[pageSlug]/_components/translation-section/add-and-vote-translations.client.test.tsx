@@ -84,25 +84,25 @@ describe("AddAndVoteTranslations", () => {
 		vi.unstubAllGlobals();
 	});
 
-	it("初回取得した先頭訳を本文へ通知する", async () => {
+	it("初回取得した先頭訳を本文へ反映する", async () => {
 		vi.mocked(useSegmentTranslations).mockReturnValue({
 			data: [firstTranslation, secondTranslation],
 			error: undefined,
 			isLoading: false,
 			mutate: vi.fn(),
 		});
-		const onBestTranslationChanged = vi.fn();
+		const translationElement = document.createElement("span");
 
 		render(
 			<AddAndVoteTranslations
-				onBestTranslationChanged={onBestTranslationChanged}
 				open
 				segmentId={10}
+				translationElement={translationElement}
 			/>,
 		);
 
 		await waitFor(() => {
-			expect(onBestTranslationChanged).toHaveBeenCalledWith("first");
+			expect(translationElement).toHaveTextContent("first");
 		});
 	});
 
@@ -129,12 +129,12 @@ describe("AddAndVoteTranslations", () => {
 				}),
 			);
 		vi.stubGlobal("fetch", fetchMock);
-		const onBestTranslationChanged = vi.fn();
+		const translationElement = document.createElement("span");
 		render(
 			<AddAndVoteTranslations
-				onBestTranslationChanged={onBestTranslationChanged}
 				open
 				segmentId={10}
+				translationElement={translationElement}
 			/>,
 		);
 
