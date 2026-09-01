@@ -72,7 +72,7 @@ describe("translateChunk", () => {
 
 	it("Geminiから正常レスポンスが返された場合、翻訳がデータベースに保存される", async () => {
 		// Arrange: テスト用データを作成
-		const { user, page, segments } = await setupTranslationTest();
+		const { page, segments } = await setupTranslationTest();
 
 		// Gemini APIのモック（正常レスポンス）
 		vi.mocked(getGeminiModelResponse).mockResolvedValue(`
@@ -84,7 +84,6 @@ describe("translateChunk", () => {
 
 		// Act
 		await translateChunk(
-			user.id,
 			"gemini-3.1-flash-lite",
 			segments.map((s) => ({ id: s.id, number: s.number, text: s.text })),
 			"ja",
@@ -105,7 +104,7 @@ describe("translateChunk", () => {
 	});
 
 	it("同じAI・言語のチャンクが再配信されても翻訳を二重生成しない", async () => {
-		const { user, page, segments } = await setupTranslationTest();
+		const { page, segments } = await setupTranslationTest();
 		vi.mocked(getGeminiModelResponse).mockResolvedValue(`
 			[
 				{"number": 0, "text": "こんにちは"},
@@ -119,7 +118,6 @@ describe("translateChunk", () => {
 		}));
 
 		await translateChunk(
-			user.id,
 			"gemini-3.1-flash-lite",
 			chunk,
 			"ja",
@@ -128,7 +126,6 @@ describe("translateChunk", () => {
 			"",
 		);
 		await translateChunk(
-			user.id,
 			"gemini-3.1-flash-lite",
 			chunk,
 			"ja",
@@ -148,7 +145,7 @@ describe("translateChunk", () => {
 
 	it("Geminiが空レスポンスを返した場合、Queue再試行用のエラーになり翻訳を保存しない", async () => {
 		// Arrange: テスト用データを作成
-		const { user, page, segments } = await setupTranslationTest({
+		const { page, segments } = await setupTranslationTest({
 			segments: [
 				{
 					number: 0,
@@ -169,7 +166,6 @@ describe("translateChunk", () => {
 		// Act & Assert: エラーが発生する
 		await expect(
 			translateChunk(
-				user.id,
 				"gemini-3.1-flash-lite",
 				segments.map((s) => ({ id: s.id, number: s.number, text: s.text })),
 				"ja",
@@ -198,7 +194,7 @@ describe("translateChunk", () => {
 
 	it("PageLocaleTranslationProofが存在しない場合、新規レコードがMACHINE_DRAFTステータスで作成される", async () => {
 		// Arrange: テスト用データを作成
-		const { user, page, segments } = await setupTranslationTest();
+		const { page, segments } = await setupTranslationTest();
 
 		// Gemini APIのモック（正常レスポンス）
 		vi.mocked(getGeminiModelResponse).mockResolvedValue(
@@ -210,7 +206,6 @@ describe("translateChunk", () => {
 
 		// Act
 		await translateChunk(
-			user.id,
 			"gemini-3.1-flash-lite",
 			segments.map((s) => ({ id: s.id, number: s.number, text: s.text })),
 			"ja",
@@ -233,7 +228,7 @@ describe("translateChunk", () => {
 
 	it("既存のPageLocaleTranslationProofがある場合、ステータスが変更されずに既存レコードが保持される", async () => {
 		// Arrange: テスト用データを作成
-		const { user, page, segments } = await setupTranslationTest();
+		const { page, segments } = await setupTranslationTest();
 
 		// 事前にPROOFREADステータスでPageLocaleTranslationProofを作成
 		const existingProof = await db
@@ -256,7 +251,6 @@ describe("translateChunk", () => {
 
 		// Act
 		await translateChunk(
-			user.id,
 			"gemini-3.1-flash-lite",
 			segments.map((s) => ({ id: s.id, number: s.number, text: s.text })),
 			"ja",

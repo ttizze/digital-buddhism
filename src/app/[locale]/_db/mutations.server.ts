@@ -9,7 +9,7 @@ type CreateTranslationJobParams = {
 
 /**
  * 翻訳ジョブを作成
- * Kyselyに移行済み
+ * 戻り値はクライアントへ渡るため、トースト表示に必要な列だけを返す
  */
 export async function createTranslationJob(params: CreateTranslationJobParams) {
 	const [translationJob, pageData] = await Promise.all([
@@ -23,7 +23,7 @@ export async function createTranslationJob(params: CreateTranslationJobParams) {
 				status: "PENDING",
 				progress: 0,
 			})
-			.returningAll()
+			.returning(["id", "locale", "status", "progress", "error"])
 			.executeTakeFirstOrThrow(),
 		db
 			.selectFrom("tipitakaPages")

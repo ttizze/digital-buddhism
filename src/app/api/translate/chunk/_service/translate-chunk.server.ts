@@ -12,7 +12,6 @@ import { saveTranslations } from "./save-translations.server";
 const logger = createServerLogger("translate-chunk");
 
 export async function translateChunk(
-	_userId: string,
 	aiModel: string,
 	segments: SegmentElement[],
 	targetLocale: string,

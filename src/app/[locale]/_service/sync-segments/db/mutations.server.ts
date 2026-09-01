@@ -8,7 +8,7 @@ export async function fetchExistingSegments(
 ): Promise<ExistingSegment[]> {
 	return tx
 		.selectFrom("segments")
-		.select(["id", "text", "number", "textAndOccurrenceHash"])
+		.select("textAndOccurrenceHash")
 		.where("tipitakaPageId", "=", pageId)
 		.execute();
 }

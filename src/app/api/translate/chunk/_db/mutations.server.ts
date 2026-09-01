@@ -45,24 +45,6 @@ export async function getOrCreateAIUser(name: string): Promise<string> {
 	return concurrentlyInserted.id;
 }
 
-export async function markJobFailed(
-	translationJobId: number,
-	progress?: number,
-	errorMessage?: string,
-) {
-	const updated = await db
-		.updateTable("translationJobs")
-		.set({
-			status: "FAILED" satisfies TranslationStatus,
-			...(progress === undefined ? {} : { progress }),
-			error: errorMessage ?? "",
-		})
-		.where("id", "=", translationJobId)
-		.returningAll()
-		.executeTakeFirst();
-	return updated;
-}
-
 export async function claimTranslationChunk(params: {
 	translationJobId: number;
 	chunkIndex: number;
@@ -181,12 +163,6 @@ export async function setTranslationProgress(
 		.where("id", "=", translationJobId)
 		.where("status", "not in", ["COMPLETED", "FAILED"])
 		.execute();
-
-	return db
-		.selectFrom("translationJobs")
-		.selectAll()
-		.where("id", "=", translationJobId)
-		.executeTakeFirst();
 }
 
 type SegmentTranslationData = {

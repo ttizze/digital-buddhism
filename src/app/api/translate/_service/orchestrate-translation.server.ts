@@ -48,18 +48,13 @@ export async function orchestrateTranslation(params: TranslateJobParams) {
 
 	await enqueueTranslationMessages(
 		chunks.map((chunk, idx) => {
+			// TranslateChunkParams は TranslateJobParams の拡張なので、spread で取りこぼしを防ぐ
 			const body: TranslateChunkParams = {
-				translationJobId: params.translationJobId,
-				aiModel: params.aiModel,
-				userId: params.userId,
-				targetLocale: params.targetLocale,
-				pageId: params.pageId,
-				annotationPageId: params.annotationPageId,
+				...params,
 				segments: chunk,
 				title,
 				totalChunks,
 				chunkIndex: idx,
-				translationContext: params.translationContext,
 			};
 			return { type: "chunk" as const, params: body };
 		}),

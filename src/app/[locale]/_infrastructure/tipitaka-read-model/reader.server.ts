@@ -94,6 +94,33 @@ function readHomeTranslationOverlay(
 	);
 }
 
+/** 複数ページ分のオーバーレイを読み、segmentId→翻訳テキストの1つのマップへ統合する */
+async function collectPageTranslations(
+	pageIds: readonly number[],
+	locale: string,
+): Promise<Record<string, string>> {
+	const overlays = await Promise.all(
+		pageIds.map((pageId) => readPageTranslationOverlay(pageId, locale)),
+	);
+	const translations: Record<string, string> = {};
+	for (const overlay of overlays) {
+		if (overlay) Object.assign(translations, overlay.translations);
+	}
+	return translations;
+}
+
+function applyAnnotationSegmentTranslations(
+	annotations: ReadonlyArray<{
+		annotationSegment: { id: number; translationText: string | null };
+	}>,
+	translations: Readonly<Record<string, string>>,
+): void {
+	for (const { annotationSegment } of annotations) {
+		annotationSegment.translationText =
+			translations[String(annotationSegment.id)] ?? null;
+	}
+}
+
 export async function readHomeData(
 	locale: string,
 ): Promise<HomeBaseSnapshot | null> {
@@ -115,23 +142,14 @@ export async function readPageContentData(
 	const baseValue = await store.get(baseKey);
 	if (!baseValue) return null;
 	const base = parseSnapshot<PageBaseSnapshot>(baseValue, baseKey);
-	const [stateValue, ...overlays] = await Promise.all([
+	const [stateValue, translations] = await Promise.all([
 		store.get(pageStateKey(base.data.pageDetail.id)),
-		...base.translationPageIds.map((pageId) =>
-			readPageTranslationOverlay(pageId, locale),
-		),
+		collectPageTranslations(base.translationPageIds, locale),
 	]);
-	const translations: Record<string, string> = {};
-	for (const overlay of overlays) {
-		if (overlay) Object.assign(translations, overlay.translations);
-	}
 
 	for (const segment of base.data.pageDetail.segments) {
 		segment.translationText = translations[String(segment.id)] ?? null;
-		for (const { annotationSegment } of segment.annotations) {
-			annotationSegment.translationText =
-				translations[String(annotationSegment.id)] ?? null;
-		}
+		applyAnnotationSegmentTranslations(segment.annotations, translations);
 	}
 	const titleSegment = base.data.pageDetail.segments.find(
 		(segment) => segment.number === 0,
@@ -180,22 +198,14 @@ export async function readPageAnnotations(
 	const value = await store.get(key);
 	if (!value) return null;
 	const snapshot = parseSnapshot<PageAnnotationsSnapshot>(value, key);
-	const overlays = await Promise.all(
-		snapshot.translationPageIds.map((pageId) =>
-			readPageTranslationOverlay(pageId, locale),
-		),
+	const translations = await collectPageTranslations(
+		snapshot.translationPageIds,
+		locale,
 	);
-	const translations: Record<string, string> = {};
-	for (const overlay of overlays) {
-		if (overlay) Object.assign(translations, overlay.translations);
-	}
 	for (const annotations of Object.values(
 		snapshot.annotationsByTargetSegmentId,
 	)) {
-		for (const { annotationSegment } of annotations) {
-			annotationSegment.translationText =
-				translations[String(annotationSegment.id)] ?? null;
-		}
+		applyAnnotationSegmentTranslations(annotations, translations);
 	}
 	return snapshot.annotationsByTargetSegmentId;
 }

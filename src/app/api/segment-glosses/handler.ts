@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
-import { parseFormData } from "@/app/[locale]/_utils/parse-form-data";
-import { isSameOriginRequest } from "@/app/api/_utils/is-same-origin-request";
+import { PRIVATE_RESPONSE_HEADERS } from "@/app/api/_utils/private-response-headers";
+import { withAuthedFormData } from "@/app/api/_utils/with-authed-form-data";
 import { db } from "@/db";
 import { handleGlossUnitVote } from "./_db/mutation.server";
 import { segmentGlossUnitSchema } from "./_domain/segment-glosses";
@@ -61,7 +61,7 @@ export async function getSegmentGlosses(request: Request): Promise<Response> {
 			.execute();
 
 		return Response.json(segmentGlossUnitSchema.array().parse(glossUnits), {
-			headers: { "Cache-Control": "no-store" },
+			headers: PRIVATE_RESPONSE_HEADERS,
 		});
 	} catch (error) {
 		console.error("Error fetching segment glosses:", error);
@@ -75,41 +75,16 @@ export async function getSegmentGlosses(request: Request): Promise<Response> {
 export async function patchSegmentGlossVote(
 	request: Request,
 ): Promise<Response> {
-	if (!isSameOriginRequest(request)) {
-		return Response.json({ error: "Forbidden" }, { status: 403 });
-	}
-
-	const currentUser = await getCurrentUserFromHeaders(request.headers);
-	if (!currentUser) {
-		return Response.json({ error: "Unauthorized" }, { status: 401 });
-	}
-
-	let formData: FormData;
-	try {
-		formData = await request.formData();
-	} catch {
-		return Response.json({ error: "Invalid form data" }, { status: 400 });
-	}
-
-	const parsed = await parseFormData(patchSchema, formData);
-	if (!parsed.success) {
-		return Response.json(
-			{
-				error: "Invalid form data",
-				zodErrors: parsed.error.flatten().fieldErrors,
-			},
-			{ status: 400 },
+	return withAuthedFormData(request, patchSchema, async (data, currentUser) => {
+		const glossUnit = await handleGlossUnitVote(
+			data.glossUnitId,
+			data.isUpvote,
+			currentUser.id,
 		);
-	}
+		if (!glossUnit) {
+			return Response.json({ error: "Gloss unit not found" }, { status: 404 });
+		}
 
-	const glossUnit = await handleGlossUnitVote(
-		parsed.data.glossUnitId,
-		parsed.data.isUpvote,
-		currentUser.id,
-	);
-	if (!glossUnit) {
-		return Response.json({ error: "Gloss unit not found" }, { status: 404 });
-	}
-
-	return Response.json({ success: true, data: { glossUnit } });
+		return Response.json({ success: true, data: { glossUnit } });
+	});
 }

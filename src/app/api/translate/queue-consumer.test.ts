@@ -31,10 +31,12 @@ vi.mock("@/db", () => ({
 vi.mock("./_service/orchestrate-translation.server", () => ({
 	orchestrateTranslation: orchestrateMock,
 }));
+vi.mock("./_db/mutations.server", () => ({
+	markJobFailed: markJobFailedMock,
+}));
 vi.mock("./chunk/_db/mutations.server", () => ({
 	claimTranslationChunk: claimChunkMock,
 	completeTranslationChunk: completeChunkMock,
-	markJobFailed: markJobFailedMock,
 	releaseTranslationChunk: releaseChunkMock,
 }));
 vi.mock("./chunk/_service/process-translation-chunk.server", () => ({
@@ -44,7 +46,6 @@ vi.mock("./chunk/_service/process-translation-chunk.server", () => ({
 import { consumeTranslationQueue } from "./queue-consumer.server";
 
 const jobParams: TranslateJobParams = {
-	userId: "user-1",
 	pageId: 1,
 	translationJobId: 10,
 	aiModel: "gemini-3.1-pro-preview",

@@ -51,7 +51,6 @@ async function createAndEnqueueJob(
 		params: {
 			translationJobId: job.id,
 			aiModel: params.aiModel,
-			userId: params.userId,
 			targetLocale: params.locale,
 			pageId: params.pageId,
 			annotationPageId: params.annotationPageId,
