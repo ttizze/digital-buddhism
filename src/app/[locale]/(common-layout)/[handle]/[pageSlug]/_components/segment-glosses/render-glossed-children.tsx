@@ -1,5 +1,5 @@
 import { Children, cloneElement, isValidElement, type ReactNode } from "react";
-import type { SegmentGlossUnit } from "@/app/api/segment-glosses/_domain/segment-glosses";
+import type { SegmentWordWithGloss } from "@/app/api/segment-glosses/_domain/word-glosses";
 import { GlossUnit } from "./gloss-unit";
 
 function textContent(node: ReactNode): string {
@@ -14,11 +14,11 @@ function textContent(node: ReactNode): string {
 	return textContent(node.props.children);
 }
 
-function validGlossUnits(
+function validGlossedWords(
 	sourceText: string,
-	units: SegmentGlossUnit[],
-): SegmentGlossUnit[] | null {
-	const ordered = [...units].sort(
+	words: SegmentWordWithGloss[],
+): SegmentWordWithGloss[] | null {
+	const ordered = [...words].sort(
 		(a, b) => a.startOffset - b.startOffset || a.endOffset - b.endOffset,
 	);
 	let previousEnd = 0;
@@ -41,9 +41,9 @@ function validGlossUnits(
 export function renderGlossedChildren(
 	children: ReactNode,
 	sourceText: string,
-	units: SegmentGlossUnit[],
+	words: SegmentWordWithGloss[],
 ): ReactNode {
-	const ordered = validGlossUnits(sourceText, units);
+	const ordered = validGlossedWords(sourceText, words);
 	if (!ordered || textContent(children) !== sourceText) return children;
 
 	let cursor = 0;

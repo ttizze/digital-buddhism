@@ -70,30 +70,22 @@ export type SelectedSegmentTranslationInsert = InferInsertModel<
 	typeof schema.selectedSegmentTranslations
 >;
 
-export type SegmentGlossSet = InferSelectModel<typeof schema.segmentGlossSets>;
-export type SegmentGlossSetInsert = InferInsertModel<
-	typeof schema.segmentGlossSets
+export type SegmentWord = InferSelectModel<typeof schema.segmentWords>;
+export type SegmentWordInsert = InferInsertModel<typeof schema.segmentWords>;
+
+export type WordGloss = InferSelectModel<typeof schema.wordGlosses>;
+export type WordGlossInsert = InferInsertModel<typeof schema.wordGlosses>;
+
+export type SelectedWordGloss = InferSelectModel<
+	typeof schema.selectedWordGlosses
+>;
+export type SelectedWordGlossInsert = InferInsertModel<
+	typeof schema.selectedWordGlosses
 >;
 
-export type SegmentGlossUnit = InferSelectModel<
-	typeof schema.segmentGlossUnits
->;
-export type SegmentGlossUnitInsert = InferInsertModel<
-	typeof schema.segmentGlossUnits
->;
-
-export type SelectedSegmentGlossSet = InferSelectModel<
-	typeof schema.selectedSegmentGlossSets
->;
-export type SelectedSegmentGlossSetInsert = InferInsertModel<
-	typeof schema.selectedSegmentGlossSets
->;
-
-export type SegmentGlossUnitVote = InferSelectModel<
-	typeof schema.segmentGlossUnitVotes
->;
-export type SegmentGlossUnitVoteInsert = InferInsertModel<
-	typeof schema.segmentGlossUnitVotes
+export type WordGlossVote = InferSelectModel<typeof schema.wordGlossVotes>;
+export type WordGlossVoteInsert = InferInsertModel<
+	typeof schema.wordGlossVotes
 >;
 
 export type SegmentMetadata = InferSelectModel<typeof schema.segmentMetadata>;

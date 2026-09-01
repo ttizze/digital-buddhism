@@ -1,60 +1,38 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { ReactNode } from "react";
 import { vi } from "vitest";
 import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
 import { AddAndVoteTranslations } from "./add-and-vote-translations.client";
 import { useSegmentTranslations } from "./hooks/use-segment-translations";
 
 vi.mock("use-intl", () => ({ useLocale: () => "ja" }));
-vi.mock("@tanstack/react-router", () => ({
-	Link: ({ children }: { children: ReactNode }) => children,
-}));
 vi.mock("./hooks/use-segment-translations", () => ({
 	useSegmentTranslations: vi.fn(),
 }));
 vi.mock("./add-translation-form/client", () => ({
 	AddTranslationForm: () => null,
 }));
-vi.mock("./vote-buttons/client", () => ({
-	VoteButtons: ({
-		voteTarget,
+vi.mock("./text-candidates/candidate-panel.client", () => ({
+	CandidatePanel: ({
+		candidates,
 		isVoting,
 		onVote,
 	}: {
-		voteTarget: SegmentTranslation;
+		candidates: SegmentTranslation[];
 		isVoting: boolean;
 		onVote: (translationId: number, isUpvote: boolean) => void;
-	}) => (
-		<button
-			data-testid={`vote-${voteTarget.id}`}
-			disabled={isVoting}
-			onClick={() => onVote(voteTarget.id, true)}
-			type="button"
-		>
-			vote
-		</button>
-	),
-}));
-vi.mock("./translation-list-item/client", () => ({
-	TranslationListItem: ({
-		translation,
-		isVoting,
-		onVote,
-	}: {
-		translation: SegmentTranslation;
-		isVoting: boolean;
-		onVote: (translationId: number, isUpvote: boolean) => void;
-	}) => (
-		<button
-			data-testid={`vote-${translation.id}`}
-			disabled={isVoting}
-			onClick={() => onVote(translation.id, true)}
-			type="button"
-		>
-			{translation.text}
-		</button>
-	),
+	}) =>
+		candidates.map((candidate) => (
+			<button
+				data-testid={`vote-${candidate.id}`}
+				disabled={isVoting}
+				key={candidate.id}
+				onClick={() => onVote(candidate.id, true)}
+				type="button"
+			>
+				{candidate.text}
+			</button>
+		)),
 }));
 
 const firstTranslation = {

@@ -80,34 +80,6 @@ export interface SegmentAnnotationLinks {
 	targetSegmentId: number;
 }
 
-export interface SegmentGlossSets {
-	aiModel: string | null;
-	createdAt: Generated<Date>;
-	id: Generated<number>;
-	locale: string;
-	segmentId: number;
-	userId: string;
-}
-
-export interface SegmentGlossUnits {
-	endOffset: number;
-	gloss: string;
-	glossSetId: number;
-	id: Generated<number>;
-	point: Generated<number>;
-	position: number;
-	startOffset: number;
-	surface: string;
-}
-
-export interface SegmentGlossUnitVotes {
-	createdAt: Generated<Date>;
-	glossUnitId: number;
-	isUpvote: boolean;
-	updatedAt: Generated<Date>;
-	userId: string;
-}
-
 export interface SegmentMetadata {
 	createdAt: Generated<Date>;
 	id: Generated<number>;
@@ -145,12 +117,13 @@ export interface SegmentTranslations {
 	userId: string;
 }
 
-export interface SelectedSegmentGlossSets {
-	glossSetId: number;
-	locale: string;
+export interface SegmentWords {
+	endOffset: number;
+	id: Generated<number>;
+	position: number;
 	segmentId: number;
-	selectedAt: Generated<Date>;
-	selectedByUserId: string | null;
+	startOffset: number;
+	surface: string;
 }
 
 export interface SelectedSegmentTranslations {
@@ -159,6 +132,14 @@ export interface SelectedSegmentTranslations {
 	selectedAt: Generated<Date>;
 	selectedByUserId: string | null;
 	translationId: number;
+}
+
+export interface SelectedWordGlosses {
+	glossId: number;
+	locale: string;
+	selectedAt: Generated<Date>;
+	selectedByUserId: string | null;
+	wordId: number;
 }
 
 export interface Sessions {
@@ -254,6 +235,25 @@ export interface Verifications {
 	value: string;
 }
 
+export interface WordGlosses {
+	aiModel: string | null;
+	createdAt: Generated<Date>;
+	id: Generated<number>;
+	locale: string;
+	point: Generated<number>;
+	text: string;
+	userId: string;
+	wordId: number;
+}
+
+export interface WordGlossVotes {
+	createdAt: Generated<Date>;
+	glossId: number;
+	isUpvote: boolean;
+	updatedAt: Generated<Date>;
+	userId: string;
+}
+
 export interface DB {
 	accounts: Accounts;
 	geminiApiKeys: GeminiApiKeys;
@@ -262,15 +262,13 @@ export interface DB {
 	notifications: Notifications;
 	pageLocaleTranslationProofs: PageLocaleTranslationProofs;
 	segmentAnnotationLinks: SegmentAnnotationLinks;
-	segmentGlossSets: SegmentGlossSets;
-	segmentGlossUnits: SegmentGlossUnits;
-	segmentGlossUnitVotes: SegmentGlossUnitVotes;
 	segmentMetadata: SegmentMetadata;
 	segmentMetadataTypes: SegmentMetadataTypes;
 	segments: Segments;
 	segmentTranslations: SegmentTranslations;
-	selectedSegmentGlossSets: SelectedSegmentGlossSets;
+	segmentWords: SegmentWords;
 	selectedSegmentTranslations: SelectedSegmentTranslations;
+	selectedWordGlosses: SelectedWordGlosses;
 	sessions: Sessions;
 	tipitakaPageAnnotationTargets: TipitakaPageAnnotationTargets;
 	tipitakaPages: TipitakaPages;
@@ -280,4 +278,6 @@ export interface DB {
 	users: Users;
 	userSettings: UserSettings;
 	verifications: Verifications;
+	wordGlosses: WordGlosses;
+	wordGlossVotes: WordGlossVotes;
 }

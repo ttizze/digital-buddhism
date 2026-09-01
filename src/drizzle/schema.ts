@@ -333,84 +333,87 @@ export const selectedSegmentTranslations = sqliteTable(
 	],
 );
 
-export const segmentGlossSets = sqliteTable(
-	"segment_gloss_sets",
+export const segmentWords = sqliteTable(
+	"segment_words",
 	{
 		id: integer().primaryKey({ autoIncrement: true }).notNull(),
 		segmentId: integer("segment_id").notNull(),
+		position: integer().notNull(),
+		startOffset: integer("start_offset").notNull(),
+		endOffset: integer("end_offset").notNull(),
+		surface: text().notNull(),
+	},
+	(table) => [
+		check("segment_words_position_check", sql`${table.position} >= 0`),
+		check(
+			"segment_words_offset_check",
+			sql`${table.startOffset} >= 0 AND ${table.endOffset} > ${table.startOffset}`,
+		),
+		uniqueIndex("segment_words_segment_id_position_key").on(
+			table.segmentId,
+			table.position,
+		),
+		uniqueIndex("segment_words_segment_id_offsets_key").on(
+			table.segmentId,
+			table.startOffset,
+			table.endOffset,
+		),
+		index("segment_words_segment_id_idx").on(table.segmentId),
+		foreignKey({
+			columns: [table.segmentId],
+			foreignColumns: [segments.id],
+			name: "segment_words_segment_id_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("cascade"),
+	],
+);
+
+export const wordGlosses = sqliteTable(
+	"word_glosses",
+	{
+		id: integer().primaryKey({ autoIncrement: true }).notNull(),
+		wordId: integer("word_id").notNull(),
 		locale: text().notNull(),
-		aiModel: text("ai_model"),
+		text: text().notNull(),
+		point: integer().default(0).notNull(),
 		createdAt: integer("created_at", { mode: "timestamp_ms" })
 			.defaultNow()
 			.notNull(),
 		userId: text("user_id").notNull(),
+		aiModel: text("ai_model"),
 	},
 	(table) => [
-		index("segment_gloss_sets_segment_id_locale_idx").on(
-			table.segmentId,
-			table.locale,
-		),
-		uniqueIndex("segment_gloss_sets_id_segment_id_locale_key").on(
+		index("word_glosses_word_id_locale_idx").on(table.wordId, table.locale),
+		uniqueIndex("word_glosses_id_word_id_locale_key").on(
 			table.id,
-			table.segmentId,
+			table.wordId,
 			table.locale,
 		),
-		index("segment_gloss_sets_user_id_idx").on(table.userId),
+		index("word_glosses_user_id_idx").on(table.userId),
 		foreignKey({
-			columns: [table.segmentId],
-			foreignColumns: [segments.id],
-			name: "segment_gloss_sets_segment_id_fkey",
+			columns: [table.wordId],
+			foreignColumns: [segmentWords.id],
+			name: "word_glosses_word_id_fkey",
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
 		foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
-			name: "segment_gloss_sets_user_id_fkey",
+			name: "word_glosses_user_id_fkey",
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
 	],
 );
 
-export const segmentGlossUnits = sqliteTable(
-	"segment_gloss_units",
+export const selectedWordGlosses = sqliteTable(
+	"selected_word_glosses",
 	{
-		id: integer().primaryKey({ autoIncrement: true }).notNull(),
-		glossSetId: integer("gloss_set_id").notNull(),
-		position: integer().notNull(),
-		startOffset: integer("start_offset").notNull(),
-		endOffset: integer("end_offset").notNull(),
-		surface: text().notNull(),
-		gloss: text().notNull(),
-		point: integer().default(0).notNull(),
-	},
-	(table) => [
-		check("segment_gloss_units_position_check", sql`${table.position} >= 0`),
-		check(
-			"segment_gloss_units_offset_check",
-			sql`${table.startOffset} >= 0 AND ${table.endOffset} > ${table.startOffset}`,
-		),
-		uniqueIndex("segment_gloss_units_gloss_set_id_position_key").on(
-			table.glossSetId,
-			table.position,
-		),
-		foreignKey({
-			columns: [table.glossSetId],
-			foreignColumns: [segmentGlossSets.id],
-			name: "segment_gloss_units_gloss_set_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-	],
-);
-
-export const selectedSegmentGlossSets = sqliteTable(
-	"selected_segment_gloss_sets",
-	{
-		segmentId: integer("segment_id").notNull(),
+		wordId: integer("word_id").notNull(),
 		locale: text().notNull(),
-		glossSetId: integer("gloss_set_id").notNull(),
+		glossId: integer("gloss_id").notNull(),
 		selectedByUserId: text("selected_by_user_id"),
 		selectedAt: integer("selected_at", { mode: "timestamp_ms" })
 			.defaultNow()
@@ -418,37 +421,31 @@ export const selectedSegmentGlossSets = sqliteTable(
 	},
 	(table) => [
 		primaryKey({
-			columns: [table.segmentId, table.locale],
-			name: "selected_segment_gloss_sets_segment_id_locale_pk",
+			columns: [table.wordId, table.locale],
+			name: "selected_word_glosses_word_id_locale_pk",
 		}),
-		uniqueIndex("selected_segment_gloss_sets_gloss_set_id_key").on(
-			table.glossSetId,
-		),
+		uniqueIndex("selected_word_glosses_gloss_id_key").on(table.glossId),
 		foreignKey({
-			columns: [table.glossSetId, table.segmentId, table.locale],
-			foreignColumns: [
-				segmentGlossSets.id,
-				segmentGlossSets.segmentId,
-				segmentGlossSets.locale,
-			],
-			name: "selected_segment_gloss_sets_gloss_segment_locale_fkey",
+			columns: [table.glossId, table.wordId, table.locale],
+			foreignColumns: [wordGlosses.id, wordGlosses.wordId, wordGlosses.locale],
+			name: "selected_word_glosses_gloss_word_locale_fkey",
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
 		foreignKey({
 			columns: [table.selectedByUserId],
 			foreignColumns: [users.id],
-			name: "selected_segment_gloss_sets_selected_by_user_id_fkey",
+			name: "selected_word_glosses_selected_by_user_id_fkey",
 		})
 			.onUpdate("cascade")
 			.onDelete("set null"),
 	],
 );
 
-export const segmentGlossUnitVotes = sqliteTable(
-	"segment_gloss_unit_votes",
+export const wordGlossVotes = sqliteTable(
+	"word_gloss_votes",
 	{
-		glossUnitId: integer("gloss_unit_id").notNull(),
+		glossId: integer("gloss_id").notNull(),
 		userId: text("user_id").notNull(),
 		isUpvote: integer("is_upvote", { mode: "boolean" }).notNull(),
 		createdAt: integer("created_at", { mode: "timestamp_ms" })
@@ -459,23 +456,23 @@ export const segmentGlossUnitVotes = sqliteTable(
 			.notNull(),
 	},
 	(table) => [
-		index("segment_gloss_unit_votes_gloss_unit_id_idx").on(table.glossUnitId),
-		uniqueIndex("segment_gloss_unit_votes_gloss_unit_id_user_id_key").on(
-			table.glossUnitId,
+		index("word_gloss_votes_gloss_id_idx").on(table.glossId),
+		uniqueIndex("word_gloss_votes_gloss_id_user_id_key").on(
+			table.glossId,
 			table.userId,
 		),
-		index("segment_gloss_unit_votes_user_id_idx").on(table.userId),
+		index("word_gloss_votes_user_id_idx").on(table.userId),
 		foreignKey({
-			columns: [table.glossUnitId],
-			foreignColumns: [segmentGlossUnits.id],
-			name: "segment_gloss_unit_votes_gloss_unit_id_fkey",
+			columns: [table.glossId],
+			foreignColumns: [wordGlosses.id],
+			name: "word_gloss_votes_gloss_id_fkey",
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
 		foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
-			name: "segment_gloss_unit_votes_user_id_fkey",
+			name: "word_gloss_votes_user_id_fkey",
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),

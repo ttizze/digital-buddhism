@@ -1,14 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
+	deleteWordGloss,
 	getSegmentGlosses,
-	patchSegmentGlossVote,
+	patchWordGlossVote,
+	postWordGloss,
 } from "@/app/api/segment-glosses/handler";
 
 export const Route = createFileRoute("/api/segment-glosses")({
 	server: {
 		handlers: {
 			GET: ({ request }) => getSegmentGlosses(request),
-			PATCH: ({ request }) => patchSegmentGlossVote(request),
+			POST: ({ request }) => postWordGloss(request),
+			PATCH: ({ request }) => patchWordGlossVote(request),
+			DELETE: ({ request }) => deleteWordGloss(request),
 		},
 	},
 });

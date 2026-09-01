@@ -37,30 +37,24 @@ export type NewSelectedSegmentTranslation = Insertable<
 	DB["selectedSegmentTranslations"]
 >;
 
-// SegmentGlossSet
-export type SegmentGlossSet = Selectable<DB["segmentGlossSets"]>;
-export type NewSegmentGlossSet = Insertable<DB["segmentGlossSets"]>;
-export type SegmentGlossSetUpdate = Updateable<DB["segmentGlossSets"]>;
+// SegmentWord
+export type SegmentWord = Selectable<DB["segmentWords"]>;
+export type NewSegmentWord = Insertable<DB["segmentWords"]>;
+export type SegmentWordUpdate = Updateable<DB["segmentWords"]>;
 
-// SegmentGlossUnit
-export type SegmentGlossUnit = Selectable<DB["segmentGlossUnits"]>;
-export type NewSegmentGlossUnit = Insertable<DB["segmentGlossUnits"]>;
-export type SegmentGlossUnitUpdate = Updateable<DB["segmentGlossUnits"]>;
+// WordGloss
+export type WordGloss = Selectable<DB["wordGlosses"]>;
+export type NewWordGloss = Insertable<DB["wordGlosses"]>;
+export type WordGlossUpdate = Updateable<DB["wordGlosses"]>;
 
-// SelectedSegmentGlossSet
-export type SelectedSegmentGlossSet = Selectable<
-	DB["selectedSegmentGlossSets"]
->;
-export type NewSelectedSegmentGlossSet = Insertable<
-	DB["selectedSegmentGlossSets"]
->;
+// SelectedWordGloss
+export type SelectedWordGloss = Selectable<DB["selectedWordGlosses"]>;
+export type NewSelectedWordGloss = Insertable<DB["selectedWordGlosses"]>;
 
-// SegmentGlossUnitVote
-export type SegmentGlossUnitVote = Selectable<DB["segmentGlossUnitVotes"]>;
-export type NewSegmentGlossUnitVote = Insertable<DB["segmentGlossUnitVotes"]>;
-export type SegmentGlossUnitVoteUpdate = Updateable<
-	DB["segmentGlossUnitVotes"]
->;
+// WordGlossVote
+export type WordGlossVote = Selectable<DB["wordGlossVotes"]>;
+export type NewWordGlossVote = Insertable<DB["wordGlossVotes"]>;
+export type WordGlossVoteUpdate = Updateable<DB["wordGlossVotes"]>;
 
 // TranslationVote
 export type TranslationVote = Selectable<DB["translationVotes"]>;

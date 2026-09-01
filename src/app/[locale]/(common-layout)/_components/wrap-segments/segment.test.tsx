@@ -1,6 +1,4 @@
 import { render } from "@testing-library/react";
-import { vi } from "vitest";
-import { SegmentGlossVoteProvider } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/segment-glosses/vote-context";
 import type { SegmentForDetail, TitleSegment } from "@/app/[locale]/types";
 import { SegmentElement } from "./segment";
 
@@ -101,7 +99,7 @@ describe("SegmentElement", () => {
 			id: 10,
 			text: "Karaṇīyam atthakusalena",
 			translationText: "なすべきこと",
-			glossUnits: [
+			words: [
 				{
 					id: 101,
 					segmentId: 10,
@@ -109,19 +107,26 @@ describe("SegmentElement", () => {
 					startOffset: 0,
 					endOffset: 9,
 					surface: "Karaṇīyam",
-					gloss: "なすべきこと",
-					point: 3,
-					currentUserVoteIsUpvote: null,
+					gloss: {
+						id: 201,
+						wordId: 101,
+						locale: "ja",
+						text: "なすべきこと",
+						point: 3,
+						createdAt: "2026-01-01T00:00:00.000Z",
+						userName: "語義投稿者",
+						userHandle: "gloss-author",
+						currentUserVoteIsUpvote: null,
+						isSelected: false,
+					},
 				},
 			],
 		});
 
 		const { container } = render(
-			<SegmentGlossVoteProvider locale="ja" mutate={vi.fn()}>
-				<SegmentElement segment={segment}>
-					<strong>Karaṇīyam</strong> atthakusalena
-				</SegmentElement>
-			</SegmentGlossVoteProvider>,
+			<SegmentElement segment={segment}>
+				<strong>Karaṇīyam</strong> atthakusalena
+			</SegmentElement>,
 		);
 
 		const source = container.querySelector(".seg-src");
@@ -130,7 +135,7 @@ describe("SegmentElement", () => {
 		expect(source?.querySelector("strong button ruby rt")).toHaveTextContent(
 			"なすべきこと",
 		);
-		expect(source?.querySelector("[data-gloss-unit-id='101']")).not.toBeNull();
+		expect(source?.querySelector("[data-word-id='101']")).not.toBeNull();
 		expect(container.querySelector(".seg-tr")).toHaveTextContent(
 			"なすべきこと",
 		);
@@ -139,7 +144,7 @@ describe("SegmentElement", () => {
 	test("語義のオフセットが原文と一致しない場合は原文を変更しない", () => {
 		const segment = makeDetailSegment({
 			text: "Karaṇīyam",
-			glossUnits: [
+			words: [
 				{
 					id: 101,
 					segmentId: 1,
@@ -147,9 +152,18 @@ describe("SegmentElement", () => {
 					startOffset: 0,
 					endOffset: 4,
 					surface: "wrong",
-					gloss: "誤り",
-					point: 0,
-					currentUserVoteIsUpvote: null,
+					gloss: {
+						id: 201,
+						wordId: 101,
+						locale: "ja",
+						text: "誤り",
+						point: 0,
+						createdAt: "2026-01-01T00:00:00.000Z",
+						userName: "語義投稿者",
+						userHandle: "gloss-author",
+						currentUserVoteIsUpvote: null,
+						isSelected: false,
+					},
 				},
 			],
 		});
@@ -159,6 +173,6 @@ describe("SegmentElement", () => {
 		);
 
 		expect(container.querySelector(".seg-src")).toHaveTextContent("Karaṇīyam");
-		expect(container.querySelector("[data-gloss-unit-id]")).toBeNull();
+		expect(container.querySelector("[data-word-id]")).toBeNull();
 	});
 });

@@ -3,13 +3,21 @@
 import { useLocation } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { AddAndVoteWordGlosses } from "./segment-glosses/add-and-vote-word-glosses.client";
 import { AddAndVoteTranslations } from "./translation-section/add-and-vote-translations.client";
 
-type ActiveState = {
-	segmentId: number;
-	rootEl: HTMLElement;
-	translationEl: HTMLElement;
-};
+type ActiveState =
+	| {
+			kind: "segment";
+			segmentId: number;
+			rootEl: HTMLElement;
+			translationEl: HTMLElement;
+	  }
+	| {
+			kind: "word";
+			wordId: number;
+			rootEl: HTMLElement;
+	  };
 
 /** Portal用rootを.seg-trの直後に確保（既存があれば再利用） */
 function ensureFormRoot(afterEl: Element): HTMLElement {
@@ -56,8 +64,13 @@ function getSegmentEl(target: EventTarget | null): HTMLElement | null {
 	return el;
 }
 
+function getWordEl(target: EventTarget | null): HTMLElement | null {
+	if (!(target instanceof Element)) return null;
+	return target.closest("[data-word-id]") as HTMLElement | null;
+}
+
 /**
- * クリックした訳文の段だけ「投票/追加フォーム」を出すためのクライアント側ブリッジ。
+ * クリックした訳文または単語訳だけ「投票/追加フォーム」を出すクライアント側ブリッジ。
  *
  * 仕組み:
  * - document.body に1本だけ click リスナーを付ける（イベント委譲）
@@ -78,7 +91,10 @@ export function TranslationFormOnClick() {
 			if (!Number.isFinite(segId)) return;
 
 			// 同じセグメントをクリック → 閉じる
-			if (stateRef.current?.segmentId === segId) {
+			if (
+				stateRef.current?.kind === "segment" &&
+				stateRef.current.segmentId === segId
+			) {
 				stateRef.current = null;
 				setActiveState(null);
 				return;
@@ -88,7 +104,33 @@ export function TranslationFormOnClick() {
 			if (!translationBlock) return;
 
 			const rootEl = ensureFormRoot(translationBlock);
-			const nextState = { segmentId: segId, rootEl, translationEl: el };
+			const nextState = {
+				kind: "segment" as const,
+				segmentId: segId,
+				rootEl,
+				translationEl: el,
+			};
+			stateRef.current = nextState;
+			setActiveState(nextState);
+		};
+
+		const toggleWord = (el: HTMLElement) => {
+			const wordId = Number(el.dataset.wordId);
+			if (!Number.isFinite(wordId)) return;
+
+			if (
+				stateRef.current?.kind === "word" &&
+				stateRef.current.wordId === wordId
+			) {
+				stateRef.current = null;
+				setActiveState(null);
+				return;
+			}
+
+			const sourceBlock = el.closest(".seg-src");
+			if (!sourceBlock) return;
+			const rootEl = ensureFormRoot(sourceBlock);
+			const nextState = { kind: "word" as const, wordId, rootEl };
 			stateRef.current = nextState;
 			setActiveState(nextState);
 		};
@@ -101,6 +143,11 @@ export function TranslationFormOnClick() {
 			if (hadSelectionOnPointerDown || hasSelection()) return;
 			if (!isClickOnText(e)) return;
 
+			const wordEl = getWordEl(e.target);
+			if (wordEl) {
+				toggleWord(wordEl);
+				return;
+			}
 			const el = getSegmentEl(e.target);
 			if (el) toggleSegment(el);
 		};
@@ -135,11 +182,15 @@ export function TranslationFormOnClick() {
 	if (!activeState) return null;
 
 	return createPortal(
-		<AddAndVoteTranslations
-			open
-			segmentId={activeState.segmentId}
-			translationElement={activeState.translationEl}
-		/>,
+		activeState.kind === "segment" ? (
+			<AddAndVoteTranslations
+				open
+				segmentId={activeState.segmentId}
+				translationElement={activeState.translationEl}
+			/>
+		) : (
+			<AddAndVoteWordGlosses open wordId={activeState.wordId} />
+		),
 		activeState.rootEl,
 	);
 }

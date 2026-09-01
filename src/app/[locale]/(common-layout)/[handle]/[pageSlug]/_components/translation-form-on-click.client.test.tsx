@@ -35,7 +35,43 @@ vi.mock("./translation-section/add-and-vote-translations.client", () => ({
 	),
 }));
 
+vi.mock("./segment-glosses/add-and-vote-word-glosses.client", () => ({
+	AddAndVoteWordGlosses: ({ wordId }: { wordId: number }) => (
+		<span data-testid="word-translation-ui">word:{wordId}</span>
+	),
+}));
+
 describe("TranslationFormOnClick", () => {
+	test("単語訳のクリックで原文直後・通常訳文の前へUIを開く", async () => {
+		const user = userEvent.setup();
+		const { container } = render(
+			<>
+				<div className="seg-src">
+					<button data-word-id="456" type="button">
+						word
+					</button>
+				</div>
+				<div className="seg-tr">translation</div>
+				<TranslationFormOnClick />
+			</>,
+		);
+
+		await user.click(screen.getByText("word"));
+
+		expect(screen.getByTestId("word-translation-ui")).toHaveTextContent(
+			"word:456",
+		);
+		expect(screen.queryByRole("dialog")).toBeNull();
+		const sourceBlock = container.querySelector(".seg-src");
+		expect(sourceBlock?.nextElementSibling).toHaveAttribute(
+			"data-tr-form-root",
+			"1",
+		);
+		expect(sourceBlock?.nextElementSibling?.nextElementSibling).toHaveClass(
+			"seg-tr",
+		);
+	});
+
 	test("data-segment-id のクリックで、その段のUIだけが開く（イベント委譲）", async () => {
 		const user = userEvent.setup();
 		const { container } = render(

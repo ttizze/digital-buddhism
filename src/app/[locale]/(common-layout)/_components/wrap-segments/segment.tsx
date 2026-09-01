@@ -25,12 +25,8 @@ function SegmentPair({
 	const hasTr = segment.translationText != null;
 	const sourceChildren = children ?? sanitizeAndParseText(segment.text ?? "");
 	const renderedSource =
-		segment.glossUnits && segment.glossUnits.length > 0
-			? renderGlossedChildren(
-					sourceChildren,
-					segment.text ?? "",
-					segment.glossUnits,
-				)
+		segment.words && segment.words.length > 0
+			? renderGlossedChildren(sourceChildren, segment.text ?? "", segment.words)
 			: sourceChildren;
 
 	return (
