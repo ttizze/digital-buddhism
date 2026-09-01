@@ -28,7 +28,7 @@ nix develop
    `http://127.0.0.1:18080` and persists it under
    `.data/digital-buddshim.sqld`. DB, import, read-model commands, and the local
    Worker share that database. Local commands reject file and external URLs.
-   The Cloudflare Vite plugin runs the Worker in workerd/Miniflare. KV and Queue
+	 The Cloudflare Vite plugin runs the local Worker runtime. KV and Queue
    use the bindings in `wrangler.jsonc`; their local state is persisted under
    `.wrangler/state`.
 4. Open `http://localhost:3000`

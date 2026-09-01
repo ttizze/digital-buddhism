@@ -60,7 +60,7 @@ Digital Buddhism は、Tipiṭakaの原文・翻訳・注釈を配信するCloud
   `.data/digital-buddshim.sqld`をDB・import・read model・ローカルWorker間で共有する
 - テストはテスト単位の一時`file:` SQLite DBを使う
 - 本番はTursoの共有DBを使い、ローカルテストやCIから本番DBへ接続しない
-- ローカルWorkerはCloudflare Vite pluginのworkerd/Miniflareで動かし、KV・Queue・
+- ローカルWorkerはCloudflare Vite pluginのローカルruntimeで動かし、KV・Queue・
   Images・R2は`wrangler.jsonc`と同じbinding名・APIを使う
 
 取得・更新ロジックは、利用するルートに近い `_db` または `db` 配下に置きます。

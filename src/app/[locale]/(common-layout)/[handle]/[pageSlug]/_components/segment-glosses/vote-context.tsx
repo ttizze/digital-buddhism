@@ -4,8 +4,8 @@ import { createContext, type ReactNode, useContext, useState } from "react";
 import type { KeyedMutator } from "swr";
 import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form";
 import {
+	parseSegmentGlossVoteResponse,
 	type SegmentGlossUnit,
-	segmentGlossVoteResponseSchema,
 } from "@/app/api/segment-glosses/_domain/segment-glosses";
 
 type GlossVoteContextValue = {
@@ -45,7 +45,7 @@ export function SegmentGlossVoteProvider({
 			});
 			if (!response?.ok) return;
 
-			const body = segmentGlossVoteResponseSchema.parse(await response.json());
+			const body = parseSegmentGlossVoteResponse(await response.json());
 			await mutate(
 				(current) =>
 					current?.map((unit) =>

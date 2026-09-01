@@ -1,7 +1,7 @@
 # DB の初期化
 
 ローカル開発では、`.data/digital-buddshim.sqld`をDB・import・read model・
-workerd/Miniflare間で共有します。`db:with-local`がNix管理の`sqld`を起動し、
+Cloudflare Vite pluginのローカルWorker間で共有します。`db:with-local`がNix管理の`sqld`を起動し、
 Turso用のチェックイン済みマイグレーションを適用してから各コマンドを
 起動します。Docker/PostgreSQLは不要です。
 

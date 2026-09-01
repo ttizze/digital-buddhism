@@ -1,18 +1,24 @@
-import { z } from "zod";
+import * as v from "valibot";
 
-const createdAtSchema = z.union([z.string(), z.date()]);
+const createdAtSchema = v.union([v.string(), v.date()]);
 
-export const segmentTranslationSchema = z.object({
-	id: z.number(),
-	segmentId: z.number(),
-	locale: z.string(),
-	text: z.string(),
-	point: z.number(),
+const segmentTranslationSchema = v.object({
+	id: v.number(),
+	segmentId: v.number(),
+	locale: v.string(),
+	text: v.string(),
+	point: v.number(),
 	createdAt: createdAtSchema,
-	userName: z.string(),
-	userHandle: z.string(),
-	currentUserVoteIsUpvote: z.boolean().nullable(),
-	isSelected: z.boolean(),
+	userName: v.string(),
+	userHandle: v.string(),
+	currentUserVoteIsUpvote: v.nullable(v.boolean()),
+	isSelected: v.boolean(),
 });
 
-export type SegmentTranslation = z.infer<typeof segmentTranslationSchema>;
+const segmentTranslationsSchema = v.array(segmentTranslationSchema);
+
+export type SegmentTranslation = v.InferOutput<typeof segmentTranslationSchema>;
+
+export function parseSegmentTranslations(input: unknown): SegmentTranslation[] {
+	return v.parse(segmentTranslationsSchema, input);
+}

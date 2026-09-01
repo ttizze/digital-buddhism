@@ -1,6 +1,7 @@
 import useSWR from "swr";
 import {
 	isTranslationJobTerminalStatus,
+	parseTranslationJobsForToast,
 	type TranslationJobForToast,
 } from "@/app/types/translation-job";
 
@@ -9,7 +10,7 @@ const fetcher = async (url: string): Promise<TranslationJobForToast[]> => {
 	if (!response.ok) {
 		throw new Error(`Failed to fetch translation jobs: ${response.status}`);
 	}
-	return response.json();
+	return parseTranslationJobsForToast(await response.json());
 };
 const isTerminalJob = (job: TranslationJobForToast) =>
 	isTranslationJobTerminalStatus(job.status);

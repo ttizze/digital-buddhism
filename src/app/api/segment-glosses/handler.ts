@@ -1,23 +1,34 @@
-import { z } from "zod";
+import * as v from "valibot";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
 import { PRIVATE_RESPONSE_HEADERS } from "@/app/api/_utils/private-response-headers";
 import { withAuthedFormData } from "@/app/api/_utils/with-authed-form-data";
 import { db } from "@/db";
 import { handleGlossUnitVote } from "./_db/mutation.server";
-import { segmentGlossUnitSchema } from "./_domain/segment-glosses";
+import { parseSegmentGlossUnits } from "./_domain/segment-glosses";
 
-const getSchema = z.object({
-	pageId: z.coerce.number().int().positive(),
-	locale: z.string().min(1),
+const positiveIntegerFromString = v.pipe(
+	v.string(),
+	v.toNumber(),
+	v.integer(),
+	v.minValue(1),
+);
+
+const getSchema = v.object({
+	pageId: positiveIntegerFromString,
+	locale: v.pipe(v.string(), v.minLength(1)),
 });
 
-const patchSchema = z.object({
-	glossUnitId: z.coerce.number().int().positive(),
-	isUpvote: z.enum(["true", "false"]).transform((value) => value === "true"),
+const patchSchema = v.object({
+	glossUnitId: positiveIntegerFromString,
+	isUpvote: v.pipe(
+		v.picklist(["true", "false"]),
+		v.transform((value) => value === "true"),
+	),
 });
 
 export async function getSegmentGlosses(request: Request): Promise<Response> {
-	const validation = getSchema.safeParse(
+	const validation = v.safeParse(
+		getSchema,
 		Object.fromEntries(new URL(request.url).searchParams),
 	);
 	if (!validation.success) {
@@ -25,7 +36,7 @@ export async function getSegmentGlosses(request: Request): Promise<Response> {
 	}
 
 	const currentUser = await getCurrentUserFromHeaders(request.headers);
-	const { pageId, locale } = validation.data;
+	const { pageId, locale } = validation.output;
 
 	try {
 		const glossUnits = await db
@@ -60,7 +71,7 @@ export async function getSegmentGlosses(request: Request): Promise<Response> {
 			.orderBy("unit.position")
 			.execute();
 
-		return Response.json(segmentGlossUnitSchema.array().parse(glossUnits), {
+		return Response.json(parseSegmentGlossUnits(glossUnits), {
 			headers: PRIVATE_RESPONSE_HEADERS,
 		});
 	} catch (error) {

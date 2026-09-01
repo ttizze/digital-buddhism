@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import type * as v from "valibot";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
 import { parseFormData } from "@/app/[locale]/_utils/parse-form-data";
 import { isSameOriginRequest } from "./is-same-origin-request";
@@ -9,14 +9,14 @@ type CurrentUser = NonNullable<
 
 /**
  * フォーム変更系APIの共通前処理:
- * same-origin 確認 → 認証 → formData 取得 → zod 検証。
- * 失敗時は統一エラー形式 { error, zodErrors? } のレスポンスを返す。
+ * same-origin 確認 → 認証 → formData 取得 → Valibot 検証。
+ * 失敗時は統一エラー形式 { error, validationErrors? } のレスポンスを返す。
  */
-export async function withAuthedFormData<Schema extends z.ZodType>(
+export async function withAuthedFormData<Schema extends v.GenericSchema>(
 	request: Request,
 	schema: Schema,
 	handler: (
-		data: z.infer<Schema>,
+		data: v.InferOutput<Schema>,
 		currentUser: CurrentUser,
 	) => Promise<Response>,
 ): Promise<Response> {
@@ -36,12 +36,12 @@ export async function withAuthedFormData<Schema extends z.ZodType>(
 		return Response.json({ error: "Invalid form data" }, { status: 400 });
 	}
 
-	const parsed = await parseFormData(schema, formData);
+	const parsed = parseFormData(schema, formData);
 	if (!parsed.success) {
 		return Response.json(
 			{
 				error: "Invalid form data",
-				zodErrors: parsed.error.flatten().fieldErrors,
+				validationErrors: parsed.validationErrors,
 			},
 			{ status: 400 },
 		);

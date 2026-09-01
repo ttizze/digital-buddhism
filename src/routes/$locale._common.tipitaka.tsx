@@ -5,6 +5,7 @@ import { TipitakaPageList } from "@/app/[locale]/(common-layout)/_components/tip
 import { getIndexData } from "./$locale/-index-data";
 
 export const Route = createFileRoute("/$locale/_common/tipitaka")({
+	staleTime: 60_000,
 	loader: async ({ params }) => {
 		const data = await getIndexData({ data: { locale: params.locale } });
 

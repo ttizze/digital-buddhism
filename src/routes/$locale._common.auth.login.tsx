@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
+import * as v from "valibot";
 import { LoginDialog } from "@/app/[locale]/(common-layout)/_components/login/_components/login-dialog";
 import { getLoginData } from "./$locale/-login-data";
 
-const loginSearch = z.object({
-	next: z.string().optional().catch(undefined),
+const loginSearch = v.object({
+	next: v.fallback(v.optional(v.string()), undefined),
 });
 
 export const Route = createFileRoute("/$locale/_common/auth/login")({

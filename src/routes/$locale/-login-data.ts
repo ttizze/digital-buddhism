@@ -4,14 +4,13 @@ import {
 	getRequestHeaders,
 	setResponseHeader,
 } from "@tanstack/react-start/server";
-import { z } from "zod";
-import { supportedLocaleOptions } from "@/app/_constants/locale";
+import * as v from "valibot";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
+import { supportedLocaleSchema } from "./-supported-locale-schema";
 
-const locales = supportedLocaleOptions.map((option) => option.code);
-const loginInput = z.object({
-	locale: z.string().refine((locale) => locales.includes(locale)),
-	next: z.string().optional(),
+const loginInput = v.object({
+	locale: supportedLocaleSchema,
+	next: v.optional(v.string()),
 });
 
 export const getLoginData = createServerFn({ method: "GET" })

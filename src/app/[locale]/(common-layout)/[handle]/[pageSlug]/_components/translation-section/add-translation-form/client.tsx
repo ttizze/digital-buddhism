@@ -55,7 +55,8 @@ export function AddTranslationForm({
 				setAddTranslationState({
 					success: false,
 					message: body.message ?? body.error,
-					zodErrors: "zodErrors" in body ? body.zodErrors : undefined,
+					validationErrors:
+						"validationErrors" in body ? body.validationErrors : undefined,
 				});
 				return;
 			}
@@ -93,9 +94,9 @@ export function AddTranslationForm({
 				</span>
 				<span className="space-x-2 flex justify-end items-center">
 					{!addTranslationState.success &&
-						addTranslationState.zodErrors?.text && (
+						addTranslationState.validationErrors?.text && (
 							<p className="text-red-500 text-sm">
-								{addTranslationState.zodErrors.text}
+								{addTranslationState.validationErrors.text}
 							</p>
 						)}
 					{!addTranslationState.success && addTranslationState.message && (

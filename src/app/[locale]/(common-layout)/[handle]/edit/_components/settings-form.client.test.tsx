@@ -27,7 +27,7 @@ describe("SettingsForm", () => {
 		vi.clearAllMocks();
 		updateProfileMock.mockResolvedValue({
 			success: false,
-			zodErrors: { handle: ["このハンドルは使用できません"] },
+			validationErrors: { handle: ["このハンドルは使用できません"] },
 		});
 	});
 

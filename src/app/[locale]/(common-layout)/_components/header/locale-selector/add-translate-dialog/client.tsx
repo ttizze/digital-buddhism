@@ -129,21 +129,23 @@ export function AddTranslateDialog({
 						{translateState.message && (
 							<p className="text-red-500">{translateState.message}</p>
 						)}
-						{!translateState.success && translateState.zodErrors?.pageSlug && (
-							<p className="text-red-500">
-								{translateState.zodErrors.pageSlug[0]}
-							</p>
-						)}
-
-						{!translateState.success && translateState.zodErrors?.aiModel && (
-							<p className="text-red-500">
-								{translateState.zodErrors.aiModel[0]}
-							</p>
-						)}
 						{!translateState.success &&
-							translateState.zodErrors?.targetLocale && (
+							translateState.validationErrors?.pageSlug && (
 								<p className="text-red-500">
-									{translateState.zodErrors.targetLocale[0]}
+									{translateState.validationErrors.pageSlug[0]}
+								</p>
+							)}
+
+						{!translateState.success &&
+							translateState.validationErrors?.aiModel && (
+								<p className="text-red-500">
+									{translateState.validationErrors.aiModel[0]}
+								</p>
+							)}
+						{!translateState.success &&
+							translateState.validationErrors?.targetLocale && (
+								<p className="text-red-500">
+									{translateState.validationErrors.targetLocale[0]}
 								</p>
 							)}
 					</>

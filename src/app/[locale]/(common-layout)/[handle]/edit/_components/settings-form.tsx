@@ -112,9 +112,9 @@ export function SettingsForm({ currentUser, locale }: SettingsFormProps) {
 											required
 										/>
 									</div>
-									{!editState.success && editState.zodErrors?.handle && (
+									{!editState.success && editState.validationErrors?.handle && (
 										<p className="text-red-500 text-sm">
-											{editState.zodErrors.handle}
+											{editState.validationErrors.handle}
 										</p>
 									)}
 								</div>

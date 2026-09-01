@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as v from "valibot";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
 import { addTranslationService } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-section/add-translation-form/service/add-translation.server";
 import {
@@ -9,30 +9,41 @@ import { PRIVATE_RESPONSE_HEADERS } from "@/app/api/_utils/private-response-head
 import { withAuthedFormData } from "@/app/api/_utils/with-authed-form-data";
 import { db } from "@/db";
 import { deleteOwnTranslation } from "./_db/mutations.server";
-import { segmentTranslationSchema } from "./_domain/segment-translations";
+import { parseSegmentTranslations } from "./_domain/segment-translations";
 
-const getSchema = z.object({
-	segmentId: z.coerce.number().int().positive(),
-	userLocale: z.string().min(1),
+const positiveIntegerFromString = v.pipe(
+	v.string(),
+	v.toNumber(),
+	v.integer(),
+	v.minValue(1),
+);
+
+const getSchema = v.object({
+	segmentId: positiveIntegerFromString,
+	userLocale: v.pipe(v.string(), v.minLength(1)),
 });
 
-const postSchema = z.object({
-	locale: z.string().min(1),
-	segmentId: z.coerce.number().int().positive(),
-	text: z
-		.string()
-		.min(1, "Translation cannot be empty")
-		.max(30000, "Translation is too long")
-		.transform((val) => val.trim()),
+const postSchema = v.object({
+	locale: v.pipe(v.string(), v.minLength(1)),
+	segmentId: positiveIntegerFromString,
+	text: v.pipe(
+		v.string(),
+		v.trim(),
+		v.minLength(1, "Translation cannot be empty"),
+		v.maxLength(30000, "Translation is too long"),
+	),
 });
 
-const patchSchema = z.object({
-	segmentTranslationId: z.coerce.number().int().positive(),
-	isUpvote: z.enum(["true", "false"]).transform((value) => value === "true"),
+const patchSchema = v.object({
+	segmentTranslationId: positiveIntegerFromString,
+	isUpvote: v.pipe(
+		v.picklist(["true", "false"]),
+		v.transform((value) => value === "true"),
+	),
 });
 
-const deleteSchema = z.object({
-	translationId: z.coerce.number().int().positive(),
+const deleteSchema = v.object({
+	translationId: positiveIntegerFromString,
 });
 
 async function listSegmentTranslations(
@@ -75,7 +86,7 @@ async function listSegmentTranslations(
 		.orderBy("st.id", "desc")
 		.execute();
 
-	return segmentTranslationSchema.array().parse(
+	return parseSegmentTranslations(
 		translations.map(({ selectedTranslationId, ...translation }) => ({
 			...translation,
 			isSelected: selectedTranslationId !== null,
@@ -86,7 +97,8 @@ async function listSegmentTranslations(
 export async function getSegmentTranslations(
 	request: Request,
 ): Promise<Response> {
-	const validation = getSchema.safeParse(
+	const validation = v.safeParse(
+		getSchema,
 		Object.fromEntries(new URL(request.url).searchParams),
 	);
 
@@ -94,7 +106,7 @@ export async function getSegmentTranslations(
 		return Response.json({ error: "Invalid parameters" }, { status: 400 });
 	}
 
-	const { segmentId, userLocale } = validation.data;
+	const { segmentId, userLocale } = validation.output;
 	const currentUser = await getCurrentUserFromHeaders(request.headers);
 
 	try {

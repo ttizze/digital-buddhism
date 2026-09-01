@@ -30,7 +30,7 @@ describe("ProfileForm", () => {
 		vi.clearAllMocks();
 		updateProfileMock.mockResolvedValue({
 			success: false,
-			zodErrors: { name: ["名前が短すぎます"] },
+			validationErrors: { name: ["名前が短すぎます"] },
 		});
 	});
 

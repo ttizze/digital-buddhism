@@ -34,6 +34,7 @@
 		"title": "翻訳ジョブ"
 	},
 	"Notifications": {
+		"label": "通知",
 		"empty": "通知はありません",
 		"vote": "<actor>{actorName}</actor>さんが<page>{pageTitle}</page>の<segment>{segmentText}</segment>に投票しました"
 	},

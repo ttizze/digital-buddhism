@@ -4,6 +4,7 @@ import { Check, ChevronDown } from "lucide-react";
 import { startTransition, useState } from "react";
 import useSWR from "swr";
 import { useLocale, useTranslations } from "use-intl";
+import * as v from "valibot";
 import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +21,6 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import type { TranslationJob } from "@/db/types.helpers";
 import type { TranslationProofStatus } from "@/drizzle/types";
 import { cn } from "@/lib/utils";
 import { AddTranslateDialog } from "./add-translate-dialog/client";
@@ -29,14 +29,25 @@ import { TextStatusGuide } from "./component/translation-status-guide.client";
 import { buildLocaleOptions } from "./domain/build-locale-options";
 
 // Local types
-interface TranslationInfo {
-	sourceLocale: string;
-	translationJobs: TranslationJob[];
-	translationProofs: {
-		locale: string;
-		translationProofStatus: TranslationProofStatus;
-	}[];
-}
+const proofStatusValues = [
+	"MACHINE_DRAFT",
+	"HUMAN_TOUCHED",
+	"PROOFREAD",
+	"VALIDATED",
+] as const satisfies readonly TranslationProofStatus[];
+
+const translationInfoSchema = v.object({
+	sourceLocale: v.string(),
+	translatedLocales: v.array(v.string()),
+	translationProofs: v.array(
+		v.object({
+			locale: v.string(),
+			translationProofStatus: v.picklist(proofStatusValues),
+		}),
+	),
+});
+
+type TranslationInfo = v.InferOutput<typeof translationInfoSchema>;
 
 // Helpers
 const buildSlugKey = ({ pageSlug }: { pageSlug?: string }) =>
@@ -47,7 +58,7 @@ const fetchTranslation: (url: string) => Promise<TranslationInfo> = async (
 ) => {
 	const res = await fetch(url, { cache: "no-store" });
 	if (!res.ok) throw new Error(`HTTP ${res.status}`);
-	return res.json();
+	return v.parse(translationInfoSchema, await res.json());
 };
 
 // Props
@@ -99,7 +110,7 @@ export function LocaleSelector({
 
 	const { data } = useSWR(apiUrl, fetchTranslation);
 
-	const { sourceLocale, translationJobs, translationProofs } = data ?? {};
+	const { sourceLocale, translatedLocales, translationProofs } = data ?? {};
 
 	// Build a map of locale => proof status using Kysely enum values directly
 	const proofStatusMap = Object.fromEntries(
@@ -111,7 +122,7 @@ export function LocaleSelector({
 
 	const localeOptionWithStatus = buildLocaleOptions({
 		sourceLocale,
-		existLocales: translationJobs?.map((job) => job.locale) ?? [],
+		existLocales: translatedLocales ?? [],
 		supported: supportedLocaleOptions,
 		proofStatusMap,
 	});
