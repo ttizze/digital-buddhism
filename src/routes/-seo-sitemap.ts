@@ -10,7 +10,7 @@ import {
 
 const CHUNK = 1_000;
 
-export const SITEMAP_REVALIDATE = 3600;
+const SITEMAP_REVALIDATE = 3600;
 
 export async function getSitemapChunkCount() {
 	const total = await countPublicPages();

@@ -1,141 +1,16 @@
 /**
- * Drizzle ORM型定義ヘルパー
+ * Drizzle スキーマ由来の enum / JSON 型定義
  *
- * PrismaからDrizzleへの移行時に、型定義を統一するためのヘルパー
- * InferSelectModel: SELECT結果の型
- * InferInsertModel: INSERT用の型
+ * テーブル行の型は kysely-codegen の `@/db/types` / `@/db/types.helpers` を使うこと。
+ * ここにはスキーマの enum 値から導出する型と、JSON カラム用の型だけを置く。
  */
-import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import type { db } from "./index";
 import type * as schema from "./schema";
-
-// トランザクションクライアント型（dbから推論）
-export type TransactionClient = Parameters<
-	Parameters<typeof db.transaction>[0]
->[0];
-
-// テーブル型のエクスポート
-export type User = InferSelectModel<typeof schema.users>;
-export type UserInsert = InferInsertModel<typeof schema.users>;
-
-export type TipitakaPage = InferSelectModel<typeof schema.tipitakaPages>;
-export type TipitakaPageInsert = InferInsertModel<typeof schema.tipitakaPages>;
-
-export type Segment = InferSelectModel<typeof schema.segments>;
-export type SegmentInsert = InferInsertModel<typeof schema.segments>;
-
-export type SegmentTranslation = InferSelectModel<
-	typeof schema.segmentTranslations
->;
-export type SegmentTranslationInsert = InferInsertModel<
-	typeof schema.segmentTranslations
->;
-
-export type Notification = InferSelectModel<typeof schema.notifications>;
-export type NotificationInsert = InferInsertModel<typeof schema.notifications>;
-
-export type TranslationVote = InferSelectModel<typeof schema.translationVotes>;
-export type TranslationVoteInsert = InferInsertModel<
-	typeof schema.translationVotes
->;
-
-export type TranslationJob = InferSelectModel<typeof schema.translationJobs>;
-export type TranslationJobInsert = InferInsertModel<
-	typeof schema.translationJobs
->;
-
-export type PageLocaleTranslationProof = InferSelectModel<
-	typeof schema.pageLocaleTranslationProofs
->;
-export type PageLocaleTranslationProofInsert = InferInsertModel<
-	typeof schema.pageLocaleTranslationProofs
->;
-
-export type Account = InferSelectModel<typeof schema.accounts>;
-export type AccountInsert = InferInsertModel<typeof schema.accounts>;
-
-export type Session = InferSelectModel<typeof schema.sessions>;
-export type SessionInsert = InferInsertModel<typeof schema.sessions>;
-
-export type UserSetting = InferSelectModel<typeof schema.userSettings>;
-export type UserSettingInsert = InferInsertModel<typeof schema.userSettings>;
-
-export type GeminiApiKey = InferSelectModel<typeof schema.geminiApiKeys>;
-export type GeminiApiKeyInsert = InferInsertModel<typeof schema.geminiApiKeys>;
-
-export type SelectedSegmentTranslation = InferSelectModel<
-	typeof schema.selectedSegmentTranslations
->;
-export type SelectedSegmentTranslationInsert = InferInsertModel<
-	typeof schema.selectedSegmentTranslations
->;
-
-export type SegmentGlossSet = InferSelectModel<typeof schema.segmentGlossSets>;
-export type SegmentGlossSetInsert = InferInsertModel<
-	typeof schema.segmentGlossSets
->;
-
-export type SegmentGlossUnit = InferSelectModel<
-	typeof schema.segmentGlossUnits
->;
-export type SegmentGlossUnitInsert = InferInsertModel<
-	typeof schema.segmentGlossUnits
->;
-
-export type SelectedSegmentGlossSet = InferSelectModel<
-	typeof schema.selectedSegmentGlossSets
->;
-export type SelectedSegmentGlossSetInsert = InferInsertModel<
-	typeof schema.selectedSegmentGlossSets
->;
-
-export type SegmentGlossUnitVote = InferSelectModel<
-	typeof schema.segmentGlossUnitVotes
->;
-export type SegmentGlossUnitVoteInsert = InferInsertModel<
-	typeof schema.segmentGlossUnitVotes
->;
-
-export type SegmentMetadata = InferSelectModel<typeof schema.segmentMetadata>;
-export type SegmentMetadataInsert = InferInsertModel<
-	typeof schema.segmentMetadata
->;
-
-export type SegmentMetadataType = InferSelectModel<
-	typeof schema.segmentMetadataTypes
->;
-export type SegmentMetadataTypeInsert = InferInsertModel<
-	typeof schema.segmentMetadataTypes
->;
-
-export type SegmentAnnotationLink = InferSelectModel<
-	typeof schema.segmentAnnotationLinks
->;
-export type SegmentAnnotationLinkInsert = InferInsertModel<
-	typeof schema.segmentAnnotationLinks
->;
-export type TipitakaPageAnnotationTarget = InferSelectModel<
-	typeof schema.tipitakaPageAnnotationTargets
->;
-export type TipitakaPageAnnotationTargetInsert = InferInsertModel<
-	typeof schema.tipitakaPageAnnotationTargets
->;
-
-export type ImportRun = InferSelectModel<typeof schema.importRuns>;
-export type ImportRunInsert = InferInsertModel<typeof schema.importRuns>;
-
-export type ImportFile = InferSelectModel<typeof schema.importFiles>;
-export type ImportFileInsert = InferInsertModel<typeof schema.importFiles>;
-
-export type Verification = InferSelectModel<typeof schema.verifications>;
-export type VerificationInsert = InferInsertModel<typeof schema.verifications>;
 
 export type ImportFileStatus =
 	(typeof schema.importFileStatus.enumValues)[number];
 export type ImportRunStatus =
 	(typeof schema.importRunStatus.enumValues)[number];
 
-// Enum型のエクスポート
 export type TipitakaTextLevel =
 	(typeof schema.tipitakaTextLevel.enumValues)[number];
 export type TranslationProofStatus =
@@ -147,4 +22,3 @@ export type JsonPrimitive = boolean | null | number | string;
 export type JsonArray = JsonValue[];
 export type JsonObject = { [key: string]: JsonValue | undefined };
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
-export type Json = JsonValue;

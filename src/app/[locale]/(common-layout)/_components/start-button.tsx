@@ -1,6 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { useHydrated } from "@/app/_hooks/use-hydrated";
 import { authClient } from "@/app/[locale]/_service/auth-client";
 import { Button } from "@/components/ui/button";
@@ -9,15 +8,9 @@ import { LoginDialog } from "./login/_components/login-dialog";
 
 interface StartButtonProps {
 	className?: string;
-	text?: string;
-	icon?: ReactNode;
 }
 
-export function StartButton({
-	className,
-	text = "Start",
-	icon,
-}: StartButtonProps) {
+export function StartButton({ className }: StartButtonProps) {
 	const hydrated = useHydrated();
 	const { data: session } = authClient.useSession();
 	const isLoggedIn = hydrated && !!session;
@@ -42,9 +35,8 @@ export function StartButton({
 					variant="default"
 				>
 					<div className="flex items-center gap-2">
-						{icon}
 						<span className="sr-only">login and start</span>
-						{text}
+						Start
 					</div>
 				</Button>
 			}

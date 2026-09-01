@@ -29,7 +29,7 @@ type AddTranslateDialogProps = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	currentHandle: string | undefined;
-	pageSlug?: string;
+	pageSlug: string;
 	userPlan: string;
 };
 
@@ -41,10 +41,6 @@ export function AddTranslateDialog({
 	userPlan,
 }: AddTranslateDialogProps) {
 	const currentLocale = useLocale();
-	if (pageSlug) {
-	} else {
-		throw new Error("pageSlug is required");
-	}
 	const translateActionFn = useServerFn(translateAction);
 	const [translateState, action, isTranslating] = useActionState<
 		TranslateActionState,

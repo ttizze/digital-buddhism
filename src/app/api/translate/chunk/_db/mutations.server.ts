@@ -7,7 +7,7 @@ import type {
 
 const TRANSLATION_CHUNK_LEASE_MS = 15 * 60 * 1000;
 
-export type TranslationChunkClaim =
+type TranslationChunkClaim =
 	| { status: "claimed" }
 	| { status: "completed" }
 	| { status: "busy"; retryAfterSeconds: number };

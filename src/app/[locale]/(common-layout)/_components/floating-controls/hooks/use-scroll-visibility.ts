@@ -5,14 +5,12 @@ import { subscribeScrollY } from "@/app/[locale]/(common-layout)/_components/hea
 /**
  * 読み込み時に表示 → 下スクロールで非表示 → 上スクロールで再表示
  */
-export function useScrollVisibility(alwaysVisible = false) {
+export function useScrollVisibility() {
 	const [isVisible, setVisible] = useState(true); // ① 初期表示
 
 	const lastY = useRef(0); // 前回の scrollY
-	const ticking = useRef(false); // rAF 同期用
 	const ignore = useRef(false); // クリック直後無視
 	const visibleRef = useRef(true);
-	const latestY = useRef(0);
 
 	/**
 	 * ボタン押下直後はスクロールイベントが同フレームで発火しやすく、
@@ -27,38 +25,22 @@ export function useScrollVisibility(alwaysVisible = false) {
 	};
 
 	useEffect(() => {
-		if (alwaysVisible) {
-			setVisible(true);
-			return;
-		}
+		// scroll-y-store が rAF でバッチ済みの値を届けるため、ここでは間引かない
+		return subscribeScrollY((scrollY) => {
+			if (ignore.current) return;
 
-		const apply = (cur: number) => {
-			const dir = cur - lastY.current; // +down / –up
+			const dir = scrollY - lastY.current; // +down / –up
 			// ② 上スクロール or 最上部近くなら表示
-			const next = dir <= 0 || cur < window.innerHeight * 0.03;
+			const next = dir <= 0 || scrollY < window.innerHeight * 0.03;
 
 			if (next !== visibleRef.current) {
 				visibleRef.current = next;
 				setVisible(next);
 			}
 
-			lastY.current = cur;
-		};
-
-		const unsubscribe = subscribeScrollY((scrollY) => {
-			if (ignore.current) return;
-			latestY.current = scrollY;
-			if (ticking.current) return;
-
-			ticking.current = true;
-			requestAnimationFrame(() => {
-				ticking.current = false;
-				apply(latestY.current);
-			});
+			lastY.current = scrollY;
 		});
-
-		return () => unsubscribe();
-	}, [alwaysVisible]);
+	}, []);
 
 	return { isVisible, ignoreNextScroll };
 }
