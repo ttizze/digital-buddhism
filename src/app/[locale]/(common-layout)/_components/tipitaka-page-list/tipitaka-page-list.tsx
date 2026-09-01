@@ -30,7 +30,7 @@ function TipitakaTreeList({
 	nodes: readonly TipitakaPageTreeNode[];
 }) {
 	return (
-		<ul className="flex flex-col divide-y">
+		<ul className="flex flex-col">
 			{nodes.map((node) => (
 				<li className="py-3 first:pt-0 last:pb-0" key={node.id}>
 					<Link

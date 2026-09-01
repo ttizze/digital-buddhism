@@ -30,7 +30,7 @@ describe("SubHeader", () => {
 		vi.clearAllMocks();
 	});
 
-	test("Tipitakaと更新日が表示される", () => {
+	test("ユーザー名と更新日を表示せずダウンロードを表示する", () => {
 		render(
 			<NuqsTestingAdapter>
 				<IntlProvider locale="en">
@@ -43,8 +43,11 @@ describe("SubHeader", () => {
 			</NuqsTestingAdapter>,
 		);
 
-		expect(screen.getByText("Tipitaka")).toBeInTheDocument();
-		expect(screen.getByText("1/1/2023")).toBeInTheDocument();
+		expect(screen.queryByText("Tipitaka")).not.toBeInTheDocument();
+		expect(screen.queryByText("1/1/2023")).not.toBeInTheDocument();
+		expect(
+			screen.getByRole("button", { name: "Export markdown" }),
+		).toBeInTheDocument();
 	});
 
 	test("TOCが空のときボタンが表示されない", () => {
