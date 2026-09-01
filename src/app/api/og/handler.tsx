@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
 import { ImageResponse } from "@cloudflare/pages-plugin-vercel-og/api";
-import { fetchPageDetail } from "@/app/[locale]/_db/fetch-page-detail.server";
+import { queryPageDetail } from "@/app/[locale]/_db/queries";
 
 const OG_CACHE_CONTROL =
 	"public, max-age=0, s-maxage=86400, stale-while-revalidate=604800";
@@ -24,7 +24,7 @@ export async function getOgImage(request: Request): Promise<Response> {
 	const { searchParams } = new URL(request.url);
 	const locale = searchParams.get("locale") || "en";
 	const slug = searchParams.get("slug") || "";
-	const pageDetail = await fetchPageDetail(slug, locale);
+	const pageDetail = await queryPageDetail(slug, locale);
 
 	if (!pageDetail) {
 		const response = new ImageResponse(

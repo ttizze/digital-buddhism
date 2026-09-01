@@ -2,8 +2,10 @@ import {
 	createTranslationJob,
 	failActiveTranslationJobs,
 } from "@/app/[locale]/_db/mutations.server";
-import { fetchPageIdBySlug } from "@/app/[locale]/_db/page-utility-queries.server";
-import { hasSegmentsForPageId } from "@/app/[locale]/_db/segment-exists.server";
+import {
+	fetchPageIdBySlug,
+	hasSegmentsForPageId,
+} from "@/app/[locale]/_db/queries";
 import { enqueueTranslationMessage } from "@/app/[locale]/_infrastructure/translation-queue/context.server";
 import type { TranslationJobForToast } from "@/app/types/translation-job";
 import { fetchAnnotationPageIdsForPage } from "../db/queries.server";

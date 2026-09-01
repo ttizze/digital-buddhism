@@ -303,14 +303,16 @@ export class TursoValueCodecPlugin implements KyselyPlugin {
 	}: PluginTransformResultArgs): Promise<QueryResult<UnknownRow>> {
 		return {
 			...result,
+			// 行側のキーだけを走査し、変換対象が無い行はそのまま返す
 			rows: result.rows.map((row) => {
-				const decoded: UnknownRow = { ...row };
-				for (const [column, codec] of resultCodecs) {
-					if (column in decoded) {
-						decoded[column] = decodeValue(codec, decoded[column], column);
-					}
+				let decoded: UnknownRow | undefined;
+				for (const [column, value] of Object.entries(row)) {
+					const codec = resultCodecs.get(column);
+					if (!codec) continue;
+					decoded ??= { ...row };
+					decoded[column] = decodeValue(codec, value, column);
 				}
-				return decoded;
+				return decoded ?? row;
 			}),
 		};
 	}

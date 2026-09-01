@@ -1,4 +1,5 @@
 import { BASE_URL } from "@/app/_constants/base-url";
+import { fetchUserByHandle } from "@/app/_db/queries.server";
 import { createTranslationJob as createTranslationJobDb } from "@/app/[locale]/_db/mutations.server";
 import { db } from "@/db";
 
@@ -37,15 +38,6 @@ type CreateTranslationJobParams = {
 	userId?: string;
 	pageId: number;
 };
-
-async function fetchUserByHandle(handle: string) {
-	const user = await db
-		.selectFrom("users")
-		.selectAll()
-		.where("handle", "=", handle)
-		.executeTakeFirst();
-	return user ?? null;
-}
 
 async function createTranslationJob(params: CreateTranslationJobParams) {
 	return createTranslationJobDb({

@@ -160,3 +160,22 @@ export async function queryPageDetail(
 		updatedAt: page.updatedAt,
 	};
 }
+
+export async function fetchPageIdBySlug(slug: string) {
+	return (
+		(await db
+			.selectFrom("tipitakaPages")
+			.select("id")
+			.where("slug", "=", slug)
+			.executeTakeFirst()) ?? null
+	);
+}
+
+export async function hasSegmentsForPageId(pageId: number): Promise<boolean> {
+	const segment = await db
+		.selectFrom("segments")
+		.select("id")
+		.where("tipitakaPageId", "=", pageId)
+		.executeTakeFirst();
+	return Boolean(segment);
+}

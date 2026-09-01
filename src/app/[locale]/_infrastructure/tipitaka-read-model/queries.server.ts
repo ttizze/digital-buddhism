@@ -52,36 +52,47 @@ export async function queryTranslationPageLocales(): Promise<
 		.execute();
 }
 
+/**
+ * bestTranslationTextSubquery（相関サブクエリ版）と同じランキングのページ一括版:
+ * 採用訳 → 得票 → 新しさ → id。変更する場合は両方を揃えること
+ * （乖離は best-translation-subquery.server.integration.test.ts の一致テストが検知する）。
+ */
 export async function queryBestTranslationTextsForPage(
 	pageId: number,
 	locale: string,
 ): Promise<Record<string, string>> {
 	const rows = await db
-		.selectFrom("segmentTranslations as candidate")
-		.innerJoin("segments", "segments.id", "candidate.segmentId")
-		.leftJoin("selectedSegmentTranslations as selected", (join) =>
+		.selectFrom("segmentTranslations as candidateTranslation")
+		.innerJoin("segments", "segments.id", "candidateTranslation.segmentId")
+		.leftJoin("selectedSegmentTranslations as selectedTranslation", (join) =>
 			join
-				.onRef("selected.translationId", "=", "candidate.id")
-				.onRef("selected.segmentId", "=", "candidate.segmentId")
-				.onRef("selected.locale", "=", "candidate.locale"),
+				.onRef(
+					"selectedTranslation.translationId",
+					"=",
+					"candidateTranslation.id",
+				)
+				.onRef(
+					"selectedTranslation.segmentId",
+					"=",
+					"candidateTranslation.segmentId",
+				)
+				.onRef(
+					"selectedTranslation.locale",
+					"=",
+					"candidateTranslation.locale",
+				),
 		)
-		.select([
-			"candidate.id",
-			"candidate.segmentId",
-			"candidate.text",
-			"candidate.point",
-			"candidate.createdAt",
-			"selected.translationId as selectedTranslationId",
-		])
+		.select(["candidateTranslation.segmentId", "candidateTranslation.text"])
 		.where("segments.tipitakaPageId", "=", pageId)
-		.where("candidate.locale", "=", locale)
-		.orderBy("candidate.segmentId")
-		.orderBy("selected.translationId", (order) => order.desc().nullsLast())
-		.orderBy("candidate.point", "desc")
-		.orderBy("candidate.createdAt", "desc")
-		.orderBy("candidate.id", "desc")
+		.where("candidateTranslation.locale", "=", locale)
+		.orderBy("candidateTranslation.segmentId")
+		.orderBy("selectedTranslation.translationId", (ob) => ob.desc().nullsLast())
+		.orderBy("candidateTranslation.point", "desc")
+		.orderBy("candidateTranslation.createdAt", "desc")
+		.orderBy("candidateTranslation.id", "desc")
 		.execute();
 
+	// セグメントごとに最初の行（=ベスト訳）を採用する
 	const translations: Record<string, string> = {};
 	for (const row of rows) {
 		const key = String(row.segmentId);

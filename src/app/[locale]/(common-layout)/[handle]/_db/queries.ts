@@ -1,13 +1,4 @@
-import { sql } from "kysely";
 import { db } from "@/db";
-
-export async function fetchUserByHandle(handle: string) {
-	return db
-		.selectFrom("users")
-		.select(["id", "handle", "name", "image", "profile", "twitterHandle"])
-		.where("handle", "=", handle)
-		.executeTakeFirst();
-}
 
 export type UserTranslationContribution = {
 	id: number;
@@ -57,7 +48,7 @@ export async function fetchUserTranslationContributions({
 			.execute(),
 		db
 			.selectFrom("segmentTranslations")
-			.select(sql<number>`count(*)`.as("count"))
+			.select((eb) => eb.fn.countAll<number>().as("count"))
 			.where("userId", "=", userId)
 			.executeTakeFirst(),
 	]);
