@@ -1,11 +1,29 @@
 "use client";
 
+import { lazy, Suspense } from "react";
 import { authClient } from "@/app/[locale]/_service/auth-client";
-import { StartButton } from "../start-button";
-import { LocaleSelector } from "./locale-selector/client";
-import { NotificationsDropdownClient } from "./notifications-dropdown/client";
 import { HeaderUserControlsLoading } from "./user-controls-loading";
-import { UserMenu } from "./user-menu.client";
+
+const StartButton = lazy(() =>
+	import("../start-button").then((module) => ({
+		default: module.StartButton,
+	})),
+);
+const LocaleSelector = lazy(() =>
+	import("./locale-selector/client").then((module) => ({
+		default: module.LocaleSelector,
+	})),
+);
+const NotificationsDropdownClient = lazy(() =>
+	import("./notifications-dropdown/client").then((module) => ({
+		default: module.NotificationsDropdownClient,
+	})),
+);
+const UserMenu = lazy(() =>
+	import("./user-menu.client").then((module) => ({
+		default: module.UserMenu,
+	})),
+);
 
 export function HeaderUserControls({ locale }: { locale: string }) {
 	const { data: session, isPending } = authClient.useSession();
@@ -13,19 +31,23 @@ export function HeaderUserControls({ locale }: { locale: string }) {
 
 	if (isPending) return <HeaderUserControlsLoading />;
 
-	return !currentUser ? (
-		<>
-			<LocaleSelector
-				currentHandle={undefined}
-				localeSelectorClassName="border rounded-full w-[150px]"
-				userPlan="free"
-			/>
-			<StartButton />
-		</>
-	) : (
-		<>
-			<NotificationsDropdownClient locale={locale} />
-			<UserMenu currentUser={currentUser} locale={locale} />
-		</>
+	return (
+		<Suspense fallback={<HeaderUserControlsLoading />}>
+			{!currentUser ? (
+				<>
+					<LocaleSelector
+						currentHandle={undefined}
+						localeSelectorClassName="border rounded-full w-[150px]"
+						userPlan="free"
+					/>
+					<StartButton />
+				</>
+			) : (
+				<>
+					<NotificationsDropdownClient locale={locale} />
+					<UserMenu currentUser={currentUser} locale={locale} />
+				</>
+			)}
+		</Suspense>
 	);
 }

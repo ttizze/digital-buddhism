@@ -1,10 +1,5 @@
 import { env } from "cloudflare:workers";
-import {
-	ClientOnly,
-	createFileRoute,
-	notFound,
-	Outlet,
-} from "@tanstack/react-router";
+import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/tanstack-router";
@@ -17,7 +12,8 @@ import {
 	DEFAULT_MESSAGE_LOCALE,
 	type MessageLocale,
 } from "@/app/_constants/message-locales";
-import { AnalyticsConsent } from "@/app/[locale]/_components/analytics-consent.client";
+import { AnalyticsConsent } from "@/app/[locale]/_components/analytics-consent";
+import { analyticsConsentStorageKey } from "@/app/[locale]/_components/analytics-consent-storage";
 import { Toaster } from "@/components/ui/sonner";
 import enMessages from "../../messages/en.json";
 import esMessages from "../../messages/es.json";
@@ -34,6 +30,7 @@ const messages: Record<MessageLocale, typeof enMessages> = {
 	ko: koMessages,
 	zh: zhMessages,
 };
+const analyticsConsentBootstrapScript = `try{const consent=localStorage.getItem(${JSON.stringify(analyticsConsentStorageKey)});if(consent==="accepted"||consent==="rejected")document.documentElement.dataset.analyticsConsent=consent}catch{}`;
 
 const loadLocaleRuntimeData = createServerFn({ method: "GET" }).handler(() => ({
 	authProviders: resolveAuthProviderAvailability(env),
@@ -80,13 +77,12 @@ function LocaleShell() {
 				<NuqsAdapter>
 					<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 						<LocalePreference locale={locale} />
-						<ClientOnly fallback={null}>
-							<AnalyticsConsent
-								gaTrackingId={gaTrackingId}
-								locale={locale}
-								message={localeMessages.CookieConsent}
-							/>
-						</ClientOnly>
+						<script>{analyticsConsentBootstrapScript}</script>
+						<AnalyticsConsent
+							gaTrackingId={gaTrackingId}
+							locale={locale}
+							message={localeMessages.CookieConsent}
+						/>
 						<Outlet />
 						<Toaster closeButton richColors />
 					</ThemeProvider>

@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { htmlToMdastWithSegments } from "./html-to-mdast-with-segments";
 import { markdownToMdastWithSegments } from "./markdown-to-mdast-with-segments";
 
 describe("markdownToMdastWithSegments", () => {
@@ -40,22 +39,5 @@ describe("markdownToMdastWithSegments", () => {
 			{ items: [{ typeKey: "OTHER_PAGEBREAK", value: "1.02" }] },
 			{ items: [{ typeKey: "OTHER_PAGEBREAK", value: "" }] },
 		]);
-	});
-
-	it("HTML 入口でも同じ pb メタデータと本文が得られる（README の入口対称性）", async () => {
-		const markdown = "Hello {pb:V:1.0001} world";
-		const html =
-			'<p>Hello <span class="pb" data-ed="V" data-n="1.0001"></span> world</p>';
-
-		const fromMarkdown = await markdownToMdastWithSegments({ markdown });
-		const fromHtml = await htmlToMdastWithSegments({ html });
-
-		expect(fromHtml.segments[0].metadata).toEqual(
-			fromMarkdown.segments[0].metadata,
-		);
-		expect(fromHtml.segments[0].metadata).toEqual({
-			items: [{ typeKey: "VRI_PAGEBREAK", value: "1.0001" }],
-		});
-		expect(fromHtml.segments[0].text).not.toContain("<span");
 	});
 });

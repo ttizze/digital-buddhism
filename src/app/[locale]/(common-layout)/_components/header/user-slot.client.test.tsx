@@ -41,7 +41,7 @@ describe("HeaderUserControls", () => {
 		expect(container.querySelectorAll(".animate-pulse")).toHaveLength(2);
 	});
 
-	it("認証済みなら通知とユーザーメニューを表示する", () => {
+	it("認証済みなら通知とユーザーメニューを表示する", async () => {
 		useSessionMock.mockReturnValue({
 			data: { user: {} },
 			isPending: false,
@@ -49,16 +49,18 @@ describe("HeaderUserControls", () => {
 
 		render(<HeaderUserControls locale="ja" />);
 
-		expect(screen.getByRole("button", { name: "Notifications" })).toBeVisible();
+		expect(
+			await screen.findByRole("button", { name: "Notifications" }),
+		).toBeVisible();
 		expect(screen.getByRole("button", { name: "User menu" })).toBeVisible();
 	});
 
-	it("未認証なら言語選択と開始ボタンを表示する", () => {
+	it("未認証なら言語選択と開始ボタンを表示する", async () => {
 		useSessionMock.mockReturnValue({ data: null, isPending: false });
 
 		render(<HeaderUserControls locale="ja" />);
 
-		expect(screen.getByRole("button", { name: "Locale" })).toBeVisible();
+		expect(await screen.findByRole("button", { name: "Locale" })).toBeVisible();
 		expect(screen.getByRole("button", { name: "Start" })).toBeVisible();
 	});
 });

@@ -1,10 +1,9 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	AnalyticsConsent,
-	analyticsConsentStorageKey,
-} from "./analytics-consent.client";
+import { AnalyticsConsent } from "./analytics-consent";
+import { analyticsConsentStorageKey } from "./analytics-consent-storage";
 
 vi.mock("@tanstack/react-router", () => ({
 	Link: ({ children }: { children: React.ReactNode }) => (
@@ -30,6 +29,15 @@ describe("AnalyticsConsent", () => {
 
 	beforeEach(() => {
 		window.localStorage.clear();
+	});
+
+	it("初回表示のバナーをSSR HTMLへ含める", () => {
+		const markup = renderToStaticMarkup(
+			<AnalyticsConsent gaTrackingId="" locale="en" message={message} />,
+		);
+
+		expect(markup).toContain("data-analytics-consent-banner");
+		expect(markup).toContain(message.title);
 	});
 
 	it("同意未選択ならバナーを表示し、GAタグを読み込まない", async () => {

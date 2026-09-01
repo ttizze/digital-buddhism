@@ -1,10 +1,8 @@
-"use client";
-
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { analyticsConsentStorageKey } from "./analytics-consent-storage";
 
-export const analyticsConsentStorageKey = "digital-buddhism.analytics-consent";
 const analyticsConsentStates = ["accepted", "rejected"] as const;
 type AnalyticsConsentState = (typeof analyticsConsentStates)[number];
 
@@ -23,9 +21,7 @@ export function AnalyticsConsent({
 		privacyLink: string;
 	};
 }) {
-	const [consent, setConsent] = useState<
-		AnalyticsConsentState | null | undefined
-	>(undefined);
+	const [consent, setConsent] = useState<AnalyticsConsentState | null>(null);
 
 	useEffect(() => {
 		const saved = window.localStorage.getItem(analyticsConsentStorageKey);
@@ -62,14 +58,13 @@ export function AnalyticsConsent({
 		setConsent("rejected");
 	};
 
-	if (consent === undefined) {
-		return null;
-	}
-
 	return (
 		<>
 			{consent === null && (
-				<div className="fixed inset-x-3 bottom-3 z-50 sm:inset-x-auto sm:right-3 sm:w-[420px] md:bottom-5 md:right-5">
+				<div
+					className="fixed inset-x-3 bottom-3 z-50 sm:inset-x-auto sm:right-3 sm:w-[420px] md:bottom-5 md:right-5"
+					data-analytics-consent-banner
+				>
 					<section
 						aria-label={message.title}
 						className="rounded-xl border bg-background/95 p-4 shadow-lg backdrop-blur"

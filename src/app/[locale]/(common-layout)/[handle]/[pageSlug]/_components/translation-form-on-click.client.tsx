@@ -1,9 +1,14 @@
 "use client";
 
 import { useLocation } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { AddAndVoteTranslations } from "./translation-section/add-and-vote-translations.client";
+
+const AddAndVoteTranslations = lazy(() =>
+	import("./translation-section/add-and-vote-translations.client").then(
+		(module) => ({ default: module.AddAndVoteTranslations }),
+	),
+);
 
 type ActiveState = {
 	segmentId: number;
@@ -135,11 +140,13 @@ export function TranslationFormOnClick() {
 	if (!activeState) return null;
 
 	return createPortal(
-		<AddAndVoteTranslations
-			open
-			segmentId={activeState.segmentId}
-			translationElement={activeState.translationEl}
-		/>,
+		<Suspense fallback={null}>
+			<AddAndVoteTranslations
+				open
+				segmentId={activeState.segmentId}
+				translationElement={activeState.translationEl}
+			/>
+		</Suspense>,
 		activeState.rootEl,
 	);
 }

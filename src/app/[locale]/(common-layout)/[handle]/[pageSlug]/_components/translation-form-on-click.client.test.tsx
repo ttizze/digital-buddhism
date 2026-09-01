@@ -49,7 +49,7 @@ describe("TranslationFormOnClick", () => {
 
 		await user.click(screen.getByText("open"));
 
-		expect(screen.getByTestId("tr-ui")).toHaveTextContent("segment:123");
+		expect(await screen.findByTestId("tr-ui")).toHaveTextContent("segment:123");
 
 		const block = container.querySelector(".seg-tr");
 		expect(block).not.toBeNull();

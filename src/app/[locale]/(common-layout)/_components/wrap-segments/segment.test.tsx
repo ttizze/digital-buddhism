@@ -64,6 +64,26 @@ describe("SegmentElement", () => {
 		expect(container).toHaveTextContent("translation");
 	});
 
+	test("ユーザー翻訳はHTMLとして解釈せず、改行を保持する", () => {
+		const { container } = render(
+			<SegmentElement
+				segment={makeDetailSegment({
+					translationText: "<strong>translation</strong>\nsecond line",
+				})}
+			/>,
+		);
+
+		const translation = container.querySelector(".seg-tr");
+		expect(translation).toHaveTextContent(
+			"<strong>translation</strong> second line",
+		);
+		expect(translation?.textContent).toBe(
+			"<strong>translation</strong>\nsecond line",
+		);
+		expect(translation).toHaveClass("whitespace-pre-wrap");
+		expect(translation?.querySelector("strong")).toBeNull();
+	});
+
 	test("注釈を持つとき、注釈は data-annotation-type 付きで描画される", () => {
 		const { container } = render(
 			<SegmentElement
