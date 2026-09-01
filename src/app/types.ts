@@ -1,11 +1,13 @@
-import type { ZodFlattenedError } from "zod";
-
 export type { SanitizedUser } from "@/db/types.helpers";
+
+export type ValidationErrors<U = Record<string, unknown>> = Partial<
+	Record<Extract<keyof U, string>, string[]>
+>;
 
 type Failure<U = Record<string, unknown>> = {
 	success: false;
 	message?: string;
-	zodErrors?: ZodFlattenedError<U>["fieldErrors"];
+	validationErrors?: ValidationErrors<U>;
 };
 
 type Success<T = undefined> = {

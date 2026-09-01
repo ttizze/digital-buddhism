@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { PageList } from "@/app/[locale]/(common-layout)/_components/page/page-list";
 import { PaginationBar } from "@/app/[locale]/(common-layout)/_components/pagination-bar";
 import type { PageForList } from "@/app/[locale]/types";
@@ -39,12 +40,15 @@ export function SearchResults({
 									key={usr.handle}
 								>
 									<div className="flex-1">
-										<a href={`/${locale}/${usr.handle}`}>
+										<Link
+											params={{ handle: usr.handle, locale }}
+											to="/$locale/$handle"
+										>
 											<h3 className="text-xl font-bold">{usr.name}</h3>
 											<span className="text-gray-500 text-sm">
 												@{usr.handle}
 											</span>
-										</a>
+										</Link>
 									</div>
 								</div>
 							))}

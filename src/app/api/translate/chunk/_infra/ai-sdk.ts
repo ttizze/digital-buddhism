@@ -1,23 +1,25 @@
 import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createOpenAI } from "@ai-sdk/openai";
+import { valibotSchema } from "@ai-sdk/valibot";
 import { generateObject, type LanguageModel } from "ai";
-import { z } from "zod";
+import * as v from "valibot";
 import { createServerLogger } from "@/app/_service/logger.server";
 import { generateTranslationPrompt } from "./generate-translation-prompt";
 
 const logger = createServerLogger("ai-sdk-translation");
 
-const translationElementSchema = z.object({
-	number: z.number(),
-	text: z.string(),
+const translationElementSchema = v.object({
+	number: v.number(),
+	text: v.string(),
 });
 
 // OpenAI APIはrootがobjectである必要がある
-const objectTranslationSchema = z.object({
-	translations: z.array(translationElementSchema),
+const objectTranslationSchema = v.object({
+	translations: v.array(translationElementSchema),
 });
 // DeepSeekは配列を直接返す
-const arrayTranslationSchema = z.array(translationElementSchema);
+const arrayTranslationSchema = v.array(translationElementSchema);
+type TranslationElement = v.InferOutput<typeof translationElementSchema>;
 
 export interface AiSdkModelRequestParams {
 	apiKey: string;
@@ -50,7 +52,9 @@ export function getDeepSeekModelResponse(params: AiSdkModelRequestParams) {
 	});
 }
 
-async function generateTranslationResponse<T>({
+async function generateTranslationResponse<
+	const TSchema extends v.GenericSchema,
+>({
 	params,
 	model,
 	provider,
@@ -60,8 +64,8 @@ async function generateTranslationResponse<T>({
 	params: AiSdkModelRequestParams;
 	model: LanguageModel;
 	provider: string;
-	schema: z.ZodType<T>;
-	unwrap: (object: T) => z.infer<typeof arrayTranslationSchema>;
+	schema: TSchema;
+	unwrap: (object: v.InferOutput<TSchema>) => TranslationElement[];
 }) {
 	// 入力JSON行数をカウント
 	const inputLineCount = params.sourceText.split("\n").length;
@@ -70,7 +74,7 @@ async function generateTranslationResponse<T>({
 		const { object } = await generateObject({
 			model,
 			maxRetries: 0,
-			schema,
+			schema: valibotSchema(schema),
 			schemaName: "TranslationResponse",
 			schemaDescription:
 				"Array of translated text segments with their original numbers",

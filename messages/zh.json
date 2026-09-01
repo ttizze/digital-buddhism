@@ -34,6 +34,7 @@
 		"title": "翻译任务"
 	},
 	"Notifications": {
+		"label": "通知",
 		"empty": "暂无通知",
 		"vote": "<actor>{actorName}</actor> 在 <page>{pageTitle}</page> 上为 <segment>{segmentText}</segment> 点了赞"
 	},

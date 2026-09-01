@@ -54,11 +54,11 @@
 ### AI 翻訳/ジョブ
 - 翻訳ジョブを作成し、進捗とステータスを管理する
 - ステータス: `PENDING` / `IN_PROGRESS` / `COMPLETED` / `FAILED`
-- 翻訳処理は Qstash を経由して実行する
-- 完了時は対象ページを revalidate する
+- 翻訳処理は `TRANSLATION_QUEUE` Cloudflare Queue を経由して実行する
+- 翻訳による変更はDB triggerでread model projection jobへ積み、KVへ反映する
 
 ### ファイルアップロード
-- 画像等のアップロードは R2 binding（開発は Miniflare）に保存する
+- 画像等のアップロードは R2 binding に保存する
 
 ### ユーザー/プロフィール
 - handle、名前、アイコン、プロフィール等を保持する
@@ -79,12 +79,12 @@
 - 返金・チャージバックの一次対応は Polar の標準フローに従う
 
 ## 画面・ルート（代表）
-- `/[locale]`: ティピタカの階層一覧
+- `/[locale]`: `/[locale]/tipitaka` へリダイレクト
+- `/[locale]/tipitaka`: ティピタカの階層一覧
+- `/[locale]/tipitaka/[pageSlug]`: ページ詳細
 - `/[locale]/search`: 検索（title/content/user）
 - `/[locale]/[handle]`: ユーザーページ
-- `/[locale]/[handle]/[pageSlug]`: ページ詳細
-- `/[locale]/[handle]/[pageSlug]/preview`: プレビュー
-- `/[locale]/[handle]/page-management`: ページ管理
+- `/[locale]/[handle]/edit`: プロフィール編集
 - `/[locale]/auth/login`: ログイン
 - `/[locale]/terms` / `/[locale]/privacy` / `/[locale]/maintenance`
 
@@ -101,11 +101,11 @@
 - ログインが必要な機能は認証済みユーザーのみ
 
 ## i18n/ロケール
-- ルートは `src/app/[locale]` を基点とする
+- ルート境界は `src/routes/$locale*`、機能実装は `src/app/[locale]` を基点とする
 - 翻訳はロケール単位で取得・表示する
 
 ## 生成/SEO/配信
-- `force-static` を基本とし、必要に応じて ISR を使う
+- 公開TipiṭakaルートはKV read modelを読み、HTTP CDN cacheとRouter loader cacheを使う
 - `robots.txt` / `sitemap.xml` を提供する
 - OG 画像生成 API を持つ
 
@@ -116,13 +116,14 @@
 - 選択中の語義セットはセグメント + ロケールで一意
 
 ## 必須条件（実装前提）
-- **静的生成を最優先**: ルート全体を dynamic にしない
-- `layout` / `provider` では `useSearchParams` / `useQueryState` を使わない
-- URL 同期は必要最小の Client Component に限定する
-- `useSearchParams` / `useQueryState` を使う場合は、使用箇所の直近に `Suspense` を置く
+- **公開データはcache可能にする**: ユーザー固有データを公開cacheへ混ぜない
+- `layout` / `provider` では `useQueryState` を使わない
+- 検索条件の読取とloader依存はTanStack Routerの型付きsearch paramsを使う
+- URLへの書込は必要最小の操作コンポーネントに限定する
 
 ## 表示モード同期（view）
-- `view` の URL 同期は UI 操作コンポーネント（例: `ViewCycle`）に限定する
+- `view` のURLへの書込はUI操作コンポーネント（例: `ViewCycle`）に限定する
+- 共通routeは`view`を検証してSSR時の`data-view`へ反映する
 - provider は状態共有のみを担当し、副作用（URL/クッキー同期）を持たせない
 
 ## 運用ルール
@@ -165,6 +166,6 @@
 - 「Webhook 受信で plan が premium/free に切り替わる」
 
 ## 測り方（確認方法）
-- `next build` の出力でルートが不要に dynamic 化されていないこと
-- `bun run typecheck` / `bun run biome` が通ること
+- `bun run build` のclient/server出力とchunk警告を確認すること
+- `bun run typecheck` / `bun x biome ci .` が通ること
 - 変更した画面・ルートで最低限の手動動作確認を行うこと

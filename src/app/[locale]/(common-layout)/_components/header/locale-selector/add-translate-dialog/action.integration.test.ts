@@ -32,20 +32,22 @@ describe("translateAction", () => {
 		await resetDatabase();
 	});
 
-	it("無効な入力データが渡された場合、バリデーションエラーを返す", async () => {
+	it("pageSlugを含む必須入力が欠けた場合、バリデーションエラーを返す", async () => {
 		// Arrange: 実際のユーザーを作成し、認証をモック（セッション管理は外部システム）
 		const user = await createUser();
 		vi.mocked(getCurrentUser).mockResolvedValue(toSessionUser(user));
 
 		const invalidFormData = new FormData();
-		// aiModelとtargetLocaleが必須だが、空文字列を送信
+		invalidFormData.append("aiModel", "gemini-pro");
+		invalidFormData.append("targetLocale", "ja");
 
 		// Act
 		const result = await executeTranslateAction(invalidFormData);
 
 		// Assert: バリデーションエラーが返される
 		expect(result.success).toBe(false);
-		expect(!result.success && result.zodErrors).toBeDefined();
+		expect(!result.success && result.validationErrors).toBeDefined();
+		expect(enqueueTranslationMessage).not.toHaveBeenCalled();
 	});
 
 	it("認証されていないユーザーがアクセスした場合、リダイレクトされる", async () => {

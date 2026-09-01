@@ -8,10 +8,10 @@ export function notifyEditState(state: ProfileEditState): void {
 		return;
 	}
 	const errorMessage =
-		state.zodErrors?.handle?.[0] ??
-		state.zodErrors?.name?.[0] ??
-		state.zodErrors?.profile?.[0] ??
-		state.zodErrors?.twitterHandle?.[0] ??
+		state.validationErrors?.handle?.[0] ??
+		state.validationErrors?.name?.[0] ??
+		state.validationErrors?.profile?.[0] ??
+		state.validationErrors?.twitterHandle?.[0] ??
 		state.message;
 	if (errorMessage) toast.error(errorMessage);
 }

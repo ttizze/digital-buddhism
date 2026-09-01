@@ -22,7 +22,6 @@ import { Route as ApiNotificationsRouteImport } from './routes/api/notifications
 import { Route as ApiOgRouteImport } from './routes/api/og'
 import { Route as ApiSegmentGlossesRouteImport } from './routes/api/segment-glosses'
 import { Route as ApiSegmentTranslationsRouteImport } from './routes/api/segment-translations'
-import { Route as ApiSentryExampleApiRouteImport } from './routes/api/sentry-example-api'
 import { Route as ApiTranslationJobsRouteImport } from './routes/api/translation-jobs'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as LocaleCommonIndexRouteImport } from './routes/$locale._common.index'
@@ -99,11 +98,6 @@ const ApiSegmentTranslationsRoute = ApiSegmentTranslationsRouteImport.update({
   path: '/api/segment-translations',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiSentryExampleApiRoute = ApiSentryExampleApiRouteImport.update({
-  id: '/api/sentry-example-api',
-  path: '/api/sentry-example-api',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiTranslationJobsRoute = ApiTranslationJobsRouteImport.update({
   id: '/api/translation-jobs',
   path: '/api/translation-jobs',
@@ -175,7 +169,6 @@ export interface FileRoutesByFullPath {
   '/api/og': typeof ApiOgRoute
   '/api/segment-glosses': typeof ApiSegmentGlossesRoute
   '/api/segment-translations': typeof ApiSegmentTranslationsRoute
-  '/api/sentry-example-api': typeof ApiSentryExampleApiRoute
   '/api/translation-jobs': typeof ApiTranslationJobsRoute
   '/auth/login': typeof AuthLoginRoute
   '/$locale/$handle': typeof LocaleCommonHandleRouteWithChildren
@@ -201,7 +194,6 @@ export interface FileRoutesByTo {
   '/api/og': typeof ApiOgRoute
   '/api/segment-glosses': typeof ApiSegmentGlossesRoute
   '/api/segment-translations': typeof ApiSegmentTranslationsRoute
-  '/api/sentry-example-api': typeof ApiSentryExampleApiRoute
   '/api/translation-jobs': typeof ApiTranslationJobsRoute
   '/auth/login': typeof AuthLoginRoute
   '/$locale/$handle': typeof LocaleCommonHandleRouteWithChildren
@@ -228,7 +220,6 @@ export interface FileRoutesById {
   '/api/og': typeof ApiOgRoute
   '/api/segment-glosses': typeof ApiSegmentGlossesRoute
   '/api/segment-translations': typeof ApiSegmentTranslationsRoute
-  '/api/sentry-example-api': typeof ApiSentryExampleApiRoute
   '/api/translation-jobs': typeof ApiTranslationJobsRoute
   '/auth/login': typeof AuthLoginRoute
   '/$locale/_common/$handle': typeof LocaleCommonHandleRouteWithChildren
@@ -256,7 +247,6 @@ export interface FileRouteTypes {
     | '/api/og'
     | '/api/segment-glosses'
     | '/api/segment-translations'
-    | '/api/sentry-example-api'
     | '/api/translation-jobs'
     | '/auth/login'
     | '/$locale/$handle'
@@ -282,7 +272,6 @@ export interface FileRouteTypes {
     | '/api/og'
     | '/api/segment-glosses'
     | '/api/segment-translations'
-    | '/api/sentry-example-api'
     | '/api/translation-jobs'
     | '/auth/login'
     | '/$locale/$handle'
@@ -308,7 +297,6 @@ export interface FileRouteTypes {
     | '/api/og'
     | '/api/segment-glosses'
     | '/api/segment-translations'
-    | '/api/sentry-example-api'
     | '/api/translation-jobs'
     | '/auth/login'
     | '/$locale/_common/$handle'
@@ -332,7 +320,6 @@ export interface RootRouteChildren {
   ApiOgRoute: typeof ApiOgRoute
   ApiSegmentGlossesRoute: typeof ApiSegmentGlossesRoute
   ApiSegmentTranslationsRoute: typeof ApiSegmentTranslationsRoute
-  ApiSentryExampleApiRoute: typeof ApiSentryExampleApiRoute
   ApiTranslationJobsRoute: typeof ApiTranslationJobsRoute
   AuthLoginRoute: typeof AuthLoginRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -430,13 +417,6 @@ declare module '@tanstack/react-router' {
       path: '/api/segment-translations'
       fullPath: '/api/segment-translations'
       preLoaderRoute: typeof ApiSegmentTranslationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/sentry-example-api': {
-      id: '/api/sentry-example-api'
-      path: '/api/sentry-example-api'
-      fullPath: '/api/sentry-example-api'
-      preLoaderRoute: typeof ApiSentryExampleApiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/translation-jobs': {
@@ -579,7 +559,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiOgRoute: ApiOgRoute,
   ApiSegmentGlossesRoute: ApiSegmentGlossesRoute,
   ApiSegmentTranslationsRoute: ApiSegmentTranslationsRoute,
-  ApiSentryExampleApiRoute: ApiSentryExampleApiRoute,
   ApiTranslationJobsRoute: ApiTranslationJobsRoute,
   AuthLoginRoute: AuthLoginRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

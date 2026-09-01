@@ -7,6 +7,7 @@ import { buildPageMetadata } from "@/app/[locale]/(common-layout)/[handle]/[page
 import { getPageDetailData } from "./$locale/-page-detail-data";
 
 export const Route = createFileRoute("/$locale/_common/tipitaka_/$pageSlug")({
+	staleTime: 60_000,
 	loader: async ({ params }) => {
 		const data = await getPageDetailData({ data: params });
 		if (!data) throw notFound();

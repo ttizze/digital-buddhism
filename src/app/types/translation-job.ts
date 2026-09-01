@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as v from "valibot";
 import type { TranslationStatus } from "@/drizzle/types";
 
 const translationStatusValues = [
@@ -8,9 +8,11 @@ const translationStatusValues = [
 	"FAILED",
 ] as const satisfies readonly TranslationStatus[];
 
-const translationJobStatusSchema = z.enum(translationStatusValues);
+const translationJobStatusSchema = v.picklist(translationStatusValues);
 
-export type TranslationJobStatus = z.infer<typeof translationJobStatusSchema>;
+export type TranslationJobStatus = v.InferOutput<
+	typeof translationJobStatusSchema
+>;
 
 export function isTranslationJobTerminalStatus(
 	status: TranslationStatus,
@@ -18,15 +20,23 @@ export function isTranslationJobTerminalStatus(
 	return status === "COMPLETED" || status === "FAILED";
 }
 
-export const translationJobForToastSchema = z.object({
-	id: z.number(),
-	locale: z.string(),
+const translationJobForToastSchema = v.object({
+	id: v.number(),
+	locale: v.string(),
 	status: translationJobStatusSchema,
-	progress: z.number(),
-	error: z.string(),
-	page: z.object({ slug: z.string() }),
+	progress: v.number(),
+	error: v.string(),
+	page: v.object({ slug: v.string() }),
 });
 
-export type TranslationJobForToast = z.infer<
+const translationJobsForToastSchema = v.array(translationJobForToastSchema);
+
+export type TranslationJobForToast = v.InferOutput<
 	typeof translationJobForToastSchema
 >;
+
+export function parseTranslationJobsForToast(
+	input: unknown,
+): TranslationJobForToast[] {
+	return v.parse(translationJobsForToastSchema, input);
+}

@@ -1,14 +1,23 @@
 import { ClientOnly, createFileRoute, notFound } from "@tanstack/react-router";
-import { z } from "zod";
+import * as v from "valibot";
 import { FloatingControls } from "@/app/[locale]/(common-layout)/_components/floating-controls/floating-controls.client";
 import { getProfileMetadata } from "@/app/[locale]/(common-layout)/[handle]/metadata";
 import { ProfilePagePresentation } from "@/app/[locale]/(common-layout)/[handle]/presentation";
 import { getHandleData } from "./$locale/-handle-data";
 
-const profileSearchSchema = z.object({
-	page: z.coerce.number().int().positive().catch(1).default(1),
-	query: z.string().catch("").default(""),
-	tab: z.string().catch("home").default("home"),
+const profileSearchSchema = v.object({
+	page: v.optional(
+		v.fallback(
+			v.pipe(
+				v.union([v.string(), v.number()]),
+				v.toNumber(),
+				v.integer(),
+				v.minValue(1),
+			),
+			1,
+		),
+		1,
+	),
 });
 
 export const Route = createFileRoute("/$locale/_common/$handle")({

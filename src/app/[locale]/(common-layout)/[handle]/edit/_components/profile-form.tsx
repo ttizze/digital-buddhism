@@ -66,9 +66,9 @@ export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 						name="name"
 						required
 					/>
-					{!editState.success && editState.zodErrors?.name && (
+					{!editState.success && editState.validationErrors?.name && (
 						<div className="text-red-500 text-sm mt-1">
-							{editState.zodErrors.name}
+							{editState.validationErrors.name}
 						</div>
 					)}
 				</div>
@@ -81,9 +81,9 @@ export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 						id="profile"
 						name="profile"
 					/>
-					{!editState.success && editState.zodErrors?.profile && (
+					{!editState.success && editState.validationErrors?.profile && (
 						<div className="text-red-500 text-sm mt-1">
-							{editState.zodErrors.profile}
+							{editState.validationErrors.profile}
 						</div>
 					)}
 				</div>
@@ -99,9 +99,9 @@ export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 						pattern="@[A-Za-z0-9_]+"
 						placeholder="start with @. e.g. @tipitaka"
 					/>
-					{!editState.success && editState.zodErrors?.twitterHandle && (
+					{!editState.success && editState.validationErrors?.twitterHandle && (
 						<div className="text-red-500 text-sm mt-1">
-							{editState.zodErrors.twitterHandle}
+							{editState.validationErrors.twitterHandle}
 						</div>
 					)}
 				</div>

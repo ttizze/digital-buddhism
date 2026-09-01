@@ -101,4 +101,23 @@ describe("NotificationsDropdownClient", () => {
 		expect(screen.getByText("Translated Page Title")).toBeInTheDocument();
 		expect(screen.getByText(/voted for/i)).toBeInTheDocument();
 	});
+
+	it("既読更新APIが失敗した場合はclient cacheを既読にしない", async () => {
+		const mutate = vi.fn();
+		(useSWR as unknown as Mock).mockReturnValue({
+			data: { notifications: sampleNotifications },
+			isLoading: false,
+			mutate,
+		});
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => Response.json({ error: "failed" }, { status: 500 })),
+		);
+
+		render(<NotificationsDropdownClient locale="en" />);
+		await user.click(screen.getByTestId("bell-icon"));
+
+		await waitFor(() => expect(fetch).toHaveBeenCalled());
+		expect(mutate).not.toHaveBeenCalled();
+	});
 });

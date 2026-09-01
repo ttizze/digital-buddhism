@@ -46,23 +46,30 @@ export function NotificationsDropdownClient({ locale }: { locale: string }) {
 		void fetch("/api/notifications", {
 			method: "POST",
 			credentials: "include",
-		}).then((response) => {
-			if (response.status === 401) {
-				window.location.assign(`/${locale}/auth/login`);
-			}
-		});
-		mutate(
-			(prev) => {
-				if (!prev) return prev;
-				return {
-					notifications: prev.notifications.map((n) => ({
-						...n,
-						read: true,
-					})),
-				};
-			},
-			{ revalidate: false },
-		);
+		})
+			.then(async (response) => {
+				if (response.status === 401) {
+					window.location.assign(`/${locale}/auth/login`);
+					return;
+				}
+				if (!response.ok) return;
+
+				await mutate(
+					(prev) => {
+						if (!prev) return prev;
+						return {
+							notifications: prev.notifications.map((notification) => ({
+								...notification,
+								read: true,
+							})),
+						};
+					},
+					{ revalidate: false },
+				);
+			})
+			.catch(() => {
+				// 失敗時は未読表示を維持し、次に開いた時の再試行へ委ねる。
+			});
 	};
 	const unreadCount =
 		data?.notifications?.filter((notification) => !notification.read).length ??
@@ -75,7 +82,7 @@ export function NotificationsDropdownClient({ locale }: { locale: string }) {
 			onOpenChange={handleClick}
 		>
 			<DropdownMenuTrigger asChild>
-				<div className="relative">
+				<button aria-label={t("label")} className="relative" type="button">
 					<Bell className="w-6 h-6 cursor-pointer" data-testid="bell-icon" />
 					{unreadCount ? (
 						<span
@@ -85,7 +92,7 @@ export function NotificationsDropdownClient({ locale }: { locale: string }) {
 							{unreadCount}
 						</span>
 					) : null}
-				</div>
+				</button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				className="w-80 overflow-y-scroll h-96 p-0 rounded-xl"

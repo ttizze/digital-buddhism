@@ -1,14 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
+import * as v from "valibot";
 import { CATEGORIES } from "@/app/[locale]/(common-layout)/search/constants";
 import { getSearchMetadata } from "@/app/[locale]/(common-layout)/search/metadata";
 import { SearchPagePresentation } from "@/app/[locale]/(common-layout)/search/presentation";
 import { getSearchData } from "./$locale/-search-data";
 
-const searchSchema = z.object({
-	category: z.enum(CATEGORIES).catch("title").default("title"),
-	page: z.coerce.number().int().positive().catch(1).default(1),
-	query: z.string().catch("").default(""),
+const searchSchema = v.object({
+	category: v.optional(v.fallback(v.picklist(CATEGORIES), "title"), "title"),
+	page: v.optional(
+		v.fallback(
+			v.pipe(
+				v.union([v.string(), v.number()]),
+				v.toNumber(),
+				v.integer(),
+				v.minValue(1),
+			),
+			1,
+		),
+		1,
+	),
+	query: v.optional(v.fallback(v.string(), ""), ""),
 });
 
 export const Route = createFileRoute("/$locale/_common/search")({

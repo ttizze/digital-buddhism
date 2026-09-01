@@ -17,9 +17,14 @@ export function SearchPagePresentation({
 	query: string;
 }) {
 	return (
-		<main>
+		<section>
 			<div className="max-w-(--breakpoint-xl) mx-auto py-6">
-				<SearchPageClient locale={locale} />
+				<SearchPageClient
+					category={category}
+					key={query}
+					locale={locale}
+					query={query}
+				/>
 				{query && (
 					<div className="">
 						<SearchResults
@@ -33,6 +38,6 @@ export function SearchPagePresentation({
 					</div>
 				)}
 			</div>
-		</main>
+		</section>
 	);
 }

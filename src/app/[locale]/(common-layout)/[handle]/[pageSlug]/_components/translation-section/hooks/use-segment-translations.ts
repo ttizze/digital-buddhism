@@ -1,7 +1,7 @@
 import useSWR from "swr";
 import {
+	parseSegmentTranslations,
 	type SegmentTranslation,
-	segmentTranslationSchema,
 } from "@/app/api/segment-translations/_domain/segment-translations";
 
 interface UseSegmentTranslationsParams {
@@ -17,7 +17,7 @@ async function fetchSegmentTranslations(
 	if (!response.ok) {
 		throw new Error("Failed to fetch translations");
 	}
-	return segmentTranslationSchema.array().parse(await response.json());
+	return parseSegmentTranslations(await response.json());
 }
 
 export function useSegmentTranslations({

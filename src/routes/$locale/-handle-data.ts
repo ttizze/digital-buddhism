@@ -3,18 +3,21 @@ import {
 	getRequestHeaders,
 	setResponseHeader,
 } from "@tanstack/react-start/server";
-import { z } from "zod";
+import * as v from "valibot";
 import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
 import { fetchProfilePage } from "@/app/[locale]/(common-layout)/[handle]/_service/profile";
 
 const locales = supportedLocaleOptions.map((option) => option.code);
-const localeSchema = z.string().refine((locale) => locales.includes(locale));
+const localeSchema = v.pipe(
+	v.string(),
+	v.check((locale) => locales.includes(locale)),
+);
 
-const handleDataInput = z.object({
-	handle: z.string().min(1),
+const handleDataInput = v.object({
+	handle: v.pipe(v.string(), v.minLength(1)),
 	locale: localeSchema,
-	page: z.number().int().positive(),
+	page: v.pipe(v.number(), v.integer(), v.minValue(1)),
 });
 
 async function getCurrentUser() {

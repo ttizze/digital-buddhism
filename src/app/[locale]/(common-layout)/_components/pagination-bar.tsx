@@ -1,6 +1,5 @@
-"use client";
-import { useLocation } from "@tanstack/react-router";
-import { parseAsString, useQueryStates } from "nuqs";
+import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
+import { Link } from "@tanstack/react-router";
 import {
 	Pagination,
 	PaginationContent,
@@ -17,42 +16,35 @@ interface PaginationBarProps {
 }
 
 export function PaginationBar({ totalPages, currentPage }: PaginationBarProps) {
-	const pathname = useLocation({ select: (location) => location.pathname });
-	const [currentQuery] = useQueryStates({
-		page: parseAsString,
-		query: parseAsString,
-		category: parseAsString,
-		tab: parseAsString,
-		view: parseAsString,
-		annotations: parseAsString,
-	});
-	const currentParams = Object.fromEntries(
-		Object.entries(currentQuery).filter(([, value]) => value != null),
-	);
 	if (totalPages <= 1) {
 		return null;
 	}
 
-	// 現在のpathnameとsearch paramsを保ち、pageだけを上書きする。
-	const getPageUrl = (page: number) => {
-		const params = new URLSearchParams(
-			Object.entries(currentParams).map(([key, value]) => [key, String(value)]),
-		);
-		params.set("page", page.toString());
-		return `${pathname}?${params.toString()}`;
-	};
 	return (
 		<Pagination className="mt-4">
 			<PaginationContent className="w-full justify-between">
 				<PaginationItem>
-					<PaginationPrevious
-						className={
-							currentPage === 1 ? "pointer-events-none opacity-50" : ""
-						}
-						href={getPageUrl(currentPage - 1)}
-					/>
+					{currentPage === 1 ? (
+						<PaginationPrevious
+							aria-disabled="true"
+							className="pointer-events-none opacity-50"
+						/>
+					) : (
+						<PaginationPrevious asChild>
+							<Link
+								search={(previous) => ({
+									...previous,
+									page: currentPage - 1,
+								})}
+								to="."
+							>
+								<ChevronLeftIcon className="h-4 w-4" />
+								<span>Previous</span>
+							</Link>
+						</PaginationPrevious>
+					)}
 				</PaginationItem>
-				<div className="flex items-center space-x-2">
+				<PaginationItem className="flex items-center space-x-2">
 					{Array.from({ length: totalPages }, (_, i) => i + 1).map(
 						(pageNumber) => {
 							if (
@@ -61,14 +53,21 @@ export function PaginationBar({ totalPages, currentPage }: PaginationBarProps) {
 								(pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
 							) {
 								return (
-									<PaginationItem key={`page-${pageNumber}`}>
-										<PaginationLink
-											href={getPageUrl(pageNumber)}
-											isActive={currentPage === pageNumber}
+									<PaginationLink
+										asChild
+										isActive={currentPage === pageNumber}
+										key={`page-${pageNumber}`}
+									>
+										<Link
+											search={(previous) => ({
+												...previous,
+												page: pageNumber,
+											})}
+											to="."
 										>
 											{pageNumber}
-										</PaginationLink>
-									</PaginationItem>
+										</Link>
+									</PaginationLink>
 								);
 							}
 							if (
@@ -80,14 +79,27 @@ export function PaginationBar({ totalPages, currentPage }: PaginationBarProps) {
 							return null;
 						},
 					)}
-				</div>
+				</PaginationItem>
 				<PaginationItem>
-					<PaginationNext
-						className={
-							currentPage === totalPages ? "pointer-events-none opacity-50" : ""
-						}
-						href={getPageUrl(currentPage + 1)}
-					/>
+					{currentPage === totalPages ? (
+						<PaginationNext
+							aria-disabled="true"
+							className="pointer-events-none opacity-50"
+						/>
+					) : (
+						<PaginationNext asChild>
+							<Link
+								search={(previous) => ({
+									...previous,
+									page: currentPage + 1,
+								})}
+								to="."
+							>
+								<span>Next</span>
+								<ChevronRightIcon className="h-4 w-4" />
+							</Link>
+						</PaginationNext>
+					)}
 				</PaginationItem>
 			</PaginationContent>
 		</Pagination>

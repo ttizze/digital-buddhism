@@ -1,9 +1,13 @@
-import type { z } from "zod";
+import * as v from "valibot";
 
-export async function parseFormData<T extends z.ZodTypeAny>(
-	schema: T,
+type ParseFormDataResult<TSchema extends v.GenericSchema> =
+	| { success: true; data: v.InferOutput<TSchema> }
+	| { success: false; validationErrors: Record<string, string[]> };
+
+export function parseFormData<const TSchema extends v.GenericSchema>(
+	schema: TSchema,
 	formData: FormData,
-): Promise<z.ZodSafeParseResult<z.infer<T>>> {
+): ParseFormDataResult<TSchema> {
 	const data: Record<string, string | string[]> = {};
 	for (const [key, value] of formData.entries()) {
 		if (typeof value !== "string") continue;
@@ -16,5 +20,14 @@ export async function parseFormData<T extends z.ZodTypeAny>(
 			data[key] = [existing, value];
 		}
 	}
-	return schema.safeParse(data);
+	const result = v.safeParse(schema, data);
+	if (result.success) return { success: true, data: result.output };
+
+	const validationErrors: Record<string, string[]> = {};
+	for (const [field, messages] of Object.entries(
+		v.flatten(result.issues).nested ?? {},
+	)) {
+		if (messages) validationErrors[field] = messages;
+	}
+	return { success: false, validationErrors };
 }
