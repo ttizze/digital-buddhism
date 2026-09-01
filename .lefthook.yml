@@ -1,17 +1,9 @@
 # lefthook設定ファイル
-# コミット前とプッシュ前にbiomeを実行する
-# （post-checkout等でwrite系コマンドを走らせるとブランチ切替のたびに作業ツリーが汚れるため登録しない）
+# コミット対象だけをBiomeで修正し、修正結果も同じcommitへ含める
 no_tty: true
 
 pre-commit:
-  parallel: true
   commands:
     biome:
-      run: bun run biome
+      run: bunx @biomejs/biome check --write --files-ignore-unknown=true --no-errors-on-unmatched {staged_files}
       stage_fixed: true
-
-pre-push:
-  parallel: true
-  commands:
-    biome:
-      run: bun run biome

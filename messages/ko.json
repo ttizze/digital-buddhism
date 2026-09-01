@@ -34,6 +34,7 @@
 		"title": "번역 작업"
 	},
 	"Notifications": {
+		"label": "알림",
 		"empty": "알림이 없습니다",
 		"vote": "<actor>{actorName}</actor>님이 <page>{pageTitle}</page>의 <segment>{segmentText}</segment>에 투표했습니다"
 	},

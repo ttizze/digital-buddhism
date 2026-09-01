@@ -1,9 +1,15 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderToStaticMarkup } from "react-dom/server";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AnalyticsConsent } from "./analytics-consent";
 import { analyticsConsentStorageKey } from "./analytics-consent-storage";
+
+vi.mock("@tanstack/react-router", () => ({
+	Link: ({ children }: { children: React.ReactNode }) => (
+		<a href="/">{children}</a>
+	),
+}));
 
 const message = {
 	title: "Analytics cookies",

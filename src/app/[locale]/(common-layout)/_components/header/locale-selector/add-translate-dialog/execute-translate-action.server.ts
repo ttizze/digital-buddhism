@@ -1,36 +1,34 @@
-import { z } from "zod";
+import * as v from "valibot";
 import { authAndValidate } from "@/app/[locale]/_action/auth-and-validate";
 import type { TranslateActionState } from "./action";
 import { translatePage } from "./service/translate-page.server";
 
-const schema = z.object({
-	pageSlug: z.string().optional(),
-	aiModel: z.string().min(1),
-	targetLocale: z.string().min(1),
+const schema = v.object({
+	pageSlug: v.pipe(v.string(), v.minLength(1)),
+	aiModel: v.pipe(v.string(), v.minLength(1)),
+	targetLocale: v.pipe(v.string(), v.minLength(1)),
 });
 
 export async function executeTranslateAction(
 	formData: FormData,
 ): Promise<TranslateActionState> {
 	const v = await authAndValidate(schema, formData);
-	if (!v.success) return { success: false, zodErrors: v.zodErrors };
+	if (!v.success) {
+		return { success: false, validationErrors: v.validationErrors };
+	}
 
 	const { currentUser, data } = v;
 
-	if (data.pageSlug) {
-		const result = await translatePage({
-			pageSlug: data.pageSlug,
-			aiModel: data.aiModel,
-			locale: data.targetLocale,
-			userId: currentUser.id,
-		});
+	const result = await translatePage({
+		pageSlug: data.pageSlug,
+		aiModel: data.aiModel,
+		locale: data.targetLocale,
+		userId: currentUser.id,
+	});
 
-		if (!result.success) {
-			return { success: false, message: result.message };
-		}
-
-		return { success: true, data: { translationJobs: result.jobs } };
+	if (!result.success) {
+		return { success: false, message: result.message };
 	}
 
-	return { success: true, data: { translationJobs: [] } };
+	return { success: true, data: { translationJobs: result.jobs } };
 }

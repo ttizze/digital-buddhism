@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { HeaderScroll } from "./header-scroll";
 
@@ -11,10 +12,11 @@ export function HeaderFrame({
 	return (
 		<HeaderScroll>
 			<div className="flex items-center gap-4">
-				<a
+				<Link
 					aria-label="Digital Buddhism"
 					className="flex items-center gap-2"
-					href={`/${locale}/tipitaka`}
+					params={{ locale }}
+					to="/$locale/tipitaka"
 				>
 					<img
 						alt=""
@@ -24,7 +26,7 @@ export function HeaderFrame({
 					<span className="hidden font-semibold text-xl sm:inline">
 						Digital Buddhism
 					</span>
-				</a>
+				</Link>
 			</div>
 			<div className="flex items-center gap-4">{userSlot}</div>
 		</HeaderScroll>

@@ -1,20 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
-import { supportedLocaleOptions } from "@/app/_constants/locale";
+import * as v from "valibot";
 import { fetchSearchResults } from "@/app/[locale]/(common-layout)/search/_db/queries";
 import { CATEGORIES } from "@/app/[locale]/(common-layout)/search/constants";
+import { supportedLocaleSchema } from "./-supported-locale-schema";
 
-const searchInput = z.object({
-	category: z.enum(CATEGORIES),
-	locale: z
-		.string()
-		.refine(
-			(locale) =>
-				supportedLocaleOptions.some((option) => option.code === locale),
-			"対応していないlocaleです",
-		),
-	page: z.number().int().positive(),
-	query: z.string(),
+const searchInput = v.object({
+	category: v.picklist(CATEGORIES),
+	locale: supportedLocaleSchema,
+	page: v.pipe(v.number(), v.integer(), v.minValue(1)),
+	query: v.string(),
 });
 
 export const getSearchData = createServerFn({ method: "GET" })

@@ -12,7 +12,10 @@ vi.mock("@tanstack/react-router", () => ({
 	ClientOnly: ({ fallback }: { fallback: ReactNode }) => fallback,
 	createFileRoute: () => (config: { component: ComponentType }) => {
 		registeredRoute.component = config.component;
-		return { useParams: () => ({ locale: "ja" }) };
+		return {
+			useParams: () => ({ locale: "ja" }),
+			useSearch: () => ({ view: "source" }),
+		};
 	},
 	Outlet: () => <div>Page</div>,
 }));
@@ -29,10 +32,6 @@ vi.mock("@/app/[locale]/(common-layout)/_components/header", () => ({
 
 vi.mock("@/app/[locale]/(common-layout)/_components/header/user-slot", () => ({
 	HeaderUserSlot: () => <button type="button">User menu</button>,
-}));
-
-vi.mock("@/app/[locale]/(common-layout)/_components/view-scope", () => ({
-	ViewScope: ({ children }: { children: ReactNode }) => children,
 }));
 
 vi.mock(
@@ -57,5 +56,9 @@ describe("共通レイアウトのヘッダー", () => {
 		expect(
 			screen.getByRole("button", { name: "User menu" }),
 		).toBeInTheDocument();
+		expect(screen.getByRole("main").closest("[data-view]")).toHaveAttribute(
+			"data-view",
+			"source",
+		);
 	});
 });

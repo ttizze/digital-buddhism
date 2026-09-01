@@ -47,6 +47,7 @@ export const Route = createFileRoute("/$locale")({
 			return params;
 		},
 	},
+	staleTime: Infinity,
 	loader: () => loadLocaleRuntimeData(),
 	component: LocaleShell,
 });

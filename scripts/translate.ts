@@ -35,7 +35,7 @@ const toNumberedElements = (
 type CreateTranslationJobParams = {
 	aiModel: string;
 	locale: string;
-	userId?: string;
+	userId: string;
 	pageId: number;
 };
 

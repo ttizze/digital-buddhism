@@ -9,8 +9,8 @@
 ## 誤解しやすい点
 - このリポジトリは **TanStack Start アプリがルート直下** にあります。ルート境界は `src/routes`、機能モジュールは `src/app` に置きます。
 - **DB は Kysely をランタイムで使用**し、**Drizzle はスキーマ/マイグレーション用**です。
-- **ローカル開発は `.data/digital-buddshim.sqld` のローカルlibSQL**、**テストは一時SQLite**、**本番はTurso（libSQL）**です。`db:with-local`がNix管理の`sqld`を起動し、CLIとworkerd/Miniflareへ同じHTTP URLを渡します。
-- `bun run dev`はCloudflare Vite pluginのworkerd/Miniflareで実行します。KV・Queue・Images・R2は`wrangler.jsonc`のbindingをローカルでもそのまま使います。
+- **ローカル開発は `.data/digital-buddshim.sqld` のローカルlibSQL**、**テストは一時SQLite**、**本番はTurso（libSQL）**です。`db:with-local`がNix管理の`sqld`を起動し、CLIとCloudflare Vite pluginのローカルWorkerへ同じHTTP URLを渡します。
+- `bun run dev`はCloudflare Vite pluginのローカルWorker runtimeで実行します。KV・Queue・Images・R2は`wrangler.jsonc`のbindingをローカルでもそのまま使います。
 - 本番の接続情報は `TURSO_DATABASE_URL` と `TURSO_AUTH_TOKEN` で渡します。値をコードやドキュメントへ書きません。
 - 認証は **better-auth** を利用しています（`src/auth.ts`）。
 - i18n は `use-intl` で、`src/routes/$locale` が基本ルートです。

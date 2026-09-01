@@ -20,16 +20,7 @@ export async function fetchLocaleInfoByPageSlug(pageSlug: string) {
 		)
 		.select([
 			"tipitakaPages.id as pageId",
-			"translationJobs.id as translationJobId",
-			"translationJobs.pageId as translationJobPageId",
-			"translationJobs.userId as translationJobUserId",
 			"translationJobs.locale as translationJobLocale",
-			"translationJobs.aiModel as translationJobAiModel",
-			"translationJobs.status as translationJobStatus",
-			"translationJobs.progress as translationJobProgress",
-			"translationJobs.error as translationJobError",
-			"translationJobs.createdAt as translationJobCreatedAt",
-			"translationJobs.updatedAt as translationJobUpdatedAt",
 			"pageLocaleTranslationProofs.locale as proofLocale",
 			"pageLocaleTranslationProofs.translationProofStatus",
 		])
@@ -40,41 +31,32 @@ export async function fetchLocaleInfoByPageSlug(pageSlug: string) {
 		return null;
 	}
 
-	// JOIN のファンアウトで重複した関連データを Map で排除して集約
-	const translationJobs = new Map(
-		rows
-			.filter((row) => row.translationJobId)
-			.map((row) => [
-				row.translationJobId,
-				{
-					id: row.translationJobId,
-					pageId: row.translationJobPageId,
-					userId: row.translationJobUserId,
-					locale: row.translationJobLocale,
-					aiModel: row.translationJobAiModel,
-					status: row.translationJobStatus,
-					progress: row.translationJobProgress,
-					error: row.translationJobError,
-					createdAt: row.translationJobCreatedAt,
-					updatedAt: row.translationJobUpdatedAt,
-				},
-			]),
-	);
-	const translationProofs = new Map(
-		rows
-			.filter((row) => row.proofLocale)
-			.map((row) => [
-				row.proofLocale,
-				{
-					locale: row.proofLocale,
-					translationProofStatus: row.translationProofStatus,
-				},
-			]),
-	);
+	// JOIN のファンアウトで重複した関連データを排除して集約する。
+	const translatedLocales = new Set<string>();
+	const translationProofs = new Map<
+		string,
+		{
+			locale: string;
+			translationProofStatus: NonNullable<
+				(typeof rows)[number]["translationProofStatus"]
+			>;
+		}
+	>();
+	for (const row of rows) {
+		if (row.translationJobLocale) {
+			translatedLocales.add(row.translationJobLocale);
+		}
+		if (row.proofLocale && row.translationProofStatus) {
+			translationProofs.set(row.proofLocale, {
+				locale: row.proofLocale,
+				translationProofStatus: row.translationProofStatus,
+			});
+		}
+	}
 
 	return {
 		sourceLocale: TIPITAKA_SOURCE_LOCALE,
-		translationJobs: Array.from(translationJobs.values()),
+		translatedLocales: Array.from(translatedLocales),
 		translationProofs: Array.from(translationProofs.values()),
 	};
 }

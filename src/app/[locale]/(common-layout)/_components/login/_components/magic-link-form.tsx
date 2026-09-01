@@ -2,14 +2,14 @@
 
 import { CheckCircle, Loader2 } from "lucide-react";
 import { useState, useTransition } from "react";
-import { z } from "zod";
+import * as v from "valibot";
 import { authClient } from "@/app/[locale]/_service/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const schema = z.object({
-	email: z.email("Please enter a valid email address"),
+const schema = v.object({
+	email: v.pipe(v.string(), v.email("Please enter a valid email address")),
 });
 
 export function MagicLinkForm({ redirectTo }: { redirectTo: string }) {
@@ -22,10 +22,10 @@ export function MagicLinkForm({ redirectTo }: { redirectTo: string }) {
 		e.preventDefault();
 
 		// ── クライアント側バリデーション ──
-		const v = schema.safeParse({ email });
-		if (!v.success) {
+		const result = v.safeParse(schema, { email });
+		if (!result.success) {
 			setError(
-				v.error.flatten().fieldErrors.email?.[0] ?? "Invalid email address",
+				v.flatten(result.issues).nested?.email?.[0] ?? "Invalid email address",
 			);
 			return;
 		}
@@ -34,7 +34,7 @@ export function MagicLinkForm({ redirectTo }: { redirectTo: string }) {
 		startTransition(() =>
 			authClient.signIn
 				.magicLink({
-					email: v.data.email,
+					email: result.output.email,
 					callbackURL: redirectTo,
 				})
 				.then(() => setSent(true))

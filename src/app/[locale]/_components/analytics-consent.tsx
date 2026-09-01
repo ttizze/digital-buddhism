@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { analyticsConsentStorageKey } from "./analytics-consent-storage";
@@ -73,9 +74,13 @@ export function AnalyticsConsent({
 						</p>
 						<p className="mt-2 text-muted-foreground text-xs md:text-sm">
 							{message.description}{" "}
-							<a className="underline" href={`/${locale}/privacy`}>
+							<Link
+								className="underline"
+								params={{ locale }}
+								to="/$locale/privacy"
+							>
 								{message.privacyLink}
-							</a>
+							</Link>
 						</p>
 						<div className="mt-3 flex justify-end gap-2">
 							<Button

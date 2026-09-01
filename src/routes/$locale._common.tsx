@@ -1,23 +1,31 @@
 import { ClientOnly, createFileRoute, Outlet } from "@tanstack/react-router";
+import * as v from "valibot";
+import { DEFAULT_VIEW, VIEW_VALUES } from "@/app/_constants/view";
 import { Footer } from "@/app/[locale]/(common-layout)/_components/footer";
 import { HeaderFrame } from "@/app/[locale]/(common-layout)/_components/header";
 import { HeaderUserSlot } from "@/app/[locale]/(common-layout)/_components/header/user-slot";
-import { ViewScope } from "@/app/[locale]/(common-layout)/_components/view-scope";
 import { TranslationFormOnClick } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-form-on-click.client";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/json-ld";
 
 export const Route = createFileRoute("/$locale/_common")({
+	validateSearch: v.looseObject({
+		view: v.optional(
+			v.fallback(v.picklist(VIEW_VALUES), DEFAULT_VIEW),
+			DEFAULT_VIEW,
+		),
+	}),
 	component: CommonLayout,
 });
 
 function CommonLayout() {
 	const { locale } = Route.useParams();
+	const { view } = Route.useSearch();
 
 	return (
 		<>
 			<OrganizationJsonLd />
 			<WebSiteJsonLd locale={locale} />
-			<ViewScope>
+			<div className="contents" data-view={view}>
 				<HeaderFrame
 					locale={locale}
 					userSlot={<HeaderUserSlot locale={locale} />}
@@ -31,7 +39,7 @@ function CommonLayout() {
 					<TranslationFormOnClick />
 				</ClientOnly>
 				<Footer />
-			</ViewScope>
+			</div>
 		</>
 	);
 }

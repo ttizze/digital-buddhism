@@ -1,12 +1,13 @@
 "use client";
 
-import { Edit3, FileText, User } from "lucide-react";
-import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
-import { useTransition } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { Edit3, FileText, SearchIcon, User } from "lucide-react";
+import { type FormEvent, useRef, useTransition } from "react";
 import {
 	CATEGORIES,
 	type Category,
 } from "@/app/[locale]/(common-layout)/search/constants";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -23,58 +24,69 @@ function renderIcon(category: Category) {
 	}
 }
 
-export function SearchPageClient({ locale }: { locale: string }) {
+export function SearchPageClient({
+	category,
+	locale,
+	query,
+}: {
+	category: Category;
+	locale: string;
+	query: string;
+}) {
+	const navigate = useNavigate();
 	const [isPending, startTransition] = useTransition();
-	const [query, setQuery] = useQueryState(
-		"query",
-		parseAsString.withOptions({
-			shallow: false,
-			startTransition,
-		}),
-	);
-	const [currentCategory, setCurrentCategory] = useQueryState(
-		"category",
-		parseAsString.withDefault("title").withOptions({
-			shallow: false,
-			startTransition,
-		}),
-	);
+	const inputRef = useRef<HTMLInputElement>(null);
 
-	const [, setPageNumber] = useQueryState(
-		"page",
-		parseAsInteger.withDefault(1).withOptions({
-			shallow: false,
-			startTransition,
-		}),
-	);
+	function navigateToSearch(nextCategory: Category) {
+		const nextQuery = inputRef.current?.value ?? query;
+		startTransition(() =>
+			navigate({
+				to: "/$locale/search",
+				params: { locale },
+				search: (previous) => ({
+					...previous,
+					category: nextCategory,
+					page: 1,
+					query: nextQuery,
+				}),
+			}),
+		);
+	}
 
-	function handleTabChange(newCat: Category) {
-		setCurrentCategory(newCat);
-		setPageNumber(1);
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+		navigateToSearch(category);
 	}
 
 	return (
 		<div className="">
-			<form action={`/${locale}/search`} className="mb-6">
-				<input name="category" type="hidden" value={currentCategory ?? ""} />
+			<form className="mb-6" onSubmit={handleSubmit}>
 				<div className="relative">
 					<Input
-						className="w-full px-4 py-3 rounded-full border"
+						className="w-full py-3 pl-4 pr-12 rounded-full border"
+						defaultValue={query}
 						name="query"
-						onChange={(e) => setQuery(e.target.value)}
 						placeholder="Search..."
+						ref={inputRef}
 						required
 						type="search"
-						value={query ?? ""}
 					/>
+					<Button
+						aria-label="Search"
+						className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full"
+						size="icon"
+						type="submit"
+					>
+						<SearchIcon className="size-4" />
+					</Button>
 				</div>
 			</form>
 
 			<Tabs
 				onValueChange={(val) => {
-					handleTabChange(val as Category);
+					navigateToSearch(val as Category);
 				}}
-				value={currentCategory ?? ""}
+				value={category}
 			>
 				<TabsList className="mb-6 border-b w-full flex rounded-full">
 					{CATEGORIES.map((cat) => (

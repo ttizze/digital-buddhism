@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocation } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 import { useLocale, useTranslations } from "use-intl";
 import { useAuthProviderAvailability } from "@/app/_constants/auth-providers";
@@ -70,14 +70,22 @@ export function LoginDialog({
 				<div className="text-center text-sm text-gray-500 my-2">
 					{t.rich("agreement", {
 						terms: (children) => (
-							<a className="underline" href={`/${locale}/terms`}>
+							<Link
+								className="underline"
+								params={{ locale }}
+								to="/$locale/terms"
+							>
 								{children}
-							</a>
+							</Link>
 						),
 						privacy: (children) => (
-							<a className="underline" href={`/${locale}/privacy`}>
+							<Link
+								className="underline"
+								params={{ locale }}
+								to="/$locale/privacy"
+							>
 								{children}
-							</a>
+							</Link>
 						),
 					})}
 				</div>

@@ -1,7 +1,7 @@
 import { db } from "@/db";
 
-/** 指定されたIDの翻訳ジョブを取得する。型の保証はハンドラ側の zod parse が担う */
-export async function fetchTranslationJobsByIds(ids: number[]) {
+/** 指定ユーザーが所有する翻訳ジョブだけを取得する。 */
+export async function fetchTranslationJobsByIds(ids: number[], userId: string) {
 	const rows = await db
 		.selectFrom("translationJobs")
 		.innerJoin("tipitakaPages", "translationJobs.pageId", "tipitakaPages.id")
@@ -14,6 +14,7 @@ export async function fetchTranslationJobsByIds(ids: number[]) {
 			"tipitakaPages.slug as pageSlug",
 		])
 		.where("translationJobs.id", "in", ids)
+		.where("translationJobs.userId", "=", userId)
 		.execute();
 
 	return rows.map(({ pageSlug, ...job }) => ({

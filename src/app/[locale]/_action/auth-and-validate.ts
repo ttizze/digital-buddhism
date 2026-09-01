@@ -1,5 +1,5 @@
 import { redirect } from "@tanstack/react-router";
-import type { z } from "zod";
+import type * as v from "valibot";
 import { getCurrentUser } from "@/app/_service/auth-server";
 import { createServerLogger } from "@/app/_service/logger.server";
 import { parseFormData } from "@/app/[locale]/_utils/parse-form-data";
@@ -29,8 +29,8 @@ export async function requireAuth(
 	// userはnullではないことが保証されている
 	return { id: user.id, handle: user.handle, plan: user.plan };
 }
-export async function authAndValidate<T extends z.ZodTypeAny>(
-	schema: T,
+export async function authAndValidate<const TSchema extends v.GenericSchema>(
+	schema: TSchema,
 	formData: FormData,
 	deps: AuthDeps = authDefaultDeps,
 ): Promise<
@@ -41,25 +41,28 @@ export async function authAndValidate<T extends z.ZodTypeAny>(
 				handle: string;
 				plan: string;
 			};
-			data: z.infer<T>;
+			data: v.InferOutput<TSchema>;
 	  }
-	| { success: false; zodErrors: Record<string, string[]> }
+	| {
+			success: false;
+			validationErrors: Partial<Record<string, string[]>>;
+	  }
 > {
 	const user = await requireAuth(deps);
 
-	const parsed = await deps.parseFormData(schema, formData);
+	const parsed = deps.parseFormData(schema, formData);
 	const logger = createServerLogger("auth-and-validate", { userId: user.id });
 	if (!parsed.success) {
-		const failedFields = Object.keys(parsed.error.flatten().fieldErrors);
-		logger.warn({ failedFields }, "Zod validation errors");
+		const failedFields = Object.keys(parsed.validationErrors);
+		logger.warn({ failedFields }, "Valibot validation errors");
 		// 開発環境では入力値もデバッグ出力
 		if (import.meta.env.DEV) {
 			const rawData = Object.fromEntries(formData.entries());
-			logger.debug({ rawData }, "Zod validation raw data");
+			logger.debug({ rawData }, "Valibot validation raw data");
 		}
 		return {
 			success: false,
-			zodErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+			validationErrors: parsed.validationErrors,
 		};
 	}
 	/* 3. 成功 ――――――――――――――――――― */

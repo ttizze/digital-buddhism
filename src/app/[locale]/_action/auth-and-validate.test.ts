@@ -1,5 +1,5 @@
+import * as v from "valibot";
 import { describe, expect, it, vi } from "vitest";
-import { ZodError, z } from "zod";
 import {
 	type AuthDeps,
 	authAndValidate,
@@ -38,21 +38,23 @@ describe("requireAuth", () => {
 /* ---------------- authAndValidate ---------------- */
 
 describe("authAndValidate", () => {
-	const schema = z.object({ title: z.string() });
+	const schema = v.object({ title: v.string() });
 
 	it("バリデーションエラー時は success:false を返す", async () => {
 		const deps: AuthDeps = {
 			getCurrentUser: vi.fn().mockResolvedValue({ id: "u1", handle: "alice" }),
-			parseFormData: vi.fn().mockResolvedValue({
+			parseFormData: vi.fn().mockReturnValue({
 				success: false,
-				error: new ZodError([]),
+				validationErrors: { title: ["Invalid title"] },
 			}),
 		};
 
 		const result = await authAndValidate(schema, new FormData(), deps);
 		expect(result.success).toBe(false);
 		if (!result.success) {
-			expect(result.zodErrors).toBeDefined();
+			expect(result.validationErrors).toEqual({
+				title: ["Invalid title"],
+			});
 		}
 	});
 
@@ -62,7 +64,7 @@ describe("authAndValidate", () => {
 
 		const deps: AuthDeps = {
 			getCurrentUser: vi.fn().mockResolvedValue({ id: "u1", handle: "alice" }),
-			parseFormData: vi.fn().mockResolvedValue({
+			parseFormData: vi.fn().mockReturnValue({
 				success: true,
 				data: { title: "hello" },
 			}),

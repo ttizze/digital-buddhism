@@ -3,6 +3,7 @@ import {
 	ChevronRightIcon,
 	DotsHorizontalIcon,
 } from "@radix-ui/react-icons";
+import { Slot } from "@radix-ui/react-slot";
 import * as React from "react";
 import type { ButtonProps } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -38,31 +39,37 @@ const PaginationItem = React.forwardRef<
 PaginationItem.displayName = "PaginationItem";
 
 type PaginationLinkProps = {
+	asChild?: boolean;
 	isActive?: boolean;
 } & Pick<ButtonProps, "size"> &
 	React.ComponentProps<"a">;
 
 const PaginationLink = ({
+	asChild,
 	className,
 	isActive,
 	size = "icon",
 	...props
-}: PaginationLinkProps) => (
-	<a
-		aria-current={isActive ? "page" : undefined}
-		className={cn(
-			buttonVariants({
-				variant: isActive ? "outline" : "ghost",
-				size,
-			}),
-			className,
-		)}
-		{...props}
-	/>
-);
+}: PaginationLinkProps) => {
+	const Comp = asChild ? Slot : "a";
+	return (
+		<Comp
+			aria-current={isActive ? "page" : undefined}
+			className={cn(
+				buttonVariants({
+					variant: isActive ? "outline" : "ghost",
+					size,
+				}),
+				className,
+			)}
+			{...props}
+		/>
+	);
+};
 PaginationLink.displayName = "PaginationLink";
 
 const PaginationPrevious = ({
+	children,
 	className,
 	...props
 }: React.ComponentProps<typeof PaginationLink>) => (
@@ -72,13 +79,18 @@ const PaginationPrevious = ({
 		size="default"
 		{...props}
 	>
-		<ChevronLeftIcon className="h-4 w-4" />
-		<span>Previous</span>
+		{children ?? (
+			<>
+				<ChevronLeftIcon className="h-4 w-4" />
+				<span>Previous</span>
+			</>
+		)}
 	</PaginationLink>
 );
 PaginationPrevious.displayName = "PaginationPrevious";
 
 const PaginationNext = ({
+	children,
 	className,
 	...props
 }: React.ComponentProps<typeof PaginationLink>) => (
@@ -88,8 +100,12 @@ const PaginationNext = ({
 		size="default"
 		{...props}
 	>
-		<span>Next</span>
-		<ChevronRightIcon className="h-4 w-4" />
+		{children ?? (
+			<>
+				<span>Next</span>
+				<ChevronRightIcon className="h-4 w-4" />
+			</>
+		)}
 	</PaginationLink>
 );
 PaginationNext.displayName = "PaginationNext";

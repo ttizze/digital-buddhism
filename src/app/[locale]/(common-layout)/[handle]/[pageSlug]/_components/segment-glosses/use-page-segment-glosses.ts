@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { segmentGlossUnitSchema } from "@/app/api/segment-glosses/_domain/segment-glosses";
+import { parseSegmentGlossUnits } from "@/app/api/segment-glosses/_domain/segment-glosses";
 
 async function fetchPageSegmentGlosses([_url, pageId, locale]: readonly [
 	string,
@@ -16,7 +16,7 @@ async function fetchPageSegmentGlosses([_url, pageId, locale]: readonly [
 		credentials: "same-origin",
 	});
 	if (!response.ok) throw new Error("Failed to load segment glosses");
-	return segmentGlossUnitSchema.array().parse(await response.json());
+	return parseSegmentGlossUnits(await response.json());
 }
 
 export function usePageSegmentGlosses(pageId: number, locale: string) {

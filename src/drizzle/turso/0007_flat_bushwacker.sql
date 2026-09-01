@@ -1,6 +1,6 @@
 PRAGMA foreign_keys=OFF;
 --> statement-breakpoint
-CREATE TEMP TABLE `__retained_tipitaka_page_ids` (
+CREATE TABLE `__retained_tipitaka_page_ids` (
 	`id` integer PRIMARY KEY NOT NULL
 );
 --> statement-breakpoint
@@ -17,7 +17,7 @@ WITH RECURSIVE `visible_pages`(`id`) AS (
 )
 SELECT `id` FROM `visible_pages`;
 --> statement-breakpoint
-CREATE TEMP TABLE `__retained_segment_ids` (
+CREATE TABLE `__retained_segment_ids` (
 	`id` integer PRIMARY KEY NOT NULL
 );
 --> statement-breakpoint
