@@ -15,11 +15,8 @@ function makeSegment(overrides: Partial<TitleSegment> = {}): TitleSegment {
 
 describe("WrapSegment (rehype-react adapter)", () => {
 	test("data-number-id が一致すると SegmentElement 経由で描画され、children が本文に使われる", () => {
-		const P = WrapSegment(
-			"p",
-			[makeSegment({ number: 10, text: "ignored" })],
-			true,
-		);
+		const segment = makeSegment({ number: 10, text: "ignored" });
+		const P = WrapSegment("p", new Map([[segment.number, segment]]), true);
 		const { container } = render(
 			<P data-number-id={10}>
 				<strong>child</strong>
@@ -36,7 +33,8 @@ describe("WrapSegment (rehype-react adapter)", () => {
 	});
 
 	test("data-number-id が無い/一致しない場合は素通しで DOM 要素を返す", () => {
-		const P = WrapSegment("p", [makeSegment({ number: 10 })], true);
+		const segment = makeSegment({ number: 10 });
+		const P = WrapSegment("p", new Map([[segment.number, segment]]), true);
 		const { container } = render(
 			<>
 				<P className="raw">a</P>

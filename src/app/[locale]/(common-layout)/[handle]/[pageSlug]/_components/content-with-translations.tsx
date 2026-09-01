@@ -1,7 +1,7 @@
 "use client";
 
 import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
-import { use, useMemo } from "react";
+import { use } from "react";
 import useSWR from "swr";
 import { mdastToMarkdown } from "@/app/[locale]/_domain/mdast-to-markdown";
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
@@ -18,10 +18,72 @@ interface ContentWithTranslationsProps {
 	locale: string;
 }
 
-const contentPromises = new WeakMap<
-	PageDetail,
-	ReturnType<typeof mdastToReact>
->();
+type PageAnnotationsData = Awaited<ReturnType<typeof getPageAnnotationsData>>;
+type GlossUnitsData = ReturnType<typeof usePageSegmentGlosses>["data"];
+
+type DisplayEntry = {
+	annotations: PageAnnotationsData | undefined;
+	glossUnits: GlossUnitsData;
+	displayPageDetail: PageDetail;
+	contentPromise: ReturnType<typeof mdastToReact>;
+};
+
+// use() へ渡す Promise は再レンダーで同一である必要があるため、
+// 入力（pageDetail + annotations + glossUnits）ごとにモジュールレベルでキャッシュする
+const displayEntries = new WeakMap<PageDetail, DisplayEntry>();
+
+function buildDisplayPageDetail(
+	pageDetail: PageDetail,
+	annotations: PageAnnotationsData | undefined,
+	glossUnits: GlossUnitsData,
+): PageDetail {
+	if (!annotations && !glossUnits) return pageDetail;
+	const glossUnitsBySegment = new Map<number, NonNullable<GlossUnitsData>>();
+	for (const unit of glossUnits ?? []) {
+		const segmentGlossUnits = glossUnitsBySegment.get(unit.segmentId) ?? [];
+		segmentGlossUnits.push(unit);
+		glossUnitsBySegment.set(unit.segmentId, segmentGlossUnits);
+	}
+	return {
+		...pageDetail,
+		segments: pageDetail.segments.map((segment) => ({
+			...segment,
+			annotations: annotations?.[String(segment.id)] ?? segment.annotations,
+			glossUnits: glossUnitsBySegment.get(segment.id) ?? [],
+		})),
+	};
+}
+
+function getDisplayEntry(
+	pageDetail: PageDetail,
+	annotations: PageAnnotationsData | undefined,
+	glossUnits: GlossUnitsData,
+): DisplayEntry {
+	const cached = displayEntries.get(pageDetail);
+	if (
+		cached &&
+		cached.annotations === annotations &&
+		cached.glossUnits === glossUnits
+	) {
+		return cached;
+	}
+	const displayPageDetail = buildDisplayPageDetail(
+		pageDetail,
+		annotations,
+		glossUnits,
+	);
+	const entry: DisplayEntry = {
+		annotations,
+		glossUnits,
+		displayPageDetail,
+		contentPromise: mdastToReact({
+			mdast: displayPageDetail.mdastJson,
+			segments: displayPageDetail.segments,
+		}),
+	};
+	displayEntries.set(pageDetail, entry);
+	return entry;
+}
 
 export function ContentWithTranslations({
 	pageDetail,
@@ -45,26 +107,11 @@ export function ContentWithTranslations({
 		pageDetail.id,
 		locale,
 	);
-	const displayPageDetail = useMemo(() => {
-		if (!annotations && !glossUnits) return pageDetail;
-		const glossUnitsBySegment = new Map<
-			number,
-			NonNullable<typeof glossUnits>
-		>();
-		for (const unit of glossUnits ?? []) {
-			const segmentGlossUnits = glossUnitsBySegment.get(unit.segmentId) ?? [];
-			segmentGlossUnits.push(unit);
-			glossUnitsBySegment.set(unit.segmentId, segmentGlossUnits);
-		}
-		return {
-			...pageDetail,
-			segments: pageDetail.segments.map((segment) => ({
-				...segment,
-				annotations: annotations?.[String(segment.id)] ?? segment.annotations,
-				glossUnits: glossUnitsBySegment.get(segment.id) ?? [],
-			})),
-		};
-	}, [annotations, glossUnits, pageDetail]);
+	const { displayPageDetail, contentPromise } = getDisplayEntry(
+		pageDetail,
+		annotations,
+		glossUnits,
+	);
 	const tocItems = extractTocItems({
 		mdast: displayPageDetail.mdastJson,
 		segments: displayPageDetail.segments,
@@ -74,14 +121,6 @@ export function ContentWithTranslations({
 		(segment) => segment.number === 0,
 	);
 
-	let contentPromise = contentPromises.get(displayPageDetail);
-	if (!contentPromise) {
-		contentPromise = mdastToReact({
-			mdast: displayPageDetail.mdastJson,
-			segments: displayPageDetail.segments,
-		});
-		contentPromises.set(displayPageDetail, contentPromise);
-	}
 	const content = use(contentPromise);
 	const markdown = mdastToMarkdown(displayPageDetail.mdastJson);
 	if (!titleSegment) return null;

@@ -3,8 +3,7 @@
 import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, SaveIcon } from "lucide-react";
-import { type FormEvent, useEffect, useState, useTransition } from "react";
-import { toast } from "sonner";
+import { type FormEvent, useState, useTransition } from "react";
 import { BASE_URL } from "@/app/_constants/base-url";
 import type { SanitizedUser } from "@/app/types";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateProfile } from "@/routes/$locale/-profile-edit-data";
 import type { ProfileEditState } from "../_service/profile-edit";
+import { notifyEditState } from "./notify-edit-state";
 
 interface SettingsFormProps {
 	currentUser: SanitizedUser;
@@ -30,27 +30,6 @@ export function SettingsForm({ currentUser, locale }: SettingsFormProps) {
 		},
 	});
 
-	useEffect(() => {
-		if (editState.success && editState.message) {
-			toast.success(editState.message);
-			return;
-		}
-		if (!editState.success) {
-			const errorMessage =
-				editState.zodErrors?.handle?.[0] ??
-				editState.zodErrors?.name?.[0] ??
-				editState.zodErrors?.profile?.[0] ??
-				editState.zodErrors?.twitterHandle?.[0];
-			if (errorMessage) {
-				toast.error(errorMessage);
-				return;
-			}
-			if (editState.message) {
-				toast.error(editState.message);
-			}
-		}
-	}, [editState]);
-
 	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		const formData = new FormData(event.currentTarget);
@@ -62,6 +41,7 @@ export function SettingsForm({ currentUser, locale }: SettingsFormProps) {
 			void (async () => {
 				const result = await updateProfileFn({ data: formData });
 				setEditState(result);
+				notifyEditState(result);
 				if (result.success) {
 					await router.invalidate({ sync: true });
 				}

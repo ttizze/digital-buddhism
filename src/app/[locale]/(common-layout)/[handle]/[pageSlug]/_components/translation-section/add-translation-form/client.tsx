@@ -5,6 +5,7 @@ import TextareaAutosize from "react-textarea-autosize";
 import { useLocale } from "use-intl";
 import { useHydrated } from "@/app/_hooks/use-hydrated";
 import { authClient } from "@/app/[locale]/_service/auth-client";
+import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form.client";
 import { StartButton } from "@/app/[locale]/(common-layout)/_components/start-button";
 import type { ActionResponse } from "@/app/types";
 import { Button } from "@/components/ui/button";
@@ -38,16 +39,13 @@ export function AddTranslationForm({
 		setAddTranslationState({ success: false });
 
 		try {
-			const response = await fetch("/api/segment-translations", {
+			const response = await fetchAuthedForm({
+				url: "/api/segment-translations",
 				method: "POST",
 				body: new FormData(event.currentTarget),
-				credentials: "same-origin",
+				locale,
 			});
-
-			if (response.status === 401) {
-				window.location.assign(`/${locale}/auth/login`);
-				return;
-			}
+			if (!response) return;
 
 			const body = (await response.json()) as ActionResponse & {
 				error?: string;

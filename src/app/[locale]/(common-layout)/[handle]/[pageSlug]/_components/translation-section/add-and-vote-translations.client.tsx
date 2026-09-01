@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronUp, Languages } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocale } from "use-intl";
+import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form.client";
 import { sanitizeTextToHtml } from "@/app/[locale]/_utils/sanitize-and-parse-text.client";
 import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
 import type { ActionResponse } from "@/app/types";
@@ -59,21 +60,18 @@ export function AddAndVoteTranslations({
 		if (isVoting) return;
 
 		setIsVoting(true);
-		const formData = new FormData();
-		formData.set("segmentTranslationId", String(translationId));
-		formData.set("isUpvote", String(isUpvote));
 
 		try {
-			const response = await fetch("/api/segment-translations", {
+			const response = await fetchAuthedForm({
+				url: "/api/segment-translations",
 				method: "PATCH",
-				body: formData,
-				credentials: "same-origin",
+				body: {
+					segmentTranslationId: String(translationId),
+					isUpvote: String(isUpvote),
+				},
+				locale: userLocale,
 			});
-
-			if (response.status === 401) {
-				window.location.assign(`/${userLocale}/auth/login`);
-				return;
-			}
+			if (!response) return;
 
 			const body = (await response.json()) as VoteResponse;
 			if (response.ok && body.success) {

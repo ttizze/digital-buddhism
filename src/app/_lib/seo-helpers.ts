@@ -1,7 +1,8 @@
 import { BASE_URL } from "@/app/_constants/base-url";
-
-const SUPPORTED_LOCALES = ["en", "ja", "zh", "ko", "es"] as const;
-const DEFAULT_LOCALE = "en";
+import {
+	DEFAULT_MESSAGE_LOCALE,
+	MESSAGE_LOCALES,
+} from "@/app/_constants/message-locales";
 
 type AlternatesConfig = {
 	canonical: string;
@@ -20,9 +21,9 @@ export function buildAlternates(
 	return {
 		canonical: `${BASE_URL}/${locale}${normalizedPath}`,
 		languages: {
-			"x-default": `${BASE_URL}/${DEFAULT_LOCALE}${normalizedPath}`,
+			"x-default": `${BASE_URL}/${DEFAULT_MESSAGE_LOCALE}${normalizedPath}`,
 			...Object.fromEntries(
-				SUPPORTED_LOCALES.map((loc) => [
+				MESSAGE_LOCALES.map((loc) => [
 					loc,
 					`${BASE_URL}/${loc}${normalizedPath}`,
 				]),

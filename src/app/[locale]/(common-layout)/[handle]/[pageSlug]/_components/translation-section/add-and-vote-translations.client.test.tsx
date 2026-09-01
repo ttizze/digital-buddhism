@@ -89,6 +89,7 @@ describe("AddAndVoteTranslations", () => {
 			data: [firstTranslation, secondTranslation],
 			error: undefined,
 			isLoading: false,
+			isValidating: false,
 			mutate: vi.fn(),
 		});
 		const translationElement = document.createElement("span");
@@ -112,6 +113,7 @@ describe("AddAndVoteTranslations", () => {
 			data: [firstTranslation, secondTranslation],
 			error: undefined,
 			isLoading: false,
+			isValidating: false,
 			mutate,
 		});
 		const fetchMock = vi

@@ -59,7 +59,7 @@ describe("useTranslationToast", () => {
 
 	it("creates toast once on first non-empty jobs list", () => {
 		renderHook(() => useTranslationJobToast(pendingJobs));
-		expect(toast).toHaveBeenCalledTimes(2); // 生成
+		expect(toast).toHaveBeenCalledTimes(1); // 生成は1回だけ
 	});
 
 	it("updates the same toast id on jobs change", () => {
@@ -78,7 +78,7 @@ describe("useTranslationToast", () => {
 		rerender({ jobs: completedJobs });
 
 		// toast が同じ id で 2 回目呼ばれる
-		expect(toast).toHaveBeenCalledTimes(3);
+		expect(toast).toHaveBeenCalledTimes(2);
 		const secondId = toastMock.mock.results[1].value;
 		expect(secondId).toBe(firstId);
 	});

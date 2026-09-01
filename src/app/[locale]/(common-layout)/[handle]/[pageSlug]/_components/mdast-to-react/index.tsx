@@ -43,8 +43,15 @@ export async function mdastToReact<T extends Segment = Segment>({
 	interactive = true,
 }: Params<T>): Promise<ReactElement | null> {
 	if (!mdast || Object.keys(mdast).length === 0) return null;
+	// number → segment のマップは全タグで共有する（タグごとに作り直さない）
+	const segmentsByNumber = new Map<number, Segment>(
+		segments.map((segment) => [segment.number, segment]),
+	);
 	const segmentComponents = Object.fromEntries(
-		SEGMENTABLE.map((tag) => [tag, WrapSegment(tag, segments, interactive)]),
+		SEGMENTABLE.map((tag) => [
+			tag,
+			WrapSegment(tag, segmentsByNumber, interactive),
+		]),
 	);
 
 	const processor = unified()

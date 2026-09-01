@@ -1,5 +1,6 @@
 # lefthook設定ファイル
-# すべてのGitフックでbiomeを実行
+# コミット前とプッシュ前にbiomeを実行する
+# （post-checkout等でwrite系コマンドを走らせるとブランチ切替のたびに作業ツリーが汚れるため登録しない）
 no_tty: true
 
 pre-commit:
@@ -11,26 +12,6 @@ pre-commit:
 
 pre-push:
   parallel: true
-  commands:
-    biome:
-      run: bun run biome
-
-commit-msg:
-  commands:
-    biome:
-      run: bun run biome
-
-pre-rebase:
-  commands:
-    biome:
-      run: bun run biome
-
-post-merge:
-  commands:
-    biome:
-      run: bun run biome
-
-post-checkout:
   commands:
     biome:
       run: bun run biome

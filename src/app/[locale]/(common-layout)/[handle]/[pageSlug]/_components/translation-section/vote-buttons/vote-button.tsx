@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface VoteButtonProps {
@@ -5,7 +6,7 @@ interface VoteButtonProps {
 	isActive: boolean | undefined;
 	isVoting: boolean;
 	voteCount?: number;
-	children: (props: { iconClass: string }) => React.ReactNode;
+	icon: LucideIcon;
 }
 
 export function VoteButton({
@@ -13,7 +14,7 @@ export function VoteButton({
 	isActive,
 	isVoting,
 	voteCount,
-	children,
+	icon: Icon,
 }: VoteButtonProps) {
 	const testId = type === "upvote" ? "vote-up-button" : "vote-down-button";
 	const iconClass = `mr-2 h-4 w-4 transition-all duration-300 ${
@@ -30,7 +31,7 @@ export function VoteButton({
 			value={type === "upvote" ? "true" : "false"}
 			variant="ghost"
 		>
-			{children({ iconClass })}
+			<Icon className={iconClass} />
 			{type === "upvote" && voteCount !== undefined && voteCount}
 		</Button>
 	);
