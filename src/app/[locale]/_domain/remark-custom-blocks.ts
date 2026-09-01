@@ -20,8 +20,7 @@ import { BLOCK_TYPE_TO_CLASS, isValidBlockType } from "./custom-block-types";
  * インライン記法:
  * - {note:内容} → <span class="note">内容</span>
  * - {pb:ed:n} → <span class="pb" data-ed="ed" data-n="n"></span>
- * - {pb:ed} → <span class="pb" data-ed="ed"></span>
- * - {pb:n} → <span class="pb" data-n="n"></span>
+ * - {pb:x} → <span class="pb" data-value="x"></span>（版名かページ番号かは抽出側で判定）
  * - {pb} → <span class="pb"></span>
  */
 export const remarkCustomBlocks: Plugin<[], Root> = () => (tree: Root) => {
@@ -90,7 +89,7 @@ function processInlineNotations(value: string): Array<Text | Html> {
 			// {pb:ed:n}
 			parts.push({
 				type: "html",
-				value: `<span class="pb" data-ed="${escapeHtmlAttribute(match[1])}" data-n="${escapeHtmlAttribute(match[2])}"></span>`,
+				value: `<span class="pb" data-ed="${escapeHtml(match[1])}" data-n="${escapeHtml(match[2])}"></span>`,
 			});
 		} else if (match[3]) {
 			// {note:内容}
@@ -102,7 +101,7 @@ function processInlineNotations(value: string): Array<Text | Html> {
 			// {pb:ed} または {pb:n}
 			parts.push({
 				type: "html",
-				value: `<span class="pb" data-value="${escapeHtmlAttribute(match[4])}"></span>`,
+				value: `<span class="pb" data-value="${escapeHtml(match[4])}"></span>`,
 			});
 		} else {
 			// {pb}
@@ -134,24 +133,10 @@ function processInlineNotations(value: string): Array<Text | Html> {
 }
 
 /**
- * HTMLコンテンツをエスケープ
+ * HTML本文・属性値の両方で安全に扱えるようにエスケープ
  */
-function escapeHtml(text: string): string {
-	// HTML本文として安全に扱うために文字参照へ変換する
+export function escapeHtml(text: string): string {
 	return text
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&#39;");
-}
-
-/**
- * HTML属性値をエスケープ
- */
-function escapeHtmlAttribute(value: string): string {
-	// HTML属性として安全に扱うために文字参照へ変換する
-	return value
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")

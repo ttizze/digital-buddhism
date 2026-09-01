@@ -3,8 +3,7 @@
 import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, SaveIcon } from "lucide-react";
-import { type FormEvent, useEffect, useState, useTransition } from "react";
-import { toast } from "sonner";
+import { type FormEvent, useState, useTransition } from "react";
 import { authClient } from "@/app/[locale]/_service/auth-client";
 import type { SanitizedUser } from "@/app/types";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateProfile } from "@/routes/$locale/-profile-edit-data";
 import type { ProfileEditState } from "../_service/profile-edit";
+import { notifyEditState } from "./notify-edit-state";
 
 interface ProfileFormProps {
 	currentUser: SanitizedUser;
@@ -30,34 +30,6 @@ export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 			twitterHandle: currentUser.twitterHandle || "",
 		},
 	});
-	useEffect(() => {
-		const updateNameSession = async () => {
-			if (editState.success && editState.message) {
-				toast.success(editState.message);
-				await authClient.updateUser({
-					name: editState.data?.name,
-				});
-				return;
-			}
-			if (!editState.success) {
-				const errorMessage =
-					editState.zodErrors?.name?.[0] ??
-					editState.zodErrors?.profile?.[0] ??
-					editState.zodErrors?.twitterHandle?.[0] ??
-					editState.zodErrors?.handle?.[0];
-				if (errorMessage) {
-					toast.error(errorMessage);
-					return;
-				}
-				if (editState.message) {
-					toast.error(editState.message);
-				}
-			}
-		};
-
-		void updateNameSession();
-	}, [editState]);
-
 	const handleProfileSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		const formData = new FormData(event.currentTarget);
@@ -66,7 +38,12 @@ export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 			void (async () => {
 				const result = await updateProfileFn({ data: formData });
 				setEditState(result);
+				notifyEditState(result);
 				if (result.success) {
+					if (result.message) {
+						// 表示名の変更をセッションにも反映する
+						await authClient.updateUser({ name: result.data?.name });
+					}
 					await router.invalidate({ sync: true });
 				}
 			})();

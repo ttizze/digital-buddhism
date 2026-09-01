@@ -56,7 +56,7 @@ export function SearchResults({
 					pageSummaries.length > 0 && (
 						<div className="space-y-4">
 							{pageSummaries.map((p) => (
-								<PageList key={p.id} locale={locale} PageForList={p} />
+								<PageList key={p.id} locale={locale} page={p} />
 							))}
 						</div>
 					)}

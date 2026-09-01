@@ -16,16 +16,12 @@ import type { Segment } from "@/app/[locale]/types";
  */
 export function WrapSegment<Tag extends keyof JSX.IntrinsicElements>(
 	Tag: Tag,
-	segments: Segment[],
-	interactive: boolean = true,
+	segmentsByNumber: ReadonlyMap<number, Segment>,
+	interactive: boolean,
 ) {
-	const segmentsMap = new Map<number, Segment>(
-		segments.map((s) => [s.number, s]),
-	);
-
 	return (p: JSX.IntrinsicElements[Tag] & { "data-number-id"?: number }) => {
 		const id = p["data-number-id"];
-		const segment = id !== undefined ? segmentsMap.get(+id) : undefined;
+		const segment = id !== undefined ? segmentsByNumber.get(+id) : undefined;
 
 		// セグメント対象でなければそのまま DOM 要素を返す
 		if (!segment) return createElement(Tag, p, p.children);

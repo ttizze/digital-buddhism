@@ -1,6 +1,6 @@
+import { fetchUserByHandle } from "@/app/_db/queries.server";
 import type { User } from "@/db/types.helpers";
 import {
-	fetchUserByHandle,
 	fetchUserTranslationContributions,
 	type UserTranslationContribution,
 } from "../_db/queries";

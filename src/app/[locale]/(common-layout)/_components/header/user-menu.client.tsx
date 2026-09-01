@@ -2,6 +2,7 @@
 
 import { Link } from "@tanstack/react-router";
 import { LogOutIcon } from "lucide-react";
+import { useTranslations } from "use-intl";
 import { authClient } from "@/app/[locale]/_service/auth-client";
 import { LocaleSelector } from "@/app/[locale]/(common-layout)/_components/header/locale-selector/client";
 import { ModeToggle } from "@/app/[locale]/(common-layout)/_components/header/mode-toggle";
@@ -34,6 +35,7 @@ async function handleSignOut() {
 }
 
 export function UserMenu({ currentUser, locale }: UserMenuProps) {
+	const t = useTranslations("UserMenu");
 	return (
 		<DropdownMenu modal={false}>
 			<DropdownMenuTrigger>
@@ -81,7 +83,7 @@ export function UserMenu({ currentUser, locale }: UserMenuProps) {
 						type="submit"
 					>
 						<LogOutIcon className="w-4 h-4" />
-						Log out
+						{t("logOut")}
 					</button>
 				</DropdownMenuItem>
 			</DropdownMenuContent>

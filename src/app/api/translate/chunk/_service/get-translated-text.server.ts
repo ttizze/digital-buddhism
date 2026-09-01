@@ -3,9 +3,11 @@ import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { createServerLogger } from "@/app/_service/logger.server";
 import type { SegmentElement } from "../../types";
 import { getProviderFromModel } from "../_domain/get-provider-from-model";
-import { getDeepSeekModelResponse } from "../_infra/deepseek";
+import {
+	getDeepSeekModelResponse,
+	getOpenAIModelResponse,
+} from "../_infra/ai-sdk";
 import { getGeminiModelResponse } from "../_infra/gemini";
-import { getOpenAIModelResponse } from "../_infra/openai";
 
 const logger = createServerLogger("translate-chunk");
 

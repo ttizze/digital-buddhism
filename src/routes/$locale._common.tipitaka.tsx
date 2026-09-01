@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
 import { getHomeMetadata } from "@/app/[locale]/(common-layout)/_components/home/metadata";
-import { HomePresentation } from "@/app/[locale]/(common-layout)/_components/home/presentation";
+import { TipitakaPageList } from "@/app/[locale]/(common-layout)/_components/tipitaka-page-list/tipitaka-page-list";
 import { getIndexData } from "./$locale/-index-data";
 
 export const Route = createFileRoute("/$locale/_common/tipitaka")({
@@ -40,5 +40,5 @@ function TipitakaIndex() {
 	const { locale } = Route.useParams();
 	const data = Route.useLoaderData();
 
-	return <HomePresentation data={data} locale={locale} />;
+	return <TipitakaPageList locale={locale} pages={data.tipitakaPages} />;
 }

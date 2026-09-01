@@ -6,7 +6,13 @@ import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/
 import { AddAndVoteTranslations } from "./add-and-vote-translations.client";
 import { useSegmentTranslations } from "./hooks/use-segment-translations";
 
-vi.mock("use-intl", () => ({ useLocale: () => "ja" }));
+vi.mock("use-intl", async () => {
+	const { createEnTranslator } = await import("@/tests/en-translations");
+	return {
+		useLocale: () => "ja",
+		useTranslations: (namespace?: string) => createEnTranslator(namespace),
+	};
+});
 vi.mock("@tanstack/react-router", () => ({
 	Link: ({ children }: { children: ReactNode }) => children,
 }));
@@ -89,6 +95,7 @@ describe("AddAndVoteTranslations", () => {
 			data: [firstTranslation, secondTranslation],
 			error: undefined,
 			isLoading: false,
+			isValidating: false,
 			mutate: vi.fn(),
 		});
 		const translationElement = document.createElement("span");
@@ -112,6 +119,7 @@ describe("AddAndVoteTranslations", () => {
 			data: [firstTranslation, secondTranslation],
 			error: undefined,
 			isLoading: false,
+			isValidating: false,
 			mutate,
 		});
 		const fetchMock = vi

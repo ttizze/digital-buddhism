@@ -17,39 +17,28 @@ const toastStyle = {
 
 export function useTranslationJobToast(jobs: TranslationJobForToast[]) {
 	const idRef = useRef<string | number>(undefined);
-	// 生成
-	useEffect(() => {
-		if (jobs.length && !idRef.current) {
-			idRef.current = toast(<JobsView jobs={jobs} />, {
-				duration: Number.POSITIVE_INFINITY,
-				...toastStyle,
-			});
-		}
-	}, [jobs]);
 
-	// 更新
+	// 生成・更新・完了後のIDクリアを1つのエフェクトで行う
+	// （id が未定義なら toast() が新規作成し、あれば同じトーストを更新する）
 	useEffect(() => {
-		if (!idRef.current || !jobs.length) return;
+		if (!jobs.length) return;
 
-		toast(<JobsView jobs={jobs} />, {
+		const done = areJobsDone(jobs);
+		idRef.current = toast(<JobsView jobs={jobs} />, {
 			id: idRef.current,
-			duration: areJobsDone(jobs) ? 3000 : Number.POSITIVE_INFINITY,
+			duration: done ? 3000 : Number.POSITIVE_INFINITY,
 			...toastStyle,
 			classNames: {
 				closeButton:
 					"absolute right-2 top-2 text-muted-foreground cursor-pointer",
 			},
 		});
-	}, [jobs]);
 
-	// 全完了後に ID をクリア
-	useEffect(() => {
-		if (!idRef.current) return;
-		if (areJobsDone(jobs)) {
-			const t = setTimeout(() => {
+		if (done) {
+			const timeout = setTimeout(() => {
 				idRef.current = undefined;
 			}, 3100);
-			return () => clearTimeout(t);
+			return () => clearTimeout(timeout);
 		}
 	}, [jobs]);
 }

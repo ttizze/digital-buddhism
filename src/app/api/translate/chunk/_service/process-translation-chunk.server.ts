@@ -1,4 +1,4 @@
-import { getPageSegments } from "../../_db/queries.server";
+import { getPageSegmentIds } from "../../_db/queries.server";
 import type { TranslateChunkParams } from "../../types";
 import {
 	getTranslatedSegmentIds,
@@ -8,7 +8,6 @@ import { translateChunk } from "./translate-chunk.server";
 
 export async function processTranslationChunk(params: TranslateChunkParams) {
 	const aiUserId = await translateChunk(
-		params.userId,
 		params.aiModel,
 		params.segments,
 		params.targetLocale,
@@ -18,20 +17,15 @@ export async function processTranslationChunk(params: TranslateChunkParams) {
 	);
 
 	const targetPageId = params.annotationPageId ?? params.pageId;
-	const pageSegments = await getPageSegments(targetPageId);
+	const segmentIds = await getPageSegmentIds(targetPageId);
 	const translatedSegmentIds = await getTranslatedSegmentIds(
-		pageSegments.map((segment) => segment.id),
+		segmentIds,
 		params.targetLocale,
 		aiUserId,
 	);
-	const updated = await setTranslationProgress(
+	await setTranslationProgress(
 		params.translationJobId,
 		translatedSegmentIds.size,
-		pageSegments.length,
+		segmentIds.length,
 	);
-
-	return {
-		completedPageId:
-			updated?.status === "COMPLETED" ? params.pageId : undefined,
-	};
 }

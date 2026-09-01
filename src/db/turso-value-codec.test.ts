@@ -93,7 +93,7 @@ describe("Tursoの値codec", () => {
 
 		const page = await db
 			.selectFrom("tipitakaPages")
-			.select(["createdAt as pageCreatedAt", "mdastJson"])
+			.select(["createdAt as translationJobCreatedAt", "mdastJson"])
 			.where("id", "=", 1)
 			.executeTakeFirstOrThrow();
 		const user = await db
@@ -112,7 +112,7 @@ describe("Tursoの値codec", () => {
 			.where("id", "=", 1)
 			.executeTakeFirstOrThrow();
 
-		expect(page).toEqual({ pageCreatedAt: createdAt, mdastJson });
+		expect(page).toEqual({ translationJobCreatedAt: createdAt, mdastJson });
 		expect(user).toEqual({ id: "u1", isAi: true, emailVerified: false });
 		expect(settings).toEqual({
 			id: 1,

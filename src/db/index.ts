@@ -7,7 +7,7 @@ import {
 import { TursoValueCodecPlugin } from "./turso-value-codec";
 import type { DB } from "./types";
 
-export type KyselyDbWithClient = Kysely<DB> & {
+type KyselyDbWithClient = Kysely<DB> & {
 	client: ReturnType<typeof getDatabaseClient>;
 };
 
@@ -66,6 +66,5 @@ export async function disposeDb(): Promise<void> {
 		}
 		globalThis.__tursoClient = null;
 		globalThis.__kyselyDb = null;
-		globalThis.__drizzleDb = null;
 	}
 }

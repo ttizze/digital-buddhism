@@ -117,7 +117,7 @@ describe("/api/segment-glosses", () => {
 		);
 
 		expect(response.status).toBe(200);
-		expect(response.headers.get("Cache-Control")).toBe("no-store");
+		expect(response.headers.get("Cache-Control")).toBe("private, no-store");
 		expect(await response.json()).toStrictEqual([
 			expect.objectContaining({
 				id: selectedUnit.id,

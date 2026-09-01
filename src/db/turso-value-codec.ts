@@ -25,58 +25,48 @@ import {
 type InputCodec = "json" | "stringArray" | "timestamp" | "boolean";
 type ResultCodec = InputCodec;
 
-const inputCodecs: Record<string, InputCodec> = {
+// スキーマ（src/drizzle/schema.ts）の timestamp_ms / boolean カラムと同期させること。
+// 乖離は turso-value-codec.schema.test.ts が検知する。
+export const inputCodecs: Record<string, InputCodec> = {
 	mdast_json: "json",
 	target_locales: "stringArray",
 	access_token_expires_at: "timestamp",
-	archived_at: "timestamp",
 	created_at: "timestamp",
 	expires_at: "timestamp",
 	finished_at: "timestamp",
-	last_reply_at: "timestamp",
-	last_used_at: "timestamp",
-	published_at: "timestamp",
 	refresh_token_expires_at: "timestamp",
+	requested_at: "timestamp",
+	selected_at: "timestamp",
 	started_at: "timestamp",
 	updated_at: "timestamp",
 	email_verified: "boolean",
 	is_ai: "boolean",
-	is_deleted: "boolean",
 	is_upvote: "boolean",
 	read: "boolean",
 };
 
-const dateResultColumns = new Set([
+// スキーマカラムの camelCase 名に加え、クエリ内のエイリアス（as ...）もここに登録する
+export const dateResultColumns = new Set([
 	"accessTokenExpiresAt",
-	"archivedAt",
 	"createdAt",
 	"expiresAt",
 	"finishedAt",
-	"lastReplyAt",
-	"lastUsedAt",
-	"publishedAt",
 	"refreshTokenExpiresAt",
+	"requestedAt",
+	"selectedAt",
 	"startedAt",
 	"updatedAt",
-	"pageCreatedAt",
-	"pageUpdatedAt",
 	"translationJobCreatedAt",
 	"translationJobUpdatedAt",
-	"userCreatedAt",
-	"userUpdatedAt",
 ]);
 
-const booleanResultColumns = new Set([
+export const booleanResultColumns = new Set([
 	"currentUserVoteIsUpvote",
 	"emailVerified",
-	"isAI",
 	"isAi",
-	"isDeleted",
 	"isUpvote",
-	"ownerUpvote",
 	"previousIsUpvote",
 	"read",
-	"userIsAi",
 ]);
 
 const resultCodecs = new Map<string, ResultCodec>([
@@ -313,14 +303,16 @@ export class TursoValueCodecPlugin implements KyselyPlugin {
 	}: PluginTransformResultArgs): Promise<QueryResult<UnknownRow>> {
 		return {
 			...result,
+			// 行側のキーだけを走査し、変換対象が無い行はそのまま返す
 			rows: result.rows.map((row) => {
-				const decoded: UnknownRow = { ...row };
-				for (const [column, codec] of resultCodecs) {
-					if (column in decoded) {
-						decoded[column] = decodeValue(codec, decoded[column], column);
-					}
+				let decoded: UnknownRow | undefined;
+				for (const [column, value] of Object.entries(row)) {
+					const codec = resultCodecs.get(column);
+					if (!codec) continue;
+					decoded ??= { ...row };
+					decoded[column] = decodeValue(codec, value, column);
 				}
-				return decoded;
+				return decoded ?? row;
 			}),
 		};
 	}

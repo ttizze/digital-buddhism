@@ -1,5 +1,9 @@
 import { BASE_URL } from "@/app/_constants/base-url";
 import {
+	DEFAULT_MESSAGE_LOCALE,
+	MESSAGE_LOCALES,
+} from "@/app/_constants/message-locales";
+import {
 	countPublicPages,
 	fetchTipitakaPagesWithTranslationsChunk,
 } from "@/app/_db/sitemap-queries.server";
@@ -10,7 +14,7 @@ import {
 
 const CHUNK = 1_000;
 
-export const SITEMAP_REVALIDATE = 3600;
+const SITEMAP_REVALIDATE = 3600;
 
 export async function getSitemapChunkCount() {
 	const total = await countPublicPages();
@@ -23,8 +27,8 @@ export async function generateSitemapEntries(id: number) {
 		offset: id * CHUNK,
 	});
 
-	const supportedLocales = ["en", "ja", "zh", "ko", "es"] as const;
-	const defaultLocale = "en";
+	const supportedLocales = MESSAGE_LOCALES;
+	const defaultLocale = DEFAULT_MESSAGE_LOCALE;
 
 	const staticPaths = ["/", "/search"];
 	const staticRoutes = staticPaths.map((route) => ({

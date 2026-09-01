@@ -3,6 +3,7 @@
 import { Link } from "@tanstack/react-router";
 import { Bell, Loader2 } from "lucide-react";
 import useSWR from "swr";
+import { useTranslations } from "use-intl";
 import type { NotificationJson } from "@/app/api/notifications/_types/notification";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -31,6 +32,7 @@ function formatNotificationDate(createdAt: string, locale: string): string {
 }
 
 export function NotificationsDropdownClient({ locale }: { locale: string }) {
+	const t = useTranslations("Notifications");
 	const { data, isLoading, mutate } = useSWR<NotificationsResponse>(
 		"/api/notifications",
 		fetchNotifications,
@@ -91,7 +93,7 @@ export function NotificationsDropdownClient({ locale }: { locale: string }) {
 			>
 				{!data?.notifications || data.notifications.length === 0 ? (
 					<DropdownMenuItem className="cursor-default">
-						No notifications
+						{t("empty")}
 					</DropdownMenuItem>
 				) : (
 					data.notifications.map((notification, index) => (
@@ -146,6 +148,7 @@ function NotificationContent({
 		pageTitle,
 		segmentTranslationText,
 	} = notificationRowsWithRelations;
+	const t = useTranslations("Notifications");
 
 	return (
 		<>
@@ -156,24 +159,33 @@ function NotificationContent({
 				locale={locale}
 			/>
 			<span className="flex flex-col">
-				<span>
-					<Link
-						className="hover:underline font-bold"
-						params={{ handle: actorHandle, locale }}
-						to="/$locale/$handle"
-					>
-						{actorName}
-					</Link>
-					<span className="text-gray-500"> voted for </span>
-					<span>{segmentTranslationText}</span>
-					<span className="text-gray-500"> on </span>
-					<Link
-						className="hover:underline font-bold"
-						params={{ locale, pageSlug }}
-						to="/$locale/tipitaka/$pageSlug"
-					>
-						{pageTitle}
-					</Link>
+				<span className="text-gray-500">
+					{t.rich("vote", {
+						actorName,
+						segmentText: segmentTranslationText ?? "",
+						pageTitle: pageTitle ?? "",
+						actor: (children) => (
+							<Link
+								className="hover:underline font-bold text-foreground"
+								params={{ handle: actorHandle, locale }}
+								to="/$locale/$handle"
+							>
+								{children}
+							</Link>
+						),
+						segment: (children) => (
+							<span className="text-foreground">{children}</span>
+						),
+						page: (children) => (
+							<Link
+								className="hover:underline font-bold text-foreground"
+								params={{ locale, pageSlug }}
+								to="/$locale/tipitaka/$pageSlug"
+							>
+								{children}
+							</Link>
+						),
+					})}
 				</span>
 				<span className="text-gray-500 text-sm">
 					{formatNotificationDate(

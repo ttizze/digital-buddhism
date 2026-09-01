@@ -1,8 +1,72 @@
 {
+	"StartButton": {
+		"start": "开始"
+	},
+	"UserMenu": {
+		"logOut": "退出登录"
+	},
+	"ModeToggle": {
+		"light": "浅色主题",
+		"dark": "深色主题"
+	},
+	"LoginDialog": {
+		"title": "登录 Tipiṭaka",
+		"description": "阅读并翻译三藏经。",
+		"continueWithEmail": "或使用邮箱继续",
+		"notConfigured": "此环境未配置身份验证。",
+		"agreement": "登录即表示您同意我们的<terms>服务条款</terms>和<privacy>隐私政策</privacy>。"
+	},
+	"LocaleSelector": {
+		"select": "选择",
+		"searchPlaceholder": "搜索...",
+		"empty": "未找到语言。",
+		"addNew": "+ 新增"
+	},
+	"AddTranslateDialog": {
+		"loginTitle": "请登录后再添加翻译",
+		"title": "添加新翻译",
+		"language": "语言",
+		"aiModel": "AI 模型",
+		"selectModelPlaceholder": "选择模型",
+		"translate": "翻译"
+	},
+	"TranslationJobs": {
+		"title": "翻译任务"
+	},
+	"Notifications": {
+		"empty": "暂无通知",
+		"vote": "<actor>{actorName}</actor> 在 <page>{pageTitle}</page> 上为 <segment>{segmentText}</segment> 点了赞"
+	},
+	"TranslationSection": {
+		"by": "译者:",
+		"otherTranslations": "其他翻译",
+		"loading": "正在加载翻译...",
+		"loadFailed": "翻译加载失败",
+		"addTranslationPlaceholder": "或输入您的翻译...",
+		"submit": "提交",
+		"delete": "删除",
+		"deleting": "删除中..."
+	},
+	"FloatingControls": {
+		"view": "视图",
+		"share": "分享",
+		"copied": "已复制到剪贴板",
+		"showAnnotation": "显示{label}",
+		"hideAnnotation": "隐藏{label}",
+		"viewUserOnly": "当前: 仅译文（点击切换）",
+		"viewSourceOnly": "当前: 仅原文（点击切换）",
+		"viewBoth": "当前: 双语显示（点击切换）"
+	},
+	"PageNavigation": {
+		"pageTreeTitle": "页面树",
+		"loading": "正在加载页面树…",
+		"unavailable": "无法获取页面树。",
+		"tocTitle": "目录",
+		"exportMarkdown": "导出 Markdown"
+	},
 	"Footer": {
-		"about": "About",
-		"privacyPolicy": "Privacy Policy",
-		"termsOfService": "Terms of Service"
+		"privacyPolicy": "隐私政策",
+		"termsOfService": "服务条款"
 	},
 	"Header": {
 		"HelpPopover": {

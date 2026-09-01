@@ -1,9 +1,10 @@
+import { isTranslationJobTerminalStatus } from "@/app/types/translation-job";
 import { db } from "@/db";
+import { markJobFailed } from "./_db/mutations.server";
 import { orchestrateTranslation } from "./_service/orchestrate-translation.server";
 import {
 	claimTranslationChunk,
 	completeTranslationChunk,
-	markJobFailed,
 	releaseTranslationChunk,
 } from "./chunk/_db/mutations.server";
 import { processTranslationChunk } from "./chunk/_service/process-translation-chunk.server";
@@ -35,7 +36,7 @@ async function isTerminalTranslationJob(translationJobId: number) {
 		.select("status")
 		.where("id", "=", translationJobId)
 		.executeTakeFirst();
-	return !job || job.status === "COMPLETED" || job.status === "FAILED";
+	return !job || isTranslationJobTerminalStatus(job.status);
 }
 
 export async function consumeTranslationQueue(

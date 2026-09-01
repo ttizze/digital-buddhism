@@ -108,6 +108,43 @@ async function readCurrentTranslationRevision(
 		: undefined;
 }
 
+/**
+ * 新リビジョンのオーバーレイを書き、ポインタを差し替える。
+ * reader 側の readPointedTranslationOverlay と対になる書き込みヘルパー。
+ */
+async function writeTranslationOverlay({
+	store,
+	pointerKey,
+	keyForRevision,
+	locale,
+	loadTranslations,
+}: {
+	store: TipitakaReadModelStore;
+	pointerKey: string;
+	keyForRevision: (revision: string) => string;
+	locale: string;
+	loadTranslations: () => Promise<Record<string, string>>;
+}): Promise<void> {
+	const revision = crypto.randomUUID();
+	const [previousRevision, translations] = await Promise.all([
+		readCurrentTranslationRevision(store, pointerKey),
+		loadTranslations(),
+	]);
+	const snapshot: TranslationOverlay = {
+		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
+		generatedAt: new Date().toISOString(),
+		locale,
+		translations,
+	};
+	const pointer: TranslationPointer = {
+		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
+		revision,
+		previousRevision,
+	};
+	await store.put(keyForRevision(revision), JSON.stringify(snapshot));
+	await store.put(pointerKey, JSON.stringify(pointer));
+}
+
 export async function publishPageBase(
 	slug: string,
 	store: TipitakaReadModelStore = getTipitakaReadModelStore(),
@@ -189,28 +226,13 @@ export async function publishPageTranslationOverlay(
 	locale: string,
 	store: TipitakaReadModelStore = getTipitakaReadModelStore(),
 ): Promise<void> {
-	const revision = crypto.randomUUID();
-	const pointerKey = pageTranslationPointerKey(pageId, locale);
-	const [previousRevision, translations] = await Promise.all([
-		readCurrentTranslationRevision(store, pointerKey),
-		queryBestTranslationTextsForPage(pageId, locale),
-	]);
-	const snapshot: TranslationOverlay = {
-		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
-		generatedAt: new Date().toISOString(),
+	await writeTranslationOverlay({
+		store,
+		pointerKey: pageTranslationPointerKey(pageId, locale),
+		keyForRevision: (revision) => pageTranslationKey(pageId, locale, revision),
 		locale,
-		translations,
-	};
-	const pointer: TranslationPointer = {
-		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
-		revision,
-		previousRevision,
-	};
-	await store.put(
-		pageTranslationKey(pageId, locale, revision),
-		JSON.stringify(snapshot),
-	);
-	await store.put(pointerKey, JSON.stringify(pointer));
+		loadTranslations: () => queryBestTranslationTextsForPage(pageId, locale),
+	});
 }
 
 export async function publishHomeBase(
@@ -235,30 +257,18 @@ export async function publishHomeTranslationOverlay(
 	locale: string,
 	store: TipitakaReadModelStore = getTipitakaReadModelStore(),
 ): Promise<void> {
-	const revision = crypto.randomUUID();
-	const pointerKey = homeTranslationPointerKey(locale);
-	const [tree, previousRevision] = await Promise.all([
-		fetchTipitakaPageTree(locale),
-		readCurrentTranslationRevision(store, pointerKey),
-	]);
-	const translations: Record<string, string> = {};
-	collectTreeTranslations(tree, translations);
-	const snapshot: TranslationOverlay = {
-		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
-		generatedAt: new Date().toISOString(),
+	await writeTranslationOverlay({
+		store,
+		pointerKey: homeTranslationPointerKey(locale),
+		keyForRevision: (revision) => homeTranslationKey(locale, revision),
 		locale,
-		translations,
-	};
-	const pointer: TranslationPointer = {
-		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
-		revision,
-		previousRevision,
-	};
-	await store.put(
-		homeTranslationKey(locale, revision),
-		JSON.stringify(snapshot),
-	);
-	await store.put(pointerKey, JSON.stringify(pointer));
+		loadTranslations: async () => {
+			const tree = await fetchTipitakaPageTree(locale);
+			const translations: Record<string, string> = {};
+			collectTreeTranslations(tree, translations);
+			return translations;
+		},
+	});
 }
 
 export async function publishTipitakaProjection(

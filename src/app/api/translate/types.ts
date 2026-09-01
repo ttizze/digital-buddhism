@@ -13,7 +13,6 @@ export type TranslatedElement = {
 
 /** 翻訳ジョブのオーケストレーターへ渡すパラメータ */
 export interface TranslateJobParams {
-	userId: string;
 	pageId: number;
 	translationJobId: number;
 	aiModel: string;

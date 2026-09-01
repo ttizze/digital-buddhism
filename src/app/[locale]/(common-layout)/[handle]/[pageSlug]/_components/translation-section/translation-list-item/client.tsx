@@ -2,8 +2,10 @@
 import { Link } from "@tanstack/react-router";
 import { EllipsisVertical, Trash2 } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
+import { useTranslations } from "use-intl";
 import { useHydrated } from "@/app/_hooks/use-hydrated";
 import { authClient } from "@/app/[locale]/_service/auth-client";
+import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form";
 import { sanitizeAndParseText } from "@/app/[locale]/_utils/sanitize-and-parse-text.client";
 import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
 import { Button } from "@/components/ui/button";
@@ -31,6 +33,7 @@ export function TranslationListItem({
 	locale = "en",
 }: TranslationItemProps) {
 	const hydrated = useHydrated();
+	const t = useTranslations("TranslationSection");
 	const isDeletingTranslationRef = useRef(false);
 	const [isDeletingTranslation, setIsDeletingTranslation] = useState(false);
 
@@ -45,18 +48,14 @@ export function TranslationListItem({
 		setIsDeletingTranslation(true);
 
 		try {
-			const response = await fetch("/api/segment-translations", {
+			const response = await fetchAuthedForm({
+				url: "/api/segment-translations",
 				method: "DELETE",
 				body: new FormData(event.currentTarget),
-				credentials: "same-origin",
+				locale,
 			});
 
-			if (response.status === 401) {
-				window.location.assign(`/${locale}/auth/login`);
-				return;
-			}
-
-			if (response.ok) {
+			if (response?.ok) {
 				onDeleted?.();
 			}
 		} finally {
@@ -93,7 +92,7 @@ export function TranslationListItem({
 										type="submit"
 									>
 										<Trash2 className="h-4 w-4" />
-										{isDeletingTranslation ? "Deleting..." : "Delete"}
+										{isDeletingTranslation ? t("deleting") : t("delete")}
 									</button>
 								</DropdownMenuItem>
 							</form>
@@ -108,7 +107,7 @@ export function TranslationListItem({
 					to="/$locale/$handle"
 				>
 					<span className="text-sm text-gray-500 text-right flex justify-end items-center  ">
-						by: {translation.userName}
+						{t("by")} {translation.userName}
 					</span>
 				</Link>
 				<VoteButtons

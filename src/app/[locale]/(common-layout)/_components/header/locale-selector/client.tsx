@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import { Check, ChevronDown } from "lucide-react";
 import { startTransition, useState } from "react";
 import useSWR from "swr";
-import { useLocale } from "use-intl";
+import { useLocale, useTranslations } from "use-intl";
 import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,6 +63,7 @@ export function LocaleSelector({
 	currentHandle,
 	userPlan,
 }: LocaleSelectorProps) {
+	const t = useTranslations("LocaleSelector");
 	const [open, setOpen] = useState(false);
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const navigate = useNavigate();
@@ -139,7 +140,7 @@ export function LocaleSelector({
 								/>
 							)}
 							<span className="truncate">
-								{selectedOption?.name ?? "Select"}
+								{selectedOption?.name ?? t("select")}
 							</span>
 						</div>
 						<ChevronDown
@@ -152,7 +153,7 @@ export function LocaleSelector({
 				</PopoverTrigger>
 				<PopoverContent className="w-60 p-0  truncate" sideOffset={-4}>
 					<Command>
-						<CommandInput placeholder="search..." />
+						<CommandInput placeholder={t("searchPlaceholder")} />
 						<CommandList>
 							{pageSlug && (
 								<>
@@ -160,7 +161,7 @@ export function LocaleSelector({
 									<Separator />
 								</>
 							)}
-							<CommandEmpty>No locales found.</CommandEmpty>
+							<CommandEmpty>{t("empty")}</CommandEmpty>
 							<CommandGroup>
 								{localeOptionWithStatus.map((item) => (
 									<CommandItem
@@ -191,7 +192,7 @@ export function LocaleSelector({
 										onClick={() => setDialogOpen(true)}
 										variant="default"
 									>
-										+ Add New
+										{t("addNew")}
 									</Button>
 								</div>
 							</>

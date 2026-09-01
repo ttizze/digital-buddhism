@@ -11,6 +11,7 @@ import {
 	TwitterShareButton,
 } from "react-share";
 import { toast } from "sonner";
+import { useTranslations } from "use-intl";
 import { viewQueryState } from "@/app/[locale]/(common-layout)/_components/view-query";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 
 export function ShareDialog() {
+	const t = useTranslations("FloatingControls");
 	const [isOpen, setIsOpen] = useState(false);
 	const [view] = useQueryState("view", viewQueryState);
 
@@ -50,7 +52,7 @@ export function ShareDialog() {
 
 			<DialogContent className="sm:max-w-md rounded-3xl p-6">
 				<DialogHeader>
-					<DialogTitle className="text-center">Share</DialogTitle>
+					<DialogTitle className="text-center">{t("share")}</DialogTitle>
 				</DialogHeader>
 
 				<div className="flex flex-col gap-6 mt-4">
@@ -60,7 +62,7 @@ export function ShareDialog() {
 							className="rounded-full"
 							onClick={() => {
 								navigator.clipboard.writeText(getShareUrl());
-								toast.success("Copied to clipboard");
+								toast.success(t("copied"));
 							}}
 							size="icon"
 							variant="outline"

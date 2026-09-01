@@ -40,22 +40,13 @@ export async function fetchLocaleInfoByPageSlug(pageSlug: string) {
 		return null;
 	}
 
-	// 最初の行からページ情報を取得
-	const firstRow = rows[0];
-	if (!firstRow) {
-		return null;
-	}
-
-	// 重複を排除して関連データを集約
-	const translationJobsSet = new Map();
-	const translationProofsSet = new Map();
-
-	for (const row of rows) {
-		// translationJobs を集約（null でない場合のみ）
-		if (row.translationJobId) {
-			const key = `${row.translationJobId}`;
-			if (!translationJobsSet.has(key)) {
-				translationJobsSet.set(key, {
+	// JOIN のファンアウトで重複した関連データを Map で排除して集約
+	const translationJobs = new Map(
+		rows
+			.filter((row) => row.translationJobId)
+			.map((row) => [
+				row.translationJobId,
+				{
 					id: row.translationJobId,
 					pageId: row.translationJobPageId,
 					userId: row.translationJobUserId,
@@ -66,25 +57,24 @@ export async function fetchLocaleInfoByPageSlug(pageSlug: string) {
 					error: row.translationJobError,
 					createdAt: row.translationJobCreatedAt,
 					updatedAt: row.translationJobUpdatedAt,
-				});
-			}
-		}
-
-		// translationProofs を集約（null でない場合のみ）
-		if (row.proofLocale) {
-			const key = row.proofLocale;
-			if (!translationProofsSet.has(key)) {
-				translationProofsSet.set(key, {
+				},
+			]),
+	);
+	const translationProofs = new Map(
+		rows
+			.filter((row) => row.proofLocale)
+			.map((row) => [
+				row.proofLocale,
+				{
 					locale: row.proofLocale,
 					translationProofStatus: row.translationProofStatus,
-				});
-			}
-		}
-	}
+				},
+			]),
+	);
 
 	return {
 		sourceLocale: TIPITAKA_SOURCE_LOCALE,
-		translationJobs: Array.from(translationJobsSet.values()),
-		translationProofs: Array.from(translationProofsSet.values()),
+		translationJobs: Array.from(translationJobs.values()),
+		translationProofs: Array.from(translationProofs.values()),
 	};
 }

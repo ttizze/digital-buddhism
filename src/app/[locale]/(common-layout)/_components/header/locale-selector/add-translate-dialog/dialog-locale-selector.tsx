@@ -1,6 +1,7 @@
 "use client";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
+import { useTranslations } from "use-intl";
 import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +29,7 @@ export function DialogLocaleSelector({
 	targetLocale,
 	onChange,
 }: DialogLocaleSelectorProps) {
+	const t = useTranslations("LocaleSelector");
 	const [open, setOpen] = useState(false);
 
 	const selectedOption = supportedLocaleOptions.find(
@@ -46,16 +48,18 @@ export function DialogLocaleSelector({
 					variant="outline"
 				>
 					<div className="flex items-center">
-						<span className="truncate">{selectedOption?.name ?? "Select"}</span>
+						<span className="truncate">
+							{selectedOption?.name ?? t("select")}
+						</span>
 					</div>
 					<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className="w-full p-0 truncate">
 				<Command>
-					<CommandInput placeholder="search..." />
+					<CommandInput placeholder={t("searchPlaceholder")} />
 					<CommandList>
-						<CommandEmpty>No locales found.</CommandEmpty>
+						<CommandEmpty>{t("empty")}</CommandEmpty>
 						<CommandGroup>
 							{supportedLocaleOptions.map((item) => (
 								<CommandItem

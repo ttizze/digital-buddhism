@@ -9,6 +9,16 @@ export async function getPageSegments(pageId: number) {
 		.execute();
 }
 
+/** 進捗計算用にセグメントIDだけを取得する（本文は読まない）。 */
+export async function getPageSegmentIds(pageId: number): Promise<number[]> {
+	const rows = await db
+		.selectFrom("segments")
+		.select("segments.id")
+		.where("segments.tipitakaPageId", "=", pageId)
+		.execute();
+	return rows.map((row) => row.id);
+}
+
 /** ページタイトル（セグメント番号0のテキスト）を取得する。 */
 export async function getPageTitle(pageId: number): Promise<string | null> {
 	const result = await db

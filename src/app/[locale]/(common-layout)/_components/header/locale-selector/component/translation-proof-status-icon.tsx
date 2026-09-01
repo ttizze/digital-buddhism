@@ -21,38 +21,28 @@ const colorMap = {
 	VALIDATED: "text-emerald-500",
 } as const;
 
+const iconMap = {
+	source: FileText,
+	untranslated: FileX,
+	translated: Languages,
+} as const;
+
 export function TranslationProofStatusIcon({
 	localeStatus,
 	proofStatus,
 }: Props) {
-	// proofStatusがない場合はMACHINE_DRAFTをデフォルトとして設定
-	proofStatus = proofStatus || "MACHINE_DRAFT";
-
-	let IconComponent: typeof FileText;
+	// proofStatus 未指定時は MACHINE_DRAFT とみなす
+	const effectiveProofStatus = proofStatus ?? "MACHINE_DRAFT";
+	const IconComponent = iconMap[localeStatus] ?? FileX;
 	const colorClass =
 		localeStatus === "translated"
-			? colorMap[proofStatus]
+			? colorMap[effectiveProofStatus]
 			: colorMap[localeStatus];
-
-	switch (localeStatus) {
-		case "source":
-			IconComponent = FileText;
-			break;
-		case "untranslated":
-			IconComponent = FileX;
-			break;
-		case "translated":
-			IconComponent = Languages;
-			break;
-		default:
-			IconComponent = FileX;
-			break;
-	}
 
 	return (
 		<IconComponent
 			className={cn("w-4 h-4 mr-2", colorClass)}
-			data-testid={`${localeStatus === "translated" ? `proof-${proofStatus}` : localeStatus}-icon`}
+			data-testid={`${localeStatus === "translated" ? `proof-${effectiveProofStatus}` : localeStatus}-icon`}
 		/>
 	);
 }

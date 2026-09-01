@@ -33,20 +33,18 @@ export function VoteButtons({
 			<form onSubmit={handleSubmit}>
 				<span className="flex h-8">
 					<VoteButton
+						icon={ThumbsUp}
 						isActive={voteTarget.currentUserVoteIsUpvote === true}
 						isVoting={isVoting}
 						type="upvote"
 						voteCount={voteTarget.point}
-					>
-						{({ iconClass }) => <ThumbsUp className={iconClass} />}
-					</VoteButton>
+					/>
 					<VoteButton
+						icon={ThumbsDown}
 						isActive={voteTarget.currentUserVoteIsUpvote === false}
 						isVoting={isVoting}
 						type="downvote"
-					>
-						{({ iconClass }) => <ThumbsDown className={iconClass} />}
-					</VoteButton>
+					/>
 				</span>
 			</form>
 		</span>

@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { FaDiscord, FaGithub } from "react-icons/fa";
 import { useLocale, useTranslations } from "use-intl";
 
@@ -8,18 +9,20 @@ export function Footer() {
 		<footer className="mt-auto h-60 grid place-items-center">
 			<div className="w-full ">
 				<div className="flex justify-center items-center text-sm text-gray-600 dark:text-gray-300 gap-4">
-					<a
+					<Link
 						className="hover:text-gray-900 dark:hover:text-white"
-						href={`/${locale}/privacy`}
+						params={{ locale }}
+						to="/$locale/privacy"
 					>
 						{t("privacyPolicy")}
-					</a>
-					<a
+					</Link>
+					<Link
 						className="hover:text-gray-900 dark:hover:text-white"
-						href={`/${locale}/terms`}
+						params={{ locale }}
+						to="/$locale/terms"
 					>
 						{t("termsOfService")}
-					</a>
+					</Link>
 					<a
 						aria-label="GitHub"
 						className="transition-colors"

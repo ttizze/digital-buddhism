@@ -3,8 +3,53 @@
 import { ChevronDown, Info } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "use-intl";
+import type { TranslationProofStatus } from "@/drizzle/types";
 import { cn } from "@/lib/utils";
 import { TranslationProofStatusIcon } from "./translation-proof-status-icon";
+
+const STATUS_ROWS: Array<{
+	localeStatus: "source" | "translated" | "untranslated";
+	proofStatus: TranslationProofStatus | undefined;
+	titleKey: string;
+	descriptionKey: string;
+}> = [
+	{
+		localeStatus: "source",
+		proofStatus: undefined,
+		titleKey: "sourceTitle",
+		descriptionKey: "sourceDescription",
+	},
+	{
+		localeStatus: "translated",
+		proofStatus: "MACHINE_DRAFT",
+		titleKey: "machineDraftTitle",
+		descriptionKey: "machineDraftDescription",
+	},
+	{
+		localeStatus: "translated",
+		proofStatus: "HUMAN_TOUCHED",
+		titleKey: "humanTouchedTitle",
+		descriptionKey: "humanTouchedDescription",
+	},
+	{
+		localeStatus: "translated",
+		proofStatus: "PROOFREAD",
+		titleKey: "proofreadTitle",
+		descriptionKey: "proofreadDescription",
+	},
+	{
+		localeStatus: "translated",
+		proofStatus: "VALIDATED",
+		titleKey: "validatedTitle",
+		descriptionKey: "validatedDescription",
+	},
+	{
+		localeStatus: "untranslated",
+		proofStatus: undefined,
+		titleKey: "untranslatedTitle",
+		descriptionKey: "untranslatedDescription",
+	},
+];
 
 export function TextStatusGuide() {
 	const [showHelpSection, setShowHelpSection] = useState(false);
@@ -30,85 +75,20 @@ export function TextStatusGuide() {
 			</button>
 			{showHelpSection && (
 				<div className="mt-2 space-y-3 p-2 bg-muted/50 rounded-md">
-					<div className="flex items-center gap-3">
-						<TranslationProofStatusIcon
-							localeStatus="source"
-							proofStatus={undefined}
-						/>
-						<div className="flex-1 min-w-0">
-							<div className="font-medium text-sm">{t("sourceTitle")}</div>
-							<div className="text-xs text-muted-foreground break-words whitespace-normal">
-								{t("sourceDescription")}
+					{STATUS_ROWS.map((row) => (
+						<div className="flex items-center gap-3" key={row.titleKey}>
+							<TranslationProofStatusIcon
+								localeStatus={row.localeStatus}
+								proofStatus={row.proofStatus}
+							/>
+							<div className="flex-1 min-w-0">
+								<div className="font-medium text-sm">{t(row.titleKey)}</div>
+								<div className="text-xs text-muted-foreground break-words whitespace-normal">
+									{t(row.descriptionKey)}
+								</div>
 							</div>
 						</div>
-					</div>
-
-					<div className="flex items-center gap-3">
-						<TranslationProofStatusIcon
-							localeStatus="translated"
-							proofStatus="MACHINE_DRAFT"
-						/>
-						<div className="flex-1 min-w-0">
-							<div className="font-medium text-sm">
-								{t("machineDraftTitle")}
-							</div>
-							<div className="text-xs text-muted-foreground break-words whitespace-normal">
-								{t("machineDraftDescription")}
-							</div>
-						</div>
-					</div>
-					<div className="flex items-center gap-3">
-						<TranslationProofStatusIcon
-							localeStatus="translated"
-							proofStatus="HUMAN_TOUCHED"
-						/>
-						<div className="flex-1 min-w-0">
-							<div className="font-medium text-sm">
-								{t("humanTouchedTitle")}
-							</div>
-							<div className="text-xs text-muted-foreground break-words whitespace-normal">
-								{t("humanTouchedDescription")}
-							</div>
-						</div>
-					</div>
-					<div className="flex items-center gap-3">
-						<TranslationProofStatusIcon
-							localeStatus="translated"
-							proofStatus="PROOFREAD"
-						/>
-						<div className="flex-1 min-w-0">
-							<div className="font-medium text-sm">{t("proofreadTitle")}</div>
-							<div className="text-xs text-muted-foreground break-words whitespace-normal">
-								{t("proofreadDescription")}
-							</div>
-						</div>
-					</div>
-					<div className="flex items-center gap-3">
-						<TranslationProofStatusIcon
-							localeStatus="translated"
-							proofStatus="VALIDATED"
-						/>
-						<div className="flex-1 min-w-0">
-							<div className="font-medium text-sm">{t("validatedTitle")}</div>
-							<div className="text-xs text-muted-foreground break-words whitespace-normal">
-								{t("validatedDescription")}
-							</div>
-						</div>
-					</div>
-					<div className="flex items-center gap-3">
-						<TranslationProofStatusIcon
-							localeStatus="untranslated"
-							proofStatus={undefined}
-						/>
-						<div className="flex-1 min-w-0">
-							<div className="font-medium text-sm">
-								{t("untranslatedTitle")}
-							</div>
-							<div className="text-xs text-muted-foreground break-words whitespace-normal">
-								{t("untranslatedDescription")}
-							</div>
-						</div>
-					</div>
+					))}
 				</div>
 			)}
 		</div>

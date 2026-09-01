@@ -1,24 +1,24 @@
 import { z } from "zod";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
-import { parseFormData } from "@/app/[locale]/_utils/parse-form-data";
 import { addTranslationService } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-section/add-translation-form/service/add-translation.server";
 import {
 	createNotificationPageSegmentTranslationVote,
 	handleVote,
 } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-section/vote-buttons/db/mutation.server";
-import { isSameOriginRequest } from "@/app/api/_utils/is-same-origin-request";
+import { PRIVATE_RESPONSE_HEADERS } from "@/app/api/_utils/private-response-headers";
+import { withAuthedFormData } from "@/app/api/_utils/with-authed-form-data";
 import { db } from "@/db";
 import { deleteOwnTranslation } from "./_db/mutations.server";
 import { segmentTranslationSchema } from "./_domain/segment-translations";
 
 const getSchema = z.object({
-	segmentId: z.coerce.number().int(),
-	userLocale: z.string(),
+	segmentId: z.coerce.number().int().positive(),
+	userLocale: z.string().min(1),
 });
 
 const postSchema = z.object({
-	locale: z.string(),
-	segmentId: z.coerce.number(),
+	locale: z.string().min(1),
+	segmentId: z.coerce.number().int().positive(),
 	text: z
 		.string()
 		.min(1, "Translation cannot be empty")
@@ -27,12 +27,12 @@ const postSchema = z.object({
 });
 
 const patchSchema = z.object({
-	segmentTranslationId: z.coerce.number().int(),
-	isUpvote: z.string().transform((val) => val === "true"),
+	segmentTranslationId: z.coerce.number().int().positive(),
+	isUpvote: z.enum(["true", "false"]).transform((value) => value === "true"),
 });
 
 const deleteSchema = z.object({
-	translationId: z.coerce.number(),
+	translationId: z.coerce.number().int().positive(),
 });
 
 async function listSegmentTranslations(
@@ -103,9 +103,7 @@ export async function getSegmentTranslations(
 			userLocale,
 			currentUser?.id,
 		);
-		return Response.json(response, {
-			headers: { "Cache-Control": "no-store" },
-		});
+		return Response.json(response, { headers: PRIVATE_RESPONSE_HEADERS });
 	} catch (error) {
 		console.error("Error fetching translations:", error);
 		return Response.json(
@@ -118,136 +116,67 @@ export async function getSegmentTranslations(
 export async function postSegmentTranslation(
 	request: Request,
 ): Promise<Response> {
-	if (!isSameOriginRequest(request)) {
-		return Response.json({ error: "Forbidden" }, { status: 403 });
-	}
-
-	const currentUser = await getCurrentUserFromHeaders(request.headers);
-	if (!currentUser) {
-		return Response.json({ error: "Unauthorized" }, { status: 401 });
-	}
-
-	let formData: FormData;
-	try {
-		formData = await request.formData();
-	} catch {
-		return Response.json(
-			{ success: false, message: "Invalid form data" },
-			{ status: 400 },
+	return withAuthedFormData(request, postSchema, async (data, currentUser) => {
+		const result = await addTranslationService(
+			data.segmentId,
+			data.text,
+			currentUser.id,
+			data.locale,
 		);
-	}
 
-	const parsed = await parseFormData(postSchema, formData);
-	if (!parsed.success) {
-		return Response.json(
-			{
-				success: false,
-				zodErrors: parsed.error.flatten().fieldErrors,
-			},
-			{ status: 400 },
-		);
-	}
+		if (!result.success) {
+			return Response.json({ error: result.message }, { status: 400 });
+		}
 
-	const result = await addTranslationService(
-		parsed.data.segmentId,
-		parsed.data.text,
-		currentUser.id,
-		parsed.data.locale,
-	);
-
-	if (!result.success) {
-		return Response.json({ success: false, message: result.message });
-	}
-
-	return Response.json({ success: true });
+		return Response.json({ success: true });
+	});
 }
 
 export async function patchSegmentTranslationVote(
 	request: Request,
 ): Promise<Response> {
-	if (!isSameOriginRequest(request)) {
-		return Response.json({ error: "Forbidden" }, { status: 403 });
-	}
-
-	const currentUser = await getCurrentUserFromHeaders(request.headers);
-	if (!currentUser) {
-		return Response.json({ error: "Unauthorized" }, { status: 401 });
-	}
-
-	let formData: FormData;
-	try {
-		formData = await request.formData();
-	} catch {
-		return Response.json(
-			{ success: false, message: "Invalid form data" },
-			{ status: 400 },
-		);
-	}
-
-	const parsed = await parseFormData(patchSchema, formData);
-	if (!parsed.success) {
-		return Response.json(
-			{
-				success: false,
-				zodErrors: parsed.error.flatten().fieldErrors,
-			},
-			{ status: 400 },
-		);
-	}
-
-	const { segmentTranslationId, isUpvote } = parsed.data;
-	const vote = await handleVote(segmentTranslationId, isUpvote, currentUser.id);
-
-	if (vote.isUpvote) {
-		await createNotificationPageSegmentTranslationVote(
-			segmentTranslationId,
+	return withAuthedFormData(request, patchSchema, async (data, currentUser) => {
+		const vote = await handleVote(
+			data.segmentTranslationId,
+			data.isUpvote,
 			currentUser.id,
 		);
-	}
 
-	const translations = await listSegmentTranslations(
-		vote.segmentId,
-		vote.locale,
-		currentUser.id,
-	);
-	return Response.json({ success: true, data: { translations } });
+		if (vote.isUpvote) {
+			await createNotificationPageSegmentTranslationVote(
+				data.segmentTranslationId,
+				currentUser.id,
+			);
+		}
+
+		const translations = await listSegmentTranslations(
+			vote.segmentId,
+			vote.locale,
+			currentUser.id,
+		);
+		return Response.json({ success: true, data: { translations } });
+	});
 }
 
 export async function deleteSegmentTranslation(
 	request: Request,
 ): Promise<Response> {
-	if (!isSameOriginRequest(request)) {
-		return Response.json({ error: "Forbidden" }, { status: 403 });
-	}
+	return withAuthedFormData(
+		request,
+		deleteSchema,
+		async (data, currentUser) => {
+			const deleted = await deleteOwnTranslation(
+				currentUser.handle,
+				data.translationId,
+			);
+			if (!deleted) {
+				return Response.json(
+					{ error: "Translation not found or unauthorized" },
+					{ status: 404 },
+				);
+			}
 
-	const currentUser = await getCurrentUserFromHeaders(request.headers);
-	if (!currentUser) {
-		return Response.json({ error: "Unauthorized" }, { status: 401 });
-	}
-
-	let formData: FormData;
-	try {
-		formData = await request.formData();
-	} catch {
-		return Response.json(
-			{ success: false, message: "Invalid form data" },
-			{ status: 400 },
-		);
-	}
-
-	const parsed = await parseFormData(deleteSchema, formData);
-	if (!parsed.success) {
-		return Response.json(
-			{
-				success: false,
-				zodErrors: parsed.error.flatten().fieldErrors,
-			},
-			{ status: 400 },
-		);
-	}
-
-	const { translationId } = parsed.data;
-	await deleteOwnTranslation(currentUser.handle, translationId);
-
-	return Response.json({ success: true });
+			return Response.json({ success: true });
+		},
+	);
 }

@@ -2,6 +2,7 @@
 
 import { createContext, type ReactNode, useContext, useState } from "react";
 import type { KeyedMutator } from "swr";
+import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form";
 import {
 	type SegmentGlossUnit,
 	segmentGlossVoteResponseSchema,
@@ -31,21 +32,18 @@ export function SegmentGlossVoteProvider({
 		if (votingGlossUnitId !== null) return;
 
 		setVotingGlossUnitId(glossUnitId);
-		const formData = new FormData();
-		formData.set("glossUnitId", String(glossUnitId));
-		formData.set("isUpvote", String(isUpvote));
 
 		try {
-			const response = await fetch("/api/segment-glosses", {
+			const response = await fetchAuthedForm({
+				url: "/api/segment-glosses",
 				method: "PATCH",
-				body: formData,
-				credentials: "same-origin",
+				body: {
+					glossUnitId: String(glossUnitId),
+					isUpvote: String(isUpvote),
+				},
+				locale,
 			});
-			if (response.status === 401) {
-				window.location.assign(`/${locale}/auth/login`);
-				return;
-			}
-			if (!response.ok) return;
+			if (!response?.ok) return;
 
 			const body = segmentGlossVoteResponseSchema.parse(await response.json());
 			await mutate(

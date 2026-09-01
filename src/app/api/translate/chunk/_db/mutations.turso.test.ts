@@ -102,10 +102,7 @@ describe("translation mutations", () => {
 	});
 
 	it("翻訳済み件数から100%へ更新する", async () => {
-		const result = await setTranslationProgress(1, 10, 10);
-
-		expect(result?.status).toBe("COMPLETED");
-		expect(result?.progress).toBe(100);
+		await setTranslationProgress(1, 10, 10);
 
 		const row = await setupClient.execute(
 			"SELECT status, progress FROM translation_jobs WHERE id = 1",

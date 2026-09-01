@@ -1,4 +1,3 @@
-import { sql } from "kysely";
 import {
 	searchPagesByContent,
 	searchPagesByTitle,
@@ -92,7 +91,7 @@ async function searchUsers(
 			.execute(),
 		db
 			.selectFrom("users")
-			.select(sql<number>`count(*)`.as("count"))
+			.select((eb) => eb.fn.countAll<number>().as("count"))
 			.where("name", "like", `%${query}%`)
 			.executeTakeFirst(),
 	]);

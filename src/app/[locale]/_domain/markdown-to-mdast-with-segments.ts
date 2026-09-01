@@ -1,21 +1,15 @@
 import remarkParse from "remark-parse";
 import { unified } from "unified";
-import { removePosition } from "unist-util-remove-position";
-import { VFile } from "vfile";
-import type { JsonValue } from "@/drizzle/types";
 import { remarkCustomBlocks } from "./remark-custom-blocks";
-import type { SegmentDraft } from "./remark-hash-and-segments";
 import { remarkHashAndSegments } from "./remark-hash-and-segments";
+import {
+	runSegmentPipeline,
+	type SegmentPipelineResult,
+} from "./run-segment-pipeline";
 
 interface Params {
 	header?: string;
 	markdown: string;
-}
-
-interface Result {
-	mdastJson: JsonValue;
-	segments: SegmentDraft[];
-	file: VFile;
 }
 
 /**
@@ -26,22 +20,11 @@ interface Result {
 export async function markdownToMdastWithSegments({
 	header,
 	markdown,
-}: Params): Promise<Result> {
+}: Params): Promise<SegmentPipelineResult> {
 	const processor = unified()
 		.use(remarkParse) // Markdown → MDAST
 		.use(remarkCustomBlocks) // カスタムブロック記法の解釈
 		.use(remarkHashAndSegments(header)); // ハッシュ + Segment 生成
 
-	const file = new VFile({ value: markdown });
-	let tree = processor.parse(file); // MDAST
-	tree = await processor.run(tree, file); // MDAST + segments
-
-	// 余計な position を削除して軽量化
-	removePosition(tree, { force: true });
-
-	return {
-		mdastJson: tree as JsonValue,
-		segments: (file.data as { segments: SegmentDraft[] }).segments,
-		file,
-	};
+	return runSegmentPipeline(processor, markdown);
 }

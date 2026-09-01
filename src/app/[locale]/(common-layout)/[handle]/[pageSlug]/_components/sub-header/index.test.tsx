@@ -3,6 +3,7 @@ import { NuqsTestingAdapter } from "nuqs/adapters/testing";
 import { IntlProvider } from "use-intl";
 import { vi } from "vitest";
 import type { PageDetail } from "@/app/[locale]/types";
+import enMessages from "../../../../../../../../messages/en.json";
 import { SubHeader } from "./index";
 
 describe("SubHeader", () => {
@@ -33,7 +34,7 @@ describe("SubHeader", () => {
 	test("ユーザー名と更新日を表示せずダウンロードを表示する", () => {
 		render(
 			<NuqsTestingAdapter>
-				<IntlProvider locale="en">
+				<IntlProvider locale="en" messages={enMessages}>
 					<SubHeader
 						markdown="Hello"
 						pageDetail={mockPageDetail}
@@ -53,7 +54,7 @@ describe("SubHeader", () => {
 	test("TOCが空のときボタンが表示されない", () => {
 		render(
 			<NuqsTestingAdapter>
-				<IntlProvider locale="en">
+				<IntlProvider locale="en" messages={enMessages}>
 					<SubHeader
 						markdown="Hello"
 						pageDetail={mockPageDetail}
@@ -69,7 +70,7 @@ describe("SubHeader", () => {
 	test("TOCがあるときボタンが表示される", () => {
 		render(
 			<NuqsTestingAdapter>
-				<IntlProvider locale="en">
+				<IntlProvider locale="en" messages={enMessages}>
 					<SubHeader
 						markdown="Hello"
 						pageDetail={mockPageDetail}
@@ -85,7 +86,7 @@ describe("SubHeader", () => {
 	test("TOCボタンのクリックで表示が切り替わる", () => {
 		render(
 			<NuqsTestingAdapter>
-				<IntlProvider locale="en">
+				<IntlProvider locale="en" messages={enMessages}>
 					<SubHeader
 						markdown="Hello"
 						pageDetail={mockPageDetail}
@@ -114,7 +115,7 @@ describe("SubHeader", () => {
 	test("原文リンクをクリックしてもTOCは閉じない", () => {
 		render(
 			<NuqsTestingAdapter>
-				<IntlProvider locale="en">
+				<IntlProvider locale="en" messages={enMessages}>
 					<SubHeader
 						markdown="Hello"
 						pageDetail={mockPageDetail}

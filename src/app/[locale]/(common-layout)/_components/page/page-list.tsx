@@ -3,27 +3,14 @@ import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-
 import type { PageForList } from "@/app/[locale]/types";
 
 type PageListProps = {
-	PageForList: PageForList;
-	index?: number;
+	page: PageForList;
 	locale: string;
 };
 
-export function PageList({ PageForList, index, locale }: PageListProps) {
-	const { titleSegment } = PageForList;
+export function PageList({ page, locale }: PageListProps) {
+	const { titleSegment } = page;
 	return (
-		<article
-			className={`grid gap-4 py-4 border-b last:border-b-0 ${
-				index !== undefined ? "grid-cols-[max-content_1fr]" : "grid-cols-1"
-			}`}
-		>
-			{/* ───── 1) インデックス番号 ───── */}
-			{index !== undefined && (
-				<div className="text-lg font-medium text-muted-foreground self-start">
-					{index + 1}
-				</div>
-			)}
-
-			{/* ───── 2) コンテンツ領域 ───── */}
+		<article className="grid gap-4 py-4 border-b last:border-b-0 grid-cols-1">
 			{/**
 			 * コンテンツ領域はタイトルとフッターの2行。
 			 */}
@@ -32,7 +19,7 @@ export function PageList({ PageForList, index, locale }: PageListProps) {
 				<div className="grid grid-cols-[1fr_auto] gap-2">
 					<Link
 						className="block overflow-hidden"
-						params={{ locale, pageSlug: PageForList.slug }}
+						params={{ locale, pageSlug: page.slug }}
 						to="/$locale/tipitaka/$pageSlug"
 					>
 						<SegmentElement
@@ -45,8 +32,8 @@ export function PageList({ PageForList, index, locale }: PageListProps) {
 				</div>
 
 				<div className="flex items-center gap-2 text-xs text-muted-foreground">
-					<span>{(PageForList.textLevel ?? "category").toLowerCase()}</span>
-					<time>{PageForList.createdAt.toLocaleDateString(locale)}</time>
+					<span>{(page.textLevel ?? "category").toLowerCase()}</span>
+					<time>{page.createdAt.toLocaleDateString(locale)}</time>
 				</div>
 			</div>
 		</article>

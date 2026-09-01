@@ -29,10 +29,5 @@ export function useSegmentTranslations({
 		? `/api/segment-translations?segmentId=${segmentId}&userLocale=${userLocale}`
 		: null;
 
-	const { data, error, isLoading, mutate } = useSWR<SegmentTranslation[]>(
-		key,
-		fetchSegmentTranslations,
-	);
-
-	return { data, error, isLoading, mutate };
+	return useSWR<SegmentTranslation[]>(key, fetchSegmentTranslations);
 }

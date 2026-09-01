@@ -1,12 +1,12 @@
 import { sql } from "kysely";
 import { db } from "@/db";
 
+/** 翻訳IDと所有者のhandleを1回のクエリで突き合わせて削除し、削除できたかを返す */
 export const deleteOwnTranslation = async (
 	currentHandle: string,
 	translationId: number,
-) => {
-	// 1回のクエリで翻訳IDとユーザーのhandleをチェックして削除
-	const deleted = await db
+): Promise<boolean> => {
+	const result = await db
 		.deleteFrom("segmentTranslations")
 		.where("id", "=", translationId)
 		.where((eb) =>
@@ -18,11 +18,7 @@ export const deleteOwnTranslation = async (
 					.where("users.handle", "=", currentHandle),
 			),
 		)
-		.returningAll()
-		.execute();
+		.executeTakeFirst();
 
-	if (deleted.length === 0) {
-		// 翻訳が見つからないか、権限がない
-		return { error: "Translation not found or unauthorized" };
-	}
+	return result.numDeletedRows > 0n;
 };

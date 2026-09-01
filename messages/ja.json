@@ -1,8 +1,72 @@
 {
+	"StartButton": {
+		"start": "はじめる"
+	},
+	"UserMenu": {
+		"logOut": "ログアウト"
+	},
+	"ModeToggle": {
+		"light": "ライトテーマ",
+		"dark": "ダークテーマ"
+	},
+	"LoginDialog": {
+		"title": "Tipiṭaka にログイン",
+		"description": "ティピタカを読み、翻訳しましょう。",
+		"continueWithEmail": "またはメールで続行",
+		"notConfigured": "この環境では認証が設定されていません。",
+		"agreement": "ログインすると<terms>利用規約</terms>と<privacy>プライバシーポリシー</privacy>に同意したものとみなされます。"
+	},
+	"LocaleSelector": {
+		"select": "選択",
+		"searchPlaceholder": "検索...",
+		"empty": "言語が見つかりません。",
+		"addNew": "+ 新規追加"
+	},
+	"AddTranslateDialog": {
+		"loginTitle": "翻訳を追加するにはログインしてください",
+		"title": "新しい翻訳を追加",
+		"language": "言語",
+		"aiModel": "AIモデル",
+		"selectModelPlaceholder": "モデルを選択",
+		"translate": "翻訳する"
+	},
+	"TranslationJobs": {
+		"title": "翻訳ジョブ"
+	},
+	"Notifications": {
+		"empty": "通知はありません",
+		"vote": "<actor>{actorName}</actor>さんが<page>{pageTitle}</page>の<segment>{segmentText}</segment>に投票しました"
+	},
+	"TranslationSection": {
+		"by": "訳:",
+		"otherTranslations": "他の翻訳",
+		"loading": "翻訳を読み込み中...",
+		"loadFailed": "翻訳の読み込みに失敗しました",
+		"addTranslationPlaceholder": "または自分の翻訳を入力...",
+		"submit": "送信",
+		"delete": "削除",
+		"deleting": "削除中..."
+	},
+	"FloatingControls": {
+		"view": "表示",
+		"share": "共有",
+		"copied": "クリップボードにコピーしました",
+		"showAnnotation": "{label}を表示",
+		"hideAnnotation": "{label}を隠す",
+		"viewUserOnly": "現在: 翻訳のみ（クリックで切替）",
+		"viewSourceOnly": "現在: 原文のみ（クリックで切替）",
+		"viewBoth": "現在: 両方表示（クリックで切替）"
+	},
+	"PageNavigation": {
+		"pageTreeTitle": "ページツリー",
+		"loading": "ページツリーを読み込み中…",
+		"unavailable": "ページツリーを取得できません。",
+		"tocTitle": "目次",
+		"exportMarkdown": "Markdownをエクスポート"
+	},
 	"Footer": {
-		"about": "About",
-		"privacyPolicy": "Privacy Policy",
-		"termsOfService": "Terms of Service"
+		"privacyPolicy": "プライバシーポリシー",
+		"termsOfService": "利用規約"
 	},
 	"Header": {
 		"HelpPopover": {

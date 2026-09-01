@@ -1,12 +1,11 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { type Client, createClient } from "@libsql/client";
 
-export type DatabaseRequestContext = {
+type DatabaseRequestContext = {
 	url?: string;
 	authToken?: string;
 	client?: Pick<Client, "close">;
 	kysely?: { destroy(): Promise<void> };
-	drizzle?: { $client: Pick<Client, "close"> };
 };
 
 const storage = new AsyncLocalStorage<DatabaseRequestContext>();
@@ -64,7 +63,7 @@ export async function runWithDatabaseRequestContext<T>(
 				try {
 					if (context.kysely) await context.kysely.destroy();
 				} finally {
-					(context.client ?? context.drizzle?.$client)?.close();
+					context.client?.close();
 				}
 			})();
 			return cleanupPromise;

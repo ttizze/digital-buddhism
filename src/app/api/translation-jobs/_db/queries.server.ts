@@ -1,13 +1,7 @@
-import type {
-	TranslationJobForToast,
-	TranslationJobStatus,
-} from "@/app/types/translation-job";
 import { db } from "@/db";
 
-/** 指定されたIDの翻訳ジョブを取得する */
-export async function fetchTranslationJobsByIds(
-	ids: number[],
-): Promise<TranslationJobForToast[]> {
+/** 指定されたIDの翻訳ジョブを取得する。型の保証はハンドラ側の zod parse が担う */
+export async function fetchTranslationJobsByIds(ids: number[]) {
 	const rows = await db
 		.selectFrom("translationJobs")
 		.innerJoin("tipitakaPages", "translationJobs.pageId", "tipitakaPages.id")
@@ -22,14 +16,8 @@ export async function fetchTranslationJobsByIds(
 		.where("translationJobs.id", "in", ids)
 		.execute();
 
-	const rowsTyped: TranslationJobForToast[] = rows.map((row) => ({
-		id: row.id,
-		locale: row.locale,
-		status: row.status as TranslationJobStatus,
-		progress: row.progress,
-		error: row.error,
-		page: { slug: row.pageSlug },
+	return rows.map(({ pageSlug, ...job }) => ({
+		...job,
+		page: { slug: pageSlug },
 	}));
-
-	return rowsTyped;
 }

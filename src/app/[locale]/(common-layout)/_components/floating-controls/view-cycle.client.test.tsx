@@ -7,6 +7,14 @@ import { describe, expect, it, vi } from "vitest";
 import { viewQueryState } from "@/app/[locale]/(common-layout)/_components/view-query";
 import { ViewCycle } from "./view-cycle.client";
 
+vi.mock("use-intl", async () => {
+	const { createEnTranslator } = await import("@/tests/en-translations");
+	return {
+		useLocale: () => "en",
+		useTranslations: (namespace?: string) => createEnTranslator(namespace),
+	};
+});
+
 function Harness({
 	initialSearchParams = "",
 	sourceLocale = "ja",
