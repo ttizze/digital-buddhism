@@ -5,15 +5,11 @@ import {
 	setResponseHeader,
 } from "@tanstack/react-start/server";
 import * as v from "valibot";
-import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
+import { supportedLocaleSchema } from "./-supported-locale-schema";
 
-const locales = supportedLocaleOptions.map((option) => option.code);
 const loginInput = v.object({
-	locale: v.pipe(
-		v.string(),
-		v.check((locale) => locales.includes(locale)),
-	),
+	locale: supportedLocaleSchema,
 	next: v.optional(v.string()),
 });
 

@@ -5,19 +5,13 @@ import {
 	setResponseHeader,
 } from "@tanstack/react-start/server";
 import * as v from "valibot";
-import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { fetchUserByHandle } from "@/app/_db/queries.server";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
 import { updateProfileForUser } from "@/app/[locale]/(common-layout)/[handle]/edit/_service/profile-edit";
-
-const locales = supportedLocaleOptions.map((option) => option.code);
-const localeSchema = v.pipe(
-	v.string(),
-	v.check((locale) => locales.includes(locale)),
-);
+import { supportedLocaleSchema } from "./-supported-locale-schema";
 
 const profileEditDataInput = v.object({
-	locale: localeSchema,
+	locale: supportedLocaleSchema,
 	handle: v.pipe(v.string(), v.minLength(1)),
 });
 
@@ -27,7 +21,7 @@ const profileEditFormInput = (value: unknown) => {
 	}
 
 	const locale = value.get("locale");
-	if (typeof locale !== "string" || !locales.includes(locale)) {
+	if (!v.safeParse(supportedLocaleSchema, locale).success) {
 		throw new Error("Invalid locale");
 	}
 

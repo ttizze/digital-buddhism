@@ -6,7 +6,7 @@ import { updateUser } from "../_db/mutations.server";
 
 const RESERVED_HANDLES = [...new Set([...reservedHandles])];
 
-export const profileEditSchema = v.object({
+const profileEditSchema = v.object({
 	name: v.pipe(
 		v.string(),
 		v.minLength(3, "Too Short. Must be at least 3 characters"),

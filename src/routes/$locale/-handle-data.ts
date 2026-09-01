@@ -4,19 +4,13 @@ import {
 	setResponseHeader,
 } from "@tanstack/react-start/server";
 import * as v from "valibot";
-import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
 import { fetchProfilePage } from "@/app/[locale]/(common-layout)/[handle]/_service/profile";
-
-const locales = supportedLocaleOptions.map((option) => option.code);
-const localeSchema = v.pipe(
-	v.string(),
-	v.check((locale) => locales.includes(locale)),
-);
+import { supportedLocaleSchema } from "./-supported-locale-schema";
 
 const handleDataInput = v.object({
 	handle: v.pipe(v.string(), v.minLength(1)),
-	locale: localeSchema,
+	locale: supportedLocaleSchema,
 	page: v.pipe(v.number(), v.integer(), v.minValue(1)),
 });
 

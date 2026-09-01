@@ -43,7 +43,10 @@ export async function authAndValidate<const TSchema extends v.GenericSchema>(
 			};
 			data: v.InferOutput<TSchema>;
 	  }
-	| { success: false; validationErrors: Record<string, string[]> }
+	| {
+			success: false;
+			validationErrors: Partial<Record<string, string[]>>;
+	  }
 > {
 	const user = await requireAuth(deps);
 

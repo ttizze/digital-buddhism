@@ -1,6 +1,6 @@
 export type { SanitizedUser } from "@/db/types.helpers";
 
-export type ValidationErrors<U = Record<string, unknown>> = Partial<
+type ValidationErrors<U = Record<string, unknown>> = Partial<
 	Record<Extract<keyof U, string>, string[]>
 >;
 

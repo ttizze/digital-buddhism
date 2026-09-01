@@ -2,7 +2,10 @@ import * as v from "valibot";
 
 type ParseFormDataResult<TSchema extends v.GenericSchema> =
 	| { success: true; data: v.InferOutput<TSchema> }
-	| { success: false; validationErrors: Record<string, string[]> };
+	| {
+			success: false;
+			validationErrors: Partial<Record<string, string[]>>;
+	  };
 
 export function parseFormData<const TSchema extends v.GenericSchema>(
 	schema: TSchema,
@@ -23,11 +26,8 @@ export function parseFormData<const TSchema extends v.GenericSchema>(
 	const result = v.safeParse(schema, data);
 	if (result.success) return { success: true, data: result.output };
 
-	const validationErrors: Record<string, string[]> = {};
-	for (const [field, messages] of Object.entries(
-		v.flatten(result.issues).nested ?? {},
-	)) {
-		if (messages) validationErrors[field] = messages;
-	}
-	return { success: false, validationErrors };
+	return {
+		success: false,
+		validationErrors: v.flatten(result.issues).nested ?? {},
+	};
 }

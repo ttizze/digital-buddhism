@@ -37,37 +37,25 @@ export function SearchPageClient({
 	const [isPending, startTransition] = useTransition();
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	function handleTabChange(newCat: Category) {
+	function navigateToSearch(nextCategory: Category) {
 		const nextQuery = inputRef.current?.value ?? query;
-		startTransition(async () => {
-			await navigate({
+		startTransition(() =>
+			navigate({
 				to: "/$locale/search",
 				params: { locale },
 				search: (previous) => ({
 					...previous,
-					category: newCat,
+					category: nextCategory,
 					page: 1,
 					query: nextQuery,
 				}),
-			});
-		});
+			}),
+		);
 	}
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
-		const nextQuery = inputRef.current?.value ?? query;
-		startTransition(async () => {
-			await navigate({
-				to: "/$locale/search",
-				params: { locale },
-				search: (previous) => ({
-					...previous,
-					category,
-					page: 1,
-					query: nextQuery,
-				}),
-			});
-		});
+		navigateToSearch(category);
 	}
 
 	return (
@@ -96,7 +84,7 @@ export function SearchPageClient({
 
 			<Tabs
 				onValueChange={(val) => {
-					handleTabChange(val as Category);
+					navigateToSearch(val as Category);
 				}}
 				value={category}
 			>
