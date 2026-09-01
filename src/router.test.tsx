@@ -19,7 +19,6 @@ describe("TanStack StartのAPIルート登録", () => {
 	it("/api/og が実際のルートツリーでマッチする", () => {
 		expectRouteToMatch("/api/og", "/api/og");
 	});
-
 });
 
 describe("TanStack Startの認証ルート登録", () => {
