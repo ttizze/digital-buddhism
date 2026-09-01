@@ -52,8 +52,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
+!.env.example
 
 # Cloudflare
 .wrangler/
@@ -69,13 +70,13 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 database.bak
+/.data/
 
 .next
 # Sentry Config File
 .env.sentry-build-plugin
 
 remark-link-card-plus
-.env*.local
 tipitaka-md/
 tipitaka-xml/
 cst/

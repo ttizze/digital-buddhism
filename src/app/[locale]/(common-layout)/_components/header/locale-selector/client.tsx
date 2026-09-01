@@ -54,7 +54,6 @@ const fetchTranslation: (url: string) => Promise<TranslationInfo> = async (
 interface LocaleSelectorProps {
 	localeSelectorClassName?: string;
 	currentHandle?: string;
-	hasGeminiApiKey: boolean;
 	userPlan: string;
 }
 
@@ -62,7 +61,6 @@ interface LocaleSelectorProps {
 export function LocaleSelector({
 	localeSelectorClassName,
 	currentHandle,
-	hasGeminiApiKey,
 	userPlan,
 }: LocaleSelectorProps) {
 	const [open, setOpen] = useState(false);
@@ -204,7 +202,6 @@ export function LocaleSelector({
 			{pageSlug && (
 				<AddTranslateDialog
 					currentHandle={currentHandle}
-					hasGeminiApiKey={hasGeminiApiKey}
 					onOpenChange={setDialogOpen}
 					open={dialogOpen}
 					pageSlug={pageSlug}

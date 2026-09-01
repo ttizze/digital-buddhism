@@ -21,7 +21,6 @@ export async function createCategoryPage({
 	const mdast = await markdownToMdastWithSegments({
 		header: title,
 		markdown: "",
-		autoUploadImages: false,
 	});
 
 	const slug = slugify(`tipitaka-${dirPath}`);

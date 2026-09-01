@@ -199,6 +199,14 @@ export interface TipitakaReadModelJobs {
 	requestedAt: Generated<Date>;
 }
 
+export interface TranslationChunkRuns {
+	chunkIndex: number;
+	completedAt: number | null;
+	leaseExpiresAt: number;
+	leaseToken: string;
+	translationJobId: number;
+}
+
 export interface TranslationJobs {
 	aiModel: string;
 	createdAt: Generated<Date>;
@@ -275,6 +283,7 @@ export interface DB {
 	tipitakaPageAnnotationTargets: TipitakaPageAnnotationTargets;
 	tipitakaPages: TipitakaPages;
 	tipitakaReadModelJobs: TipitakaReadModelJobs;
+	translationChunkRuns: TranslationChunkRuns;
 	translationJobs: TranslationJobs;
 	translationVotes: TranslationVotes;
 	users: Users;

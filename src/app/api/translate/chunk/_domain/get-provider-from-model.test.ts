@@ -2,10 +2,8 @@ import { describe, expect, it } from "vitest";
 import { getProviderFromModel } from "./get-provider-from-model";
 
 describe("getProviderFromModel", () => {
-	it("Geminiモデル + フリープランのとき、Vertexを選ぶ", () => {
-		expect(getProviderFromModel("gemini-2.5-flash-lite", "free")).toBe(
-			"vertex",
-		);
+	it("Geminiモデルのとき、Gemini APIを選ぶ", () => {
+		expect(getProviderFromModel("gemini-3.1-flash-lite")).toBe("gemini");
 	});
 
 	it("OpenAIモデルのとき、openaiを選ぶ", () => {
@@ -16,7 +14,7 @@ describe("getProviderFromModel", () => {
 		expect(getProviderFromModel("deepseek-reasoner")).toBe("deepseek");
 	});
 
-	it("不明なモデル + プレミアムのとき、Vertexを選ぶ", () => {
-		expect(getProviderFromModel("unknown-model", "premium")).toBe("vertex");
+	it("不明なモデルのとき、Gemini APIを選ぶ", () => {
+		expect(getProviderFromModel("unknown-model")).toBe("gemini");
 	});
 });

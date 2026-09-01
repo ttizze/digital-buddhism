@@ -1,6 +1,6 @@
-import { createServerLogger } from "@/app/_service/logger.server";
 import { db } from "@/db";
 import type { TipitakaTextLevel } from "@/drizzle/types";
+import { createCliLogger } from "../../logger";
 import type { TipitakaFileMeta } from "../../types";
 import {
 	type AnnotationTargetPage,
@@ -8,7 +8,7 @@ import {
 	resolveAnnotationLinks,
 } from "../domain/resolve-annotation-links";
 
-const logger = createServerLogger("tipitaka-import");
+const logger = createCliLogger("tipitaka-import");
 const INSERT_CHUNK_SIZE = 400;
 
 interface SyncAnnotationRelationsResult {

@@ -5,7 +5,6 @@ import { unified } from "unified";
 import { removePosition } from "unist-util-remove-position";
 import { VFile } from "vfile";
 /* html-to-mdast-with-segments.ts ----------------------------------------- */
-import { remarkAutoUploadImages } from "@/app/[locale]/_domain/remark-auto-upload-images";
 import type { SegmentDraft } from "@/app/[locale]/_domain/remark-hash-and-segments";
 import { remarkHashAndSegments } from "@/app/[locale]/_domain/remark-hash-and-segments";
 import type { JsonValue } from "@/drizzle/types";
@@ -30,8 +29,7 @@ export async function htmlToMdastWithSegments({
 		.use(rehypeParse, { fragment: true }) // HTML → HAST
 		.use(rehypeSanitize) // XSS 対策
 		.use(rehypeRemark) // HAST → MDAST
-		.use(remarkHashAndSegments(header)) // ハッシュ抽出
-		.use(remarkAutoUploadImages); // 画像自動アップロード
+		.use(remarkHashAndSegments(header)); // ハッシュ抽出
 
 	/* 2. VFile を自前で作り ↓ parse → run ----------------------------- */
 	const file = new VFile({ value: html });

@@ -1,11 +1,21 @@
-import { createServerLogger } from "@/app/_service/logger.server";
 import { parseDirSegment } from "../../domain/parse-dir-segment/parse-dir-segment";
+import { createCliLogger } from "../../logger";
 import type { TipitakaFileMeta } from "../../types";
 import { createContentPage } from "../_pages/application/create-content-page";
 import { syncAnnotationRelations } from "./sync-annotation-relations";
 
-const logger = createServerLogger("tipitaka-import");
-const CONCURRENCY = 10;
+const logger = createCliLogger("tipitaka-import");
+const REMOTE_CONCURRENCY = 10;
+
+function resolveWriteConcurrency(): number {
+	const databaseUrl = process.env.TURSO_DATABASE_URL;
+	if (!databaseUrl) return REMOTE_CONCURRENCY;
+	const parsedUrl = new URL(databaseUrl);
+	return parsedUrl.protocol === "http:" &&
+		(parsedUrl.hostname === "127.0.0.1" || parsedUrl.hostname === "localhost")
+		? 1
+		: REMOTE_CONCURRENCY;
+}
 
 export async function importAllContentPages(
 	fileMetas: TipitakaFileMeta[],
@@ -17,9 +27,10 @@ export async function importAllContentPages(
 	const orderedFileMetas = [...fileMetas].sort((left, right) =>
 		left.fileKey.localeCompare(right.fileKey),
 	);
+	const concurrency = resolveWriteConcurrency();
 
-	for (let index = 0; index < orderedFileMetas.length; index += CONCURRENCY) {
-		const batch = orderedFileMetas.slice(index, index + CONCURRENCY);
+	for (let index = 0; index < orderedFileMetas.length; index += concurrency) {
+		const batch = orderedFileMetas.slice(index, index + concurrency);
 		const importedPages = await Promise.all(
 			batch.map(async (fileMeta) => {
 				const parentPath = fileMeta.dirSegments.slice(0, -1).join("/");

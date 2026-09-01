@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getCurrentUser } from "@/app/_service/auth-server";
-import { enqueueTranslate } from "@/app/[locale]/_infrastructure/qstash/enqueue-translate.server";
+import { enqueueTranslationMessage } from "@/app/[locale]/_infrastructure/translation-queue/context.server";
 import { db } from "@/db";
 import { toSessionUser } from "@/tests/auth-helpers";
 import { resetDatabase } from "@/tests/db-helpers";
@@ -16,19 +16,16 @@ await setupDbPerFile(import.meta.url);
 
 // 外部システムのみモック（キューシステム）
 vi.mock(
-	"@/app/[locale]/_infrastructure/qstash/enqueue-translate.server",
+	"@/app/[locale]/_infrastructure/translation-queue/context.server",
 	() => ({
-		enqueueTranslate: vi.fn(),
+		enqueueTranslationMessage: vi.fn(),
 	}),
 );
 
 describe("translateAction", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
-		vi.mocked(enqueueTranslate).mockResolvedValue({
-			messageId: "test-id",
-			url: "https://test.example.com",
-		});
+		vi.mocked(enqueueTranslationMessage).mockResolvedValue(undefined);
 	});
 
 	afterEach(async () => {
@@ -139,7 +136,46 @@ describe("translateAction", () => {
 		expect(jobs[0]?.aiModel).toBe("gemini-pro");
 
 		// Assert: キューにジョブがエンキューされている（外部システムのモック）
-		expect(enqueueTranslate).toHaveBeenCalledTimes(1);
+		expect(enqueueTranslationMessage).toHaveBeenCalledTimes(1);
+	});
+
+	it("再実行時は同じ条件の未完了ジョブをFAILEDにして新しいジョブを作る", async () => {
+		const user = await createUser();
+		const page = await createPageWithSegments({
+			slug: "retry-page",
+			segments: [
+				{
+					number: 0,
+					text: "Title",
+					textAndOccurrenceHash: "retry-title",
+				},
+			],
+		});
+		vi.mocked(getCurrentUser).mockResolvedValue(toSessionUser(user));
+		const createFormData = () => {
+			const formData = new FormData();
+			formData.append("pageSlug", page.slug);
+			formData.append("aiModel", "gemini-3.1-pro-preview");
+			formData.append("targetLocale", "ja");
+			return formData;
+		};
+
+		await executeTranslateAction(createFormData());
+		await executeTranslateAction(createFormData());
+
+		const jobs = await db
+			.selectFrom("translationJobs")
+			.select(["status", "error"])
+			.where("pageId", "=", page.id)
+			.orderBy("id", "asc")
+			.execute();
+		expect(jobs).toEqual([
+			{
+				status: "FAILED",
+				error: "Superseded by a new translation run",
+			},
+			{ status: "PENDING", error: "" },
+		]);
 	});
 
 	it("ページに注釈がある場合、注釈も翻訳ジョブに含まれる", async () => {
@@ -189,12 +225,19 @@ describe("translateAction", () => {
 		expect(jobs.length).toBeGreaterThanOrEqual(2);
 
 		const annotationCall = vi
-			.mocked(enqueueTranslate)
-			.mock.calls.find(([body]) => body.annotationPageId === annotationPage.id);
+			.mocked(enqueueTranslationMessage)
+			.mock.calls.find(
+				([message]) =>
+					message.type === "orchestrate" &&
+					message.params.annotationPageId === annotationPage.id,
+			);
 		expect(annotationCall?.[0]).toMatchObject({
-			annotationPageId: annotationPage.id,
-			pageId: targetPage.id,
-			targetLocale: "ja",
+			type: "orchestrate",
+			params: {
+				annotationPageId: annotationPage.id,
+				pageId: targetPage.id,
+				targetLocale: "ja",
+			},
 		});
 	});
 });

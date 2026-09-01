@@ -43,7 +43,7 @@ describe("HeaderUserControls", () => {
 
 	it("認証済みなら通知とユーザーメニューを表示する", () => {
 		useSessionMock.mockReturnValue({
-			data: { user: { hasGeminiApiKey: false } },
+			data: { user: {} },
 			isPending: false,
 		});
 

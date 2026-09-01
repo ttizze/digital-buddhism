@@ -17,7 +17,6 @@ export function HeaderUserControls({ locale }: { locale: string }) {
 		<>
 			<LocaleSelector
 				currentHandle={undefined}
-				hasGeminiApiKey={false}
 				localeSelectorClassName="border rounded-full w-[150px]"
 				userPlan="free"
 			/>
@@ -26,11 +25,7 @@ export function HeaderUserControls({ locale }: { locale: string }) {
 	) : (
 		<>
 			<NotificationsDropdownClient locale={locale} />
-			<UserMenu
-				currentUser={currentUser}
-				hasGeminiApiKey={session.user.hasGeminiApiKey}
-				locale={locale}
-			/>
+			<UserMenu currentUser={currentUser} locale={locale} />
 		</>
 	);
 }

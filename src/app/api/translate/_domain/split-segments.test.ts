@@ -15,29 +15,35 @@ describe("splitSegments", () => {
 				{ id: 1, number: 1, text: "a" },
 				{ id: 2, number: 2, text: "b" },
 			],
-			"gemini-2.5-flash",
+			"gemini-3.1-pro-preview",
 		);
 		expect(chunks.length).toBe(1);
 		expect(chunks[0].map((e) => e.number)).toEqual([1, 2]);
 	});
 
 	it("MAX_CHUNK_SIZEを超えると2チャンクに分割される", () => {
-		// gemini-2.5-flash has 30,000 char limit
+		// gemini-3.1-pro-preview has 30,000 char limit
 		// 50 * 600 = 30,000 (fits), next 600 would exceed 30,000
 		const many = createSegments(100, 600);
-		const chunks = splitSegments(many, "gemini-2.5-flash");
+		const chunks = splitSegments(many, "gemini-3.1-pro-preview");
 		expect(chunks.length).toBe(2);
 		expect(chunks[0].length).toBe(50);
 		expect(chunks[1].length).toBe(50);
 	});
 
-	it("gemini-2.0-flashは小さい上限で分割される", () => {
-		// gemini-2.0-flash has 10,000 char limit
-		// 16 * 600 = 9,600 (fits), next 600 would exceed 10,000
-		const many = createSegments(20, 600);
-		const chunks = splitSegments(many, "gemini-2.0-flash");
+	it("gemini-3.1-flash-liteは30,000文字で分割される", () => {
+		const many = createSegments(100, 600);
+		const chunks = splitSegments(many, "gemini-3.1-flash-lite");
 		expect(chunks.length).toBe(2);
-		expect(chunks[0].length).toBe(16);
-		expect(chunks[1].length).toBe(4);
+		expect(chunks[0].length).toBe(50);
+		expect(chunks[1].length).toBe(50);
+	});
+
+	it("gemini-3.7-flashは30,000文字で分割される", () => {
+		const many = createSegments(100, 600);
+		const chunks = splitSegments(many, "gemini-3.7-flash");
+		expect(chunks.length).toBe(2);
+		expect(chunks[0].length).toBe(50);
+		expect(chunks[1].length).toBe(50);
 	});
 });

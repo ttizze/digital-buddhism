@@ -2,14 +2,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
 	handlerFetchMock,
+	consumeTranslationQueueMock,
 	projectPendingReadModelsMock,
 	runWithDatabaseRequestContextMock,
+	runWithTranslationQueueMock,
 	withSentryMock,
 } = vi.hoisted(() => ({
 	handlerFetchMock: vi.fn(),
+	consumeTranslationQueueMock: vi.fn(),
 	projectPendingReadModelsMock: vi.fn(),
 	runWithDatabaseRequestContextMock: vi.fn(
 		(_connection: unknown, callback: () => unknown) => callback(),
+	),
+	runWithTranslationQueueMock: vi.fn(
+		(_queue: unknown, callback: () => unknown) => callback(),
 	),
 	withSentryMock: vi.fn(
 		(_options: unknown, workerEntry: unknown) => workerEntry,
@@ -24,6 +30,7 @@ const readModelBinding = {
 	get: kvGetMock,
 	put: kvPutMock,
 };
+const translationQueueBinding = { send: vi.fn() };
 
 vi.mock("@sentry/cloudflare", () => ({
 	withSentry: withSentryMock,
@@ -35,6 +42,15 @@ vi.mock("@tanstack/react-start/server-entry", () => ({
 
 vi.mock("./db/request-context", () => ({
 	runWithDatabaseRequestContext: runWithDatabaseRequestContextMock,
+}));
+
+vi.mock(
+	"./app/[locale]/_infrastructure/translation-queue/context.server",
+	() => ({ runWithTranslationQueue: runWithTranslationQueueMock }),
+);
+
+vi.mock("./app/api/translate/queue-consumer.server", () => ({
+	consumeTranslationQueue: consumeTranslationQueueMock,
 }));
 
 vi.mock(
@@ -61,6 +77,8 @@ beforeEach(() => {
 	handlerFetchMock.mockReset();
 	projectPendingReadModelsMock.mockReset().mockResolvedValue(0);
 	runWithDatabaseRequestContextMock.mockClear();
+	runWithTranslationQueueMock.mockClear();
+	consumeTranslationQueueMock.mockReset().mockResolvedValue(undefined);
 });
 
 describe("Cloudflare Workerのセキュリティヘッダー", () => {
@@ -81,6 +99,7 @@ describe("Cloudflare Workerのセキュリティヘッダー", () => {
 				TURSO_DATABASE_URL: "https://db.test",
 				TURSO_AUTH_TOKEN: "db-token",
 				TIPITAKA_READ_MODELS: readModelBinding,
+				TRANSLATION_QUEUE: translationQueueBinding,
 			},
 			{ waitUntil: waitUntilMock },
 		);
@@ -120,6 +139,7 @@ describe("Cloudflare Workerの公開レスポンスキャッシュ", () => {
 				TURSO_DATABASE_URL: "https://db.test",
 				TURSO_AUTH_TOKEN: "db-token",
 				TIPITAKA_READ_MODELS: readModelBinding,
+				TRANSLATION_QUEUE: translationQueueBinding,
 			},
 			{ waitUntil: waitUntilMock },
 		);
@@ -143,6 +163,7 @@ describe("Cloudflare Workerの公開レスポンスキャッシュ", () => {
 				TURSO_DATABASE_URL: "https://db.test",
 				TURSO_AUTH_TOKEN: "db-token",
 				TIPITAKA_READ_MODELS: readModelBinding,
+				TRANSLATION_QUEUE: translationQueueBinding,
 			},
 			{ waitUntil: waitUntilMock },
 		);
@@ -166,12 +187,36 @@ describe("Cloudflare WorkerのRead Model更新", () => {
 				TURSO_DATABASE_URL: "https://db.test",
 				TURSO_AUTH_TOKEN: "db-token",
 				TIPITAKA_READ_MODELS: readModelBinding,
+				TRANSLATION_QUEUE: translationQueueBinding,
 			},
 			{ waitUntil: waitUntilMock },
 		);
 
 		expect(response.status).toBe(200);
 		expect(projectPendingReadModelsMock).toHaveBeenCalledOnce();
+		expect(waitUntilMock).toHaveBeenCalledWith(expect.any(Promise));
+	});
+});
+
+describe("Cloudflare Workerの翻訳Queue", () => {
+	it("Queue batchをDB・Queueコンテキスト内で処理する", async () => {
+		const batch = { messages: [] };
+		await worker.queue(
+			batch,
+			{
+				TURSO_DATABASE_URL: "https://db.test",
+				TURSO_AUTH_TOKEN: "db-token",
+				TIPITAKA_READ_MODELS: readModelBinding,
+				TRANSLATION_QUEUE: translationQueueBinding,
+			},
+			{ waitUntil: waitUntilMock },
+		);
+
+		expect(runWithTranslationQueueMock).toHaveBeenCalledWith(
+			translationQueueBinding,
+			expect.any(Function),
+		);
+		expect(consumeTranslationQueueMock).toHaveBeenCalledWith(batch);
 		expect(waitUntilMock).toHaveBeenCalledWith(expect.any(Promise));
 	});
 });

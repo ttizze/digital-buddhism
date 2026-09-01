@@ -1,12 +1,12 @@
-import { createServerLogger } from "@/app/_service/logger.server";
 import { importAllContentPages } from "./_content-pages/application/import-all-content-pages";
 import { createCategoryPages } from "./_create-category-pages/application/create-category-pages";
 import { setupInitialRequirements } from "./_initial-setup/application/setup-initial-requirements";
 import { withImportRun } from "./application/import-tracking";
+import { createCliLogger } from "./logger";
 import { readBooksJson } from "./utils/books";
 
 export async function runTipitakaImport(): Promise<void> {
-	const logger = createServerLogger("tipitaka-import");
+	const logger = createCliLogger("tipitaka-import");
 	logger.info(
 		{ logLevel: process.env.LOG_LEVEL || "default" },
 		"Starting Tipitaka import",

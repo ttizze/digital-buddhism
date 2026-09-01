@@ -14,7 +14,6 @@ export async function ensureRootPage(): Promise<number> {
 	const parsed = await markdownToMdastWithSegments({
 		header: ROOT_TITLE,
 		markdown: markdownContent,
-		autoUploadImages: false,
 	});
 
 	await upsertPageAndSegments({

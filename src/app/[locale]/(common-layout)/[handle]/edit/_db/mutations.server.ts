@@ -30,26 +30,3 @@ export async function updateUser(
 		.executeTakeFirst();
 	return updatedUser;
 }
-
-export async function updateUserImage(userId: string, imageUrl: string) {
-	const updatedUser = await db
-		.updateTable("users")
-		.set({ image: imageUrl })
-		.where("id", "=", userId)
-		.returning([
-			"id",
-			"handle",
-			"name",
-			"image",
-			"emailVerified",
-			"createdAt",
-			"updatedAt",
-			"profile",
-			"twitterHandle",
-			"totalPoints",
-			"isAi as isAI",
-			"plan",
-		])
-		.executeTakeFirst();
-	return updatedUser;
-}

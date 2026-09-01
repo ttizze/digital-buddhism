@@ -12,7 +12,6 @@ export type SessionUser = {
 	image: string;
 	createdAt: Date;
 	updatedAt: Date;
-	hasGeminiApiKey: boolean;
 };
 
 /**
@@ -32,6 +31,5 @@ export function toSessionUser(user: User): SessionUser {
 		image: user.image,
 		createdAt: user.createdAt as Date,
 		updatedAt: user.updatedAt as Date,
-		hasGeminiApiKey: false,
 	};
 }

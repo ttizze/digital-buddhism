@@ -14,20 +14,30 @@ nix develop
    ```bash
    bun install
    ```
-2. Prepare environment variables
+2. Prepare optional integrations
    ```bash
-   cp .env.example .env
-   openssl rand -base64 32
+   cp .env.example .env.local
    ```
-   Put the generated string into `.env`.
+   Core local development works without editing this file. Configure only the
+   authentication, translation, or analytics services you need.
 3. Start dev server
    ```bash
    bun run dev
    ```
-   The development command creates an isolated temporary SQLite database and
-   applies the checked-in Turso migration and seed before starting the server.
-   Docker, PostgreSQL, and a manual seed are not required for local development.
+   The development command starts Nix-managed `sqld` on
+   `http://127.0.0.1:18080` and persists it under
+   `.data/digital-buddshim.sqld`. DB, import, read-model commands, and the local
+   Worker share that database. Local commands reject file and external URLs.
+   The Cloudflare Vite plugin runs the Worker in workerd/Miniflare. KV and Queue
+   use the bindings in `wrangler.jsonc`; their local state is persisted under
+   `.wrangler/state`.
 4. Open `http://localhost:3000`
+
+The repository does not contain Tipiṭaka source text. To populate a local DB,
+prepare the source described in `scripts/tipitaka-import/TIPITAKA_IMPORT.md` and
+run `bun run tipitaka`. The import also updates the local Workers KV read model.
+If the DB is already populated and only KV needs rebuilding, run
+`bun run tipitaka:read-model`.
 
 ## Checks
 
@@ -45,7 +55,20 @@ error; use `bun run doctor --blocking none` for an advisory-only full scan.
 
 Production keeps the source of truth in Turso (libSQL) and serves public Tipiṭaka pages from the `TIPITAKA_READ_MODELS` Workers KV binding.
 Configure `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` through the deployment secret manager; do not commit either value.
-Run `bun run tipitaka:read-model` before local Tipiṭaka display work, or run `bun run tipitaka:read-model --remote` to update the production KV namespace.
+Production also requires a random `BETTER_AUTH_SECRET` of at least 32
+characters. Google sign-in requires both `AUTH_GOOGLE_ID` and
+`AUTH_GOOGLE_SECRET`; Magic Link is enabled when `AUTH_RESEND_KEY` is set.
+Use `bun run tipitaka:read-model:remote` only with an explicitly configured
+production Turso connection to update the production KV namespace.
+
+Production translations use the Gemini Developer API through Google's official
+GenAI SDK. Configure the server-side API key as a Cloudflare Worker secret:
+
+```bash
+wrangler secret put GEMINI_API_KEY
+```
+
+Do not commit the key or expose it to browser code.
 
 ## Key links
 

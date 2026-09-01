@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { createServerLogger } from "@/app/_service/logger.server";
 import { db } from "@/db";
+import { createCliLogger } from "../logger";
 
 const MAX_MESSAGE_LENGTH = 2_000;
-const logger = createServerLogger("tipitaka-import-tracking");
+const logger = createCliLogger("tipitaka-import-tracking");
 
 function errorMessage(error: unknown): string {
 	const message = error instanceof Error ? error.message : String(error);

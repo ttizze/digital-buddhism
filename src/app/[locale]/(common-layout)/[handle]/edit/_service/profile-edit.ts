@@ -1,9 +1,8 @@
 import { z } from "zod";
-import { uploadImage } from "@/app/[locale]/_service/upload/upload-image";
 import { parseFormData } from "@/app/[locale]/_utils/parse-form-data";
 import type { ActionResponse } from "@/app/types";
 import reservedHandles from "../_components/reserved-handles.json";
-import { updateUser, updateUserImage } from "../_db/mutations.server";
+import { updateUser } from "../_db/mutations.server";
 
 const RESERVED_HANDLES = [...new Set([...reservedHandles])];
 
@@ -87,58 +86,5 @@ export async function updateProfileForUser(
 			profile,
 			twitterHandle,
 		},
-	};
-}
-
-export type ProfileImageEditState = ActionResponse<
-	{
-		imageUrl: string;
-	},
-	void
->;
-
-function isImageFile(value: FormDataEntryValue | null): value is File {
-	return (
-		typeof value === "object" &&
-		value !== null &&
-		"arrayBuffer" in value &&
-		typeof value.arrayBuffer === "function" &&
-		"size" in value &&
-		typeof value.size === "number" &&
-		"type" in value &&
-		typeof value.type === "string"
-	);
-}
-
-export async function updateProfileImageForUser(
-	userId: string,
-	formData: FormData,
-): Promise<ProfileImageEditState> {
-	const file = formData.get("image");
-	if (!isImageFile(file)) {
-		return { success: false, message: "No image provided" };
-	}
-
-	const maxSize = 5 * 1024 * 1024;
-	if (file.size > maxSize) {
-		return {
-			success: false,
-			message: "Image size exceeds 5MB limit. Please choose a smaller file.",
-		};
-	}
-
-	const result = await uploadImage(file);
-	if (!result.success || !result.data?.imageUrl) {
-		return {
-			success: false,
-			message: "Failed to upload image",
-		};
-	}
-
-	await updateUserImage(userId, result.data.imageUrl);
-	return {
-		success: true,
-		data: { imageUrl: result.data.imageUrl },
-		message: "Profile image updated successfully",
 	};
 }

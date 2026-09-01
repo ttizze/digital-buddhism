@@ -7,15 +7,30 @@
 	"assets": {
 		"binding": "ASSETS"
 	},
-	"images": {
-		"binding": "IMAGES"
-	},
 	"kv_namespaces": [
 		{
 			"binding": "TIPITAKA_READ_MODELS",
 			"id": "b4d21330448b4df894181807f4481543"
 		}
 	],
+	"queues": {
+		"producers": [
+			{
+				"binding": "TRANSLATION_QUEUE",
+				"queue": "digital-buddhism-translations"
+			}
+		],
+		"consumers": [
+			{
+				"queue": "digital-buddhism-translations",
+				"max_batch_size": 1,
+				"max_batch_timeout": 1,
+				"max_retries": 3,
+				"max_concurrency": 4,
+				"dead_letter_queue": "digital-buddhism-translations-dlq"
+			}
+		]
+	},
 	"triggers": {
 		"crons": ["* * * * *"]
 	},

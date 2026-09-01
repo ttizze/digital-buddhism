@@ -8,10 +8,7 @@ import { z } from "zod";
 import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { fetchUserByHandle } from "@/app/_db/queries.server";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
-import {
-	updateProfileForUser,
-	updateProfileImageForUser,
-} from "@/app/[locale]/(common-layout)/[handle]/edit/_service/profile-edit";
+import { updateProfileForUser } from "@/app/[locale]/(common-layout)/[handle]/edit/_service/profile-edit";
 
 const locales = supportedLocaleOptions.map((option) => option.code);
 const localeSchema = z.string().refine((locale) => locales.includes(locale));
@@ -72,20 +69,4 @@ export const updateProfile = createServerFn({ method: "POST" })
 			throw redirect({ href: `/${locale}/${handle}/edit` });
 		}
 		return result;
-	});
-
-export const updateProfileImage = createServerFn({ method: "POST" })
-	.validator(profileEditFormInput)
-	.handler(async ({ data }) => {
-		const locale = data.get("locale");
-		if (typeof locale !== "string") {
-			throw new Error("Invalid profile image form data");
-		}
-
-		const currentUser = await getCurrentUser();
-		if (!currentUser) {
-			throw redirect({ href: `/${locale}/auth/login` });
-		}
-
-		return updateProfileImageForUser(currentUser.id, data);
 	});

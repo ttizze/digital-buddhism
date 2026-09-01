@@ -1,4 +1,3 @@
-import { serverLogger } from "@/app/_service/logger.server";
 import type { PageDetail, SegmentForPage } from "@/app/[locale]/types";
 import { db } from "@/db";
 import { TIPITAKA_ROOT_SLUG } from "../_domain/tipitaka-page-visibility";
@@ -111,14 +110,11 @@ async function fetchSegmentsWithAnnotations(
 			row.annotationNumber === null ||
 			row.annotationText === null
 		) {
-			serverLogger.warn(
-				{
-					annotationSegmentId: row.linkedAnnotationSegmentId,
-					targetSegmentId: row.segmentId,
-					pageId,
-				},
-				"Annotation segment not found, skipping",
-			);
+			console.warn("Annotation segment not found, skipping", {
+				annotationSegmentId: row.linkedAnnotationSegmentId,
+				targetSegmentId: row.segmentId,
+				pageId,
+			});
 			continue;
 		}
 

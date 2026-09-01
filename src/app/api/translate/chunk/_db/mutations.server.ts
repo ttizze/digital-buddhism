@@ -1,56 +1,148 @@
 import { createId } from "@paralleldrive/cuid2";
-import { sql } from "kysely";
 import { db } from "@/db";
 import type {
 	TranslationProofStatus,
 	TranslationStatus,
 } from "@/drizzle/types";
 
+const TRANSLATION_CHUNK_LEASE_MS = 15 * 60 * 1000;
+
+export type TranslationChunkClaim =
+	| { status: "claimed" }
+	| { status: "completed" }
+	| { status: "busy"; retryAfterSeconds: number };
+
 export async function getOrCreateAIUser(name: string): Promise<string> {
-	// 既存ユーザーを確認
 	const existing = await db
 		.selectFrom("users")
-		.selectAll()
+		.select("id")
 		.where("handle", "=", name)
 		.executeTakeFirst();
 
-	if (existing) {
-		return existing.id;
-	}
+	if (existing) return existing.id;
 
-	// 存在しない場合は作成
-	const user = await db
+	const id = createId();
+	const inserted = await db
 		.insertInto("users")
 		.values({
-			id: createId(),
+			id,
 			handle: name,
 			name: name,
 			isAi: true,
 			image: "",
 			email: `${name}@ai.com`,
 		})
-		.returningAll()
-		.executeTakeFirstOrThrow();
+		.onConflict((oc) => oc.doNothing())
+		.returning("id")
+		.executeTakeFirst();
+	if (inserted) return inserted.id;
 
-	return user.id;
+	const concurrentlyInserted = await db
+		.selectFrom("users")
+		.select("id")
+		.where("handle", "=", name)
+		.executeTakeFirstOrThrow();
+	return concurrentlyInserted.id;
 }
 
 export async function markJobFailed(
 	translationJobId: number,
-	progress = 0,
+	progress?: number,
 	errorMessage?: string,
 ) {
 	const updated = await db
 		.updateTable("translationJobs")
 		.set({
 			status: "FAILED" satisfies TranslationStatus,
-			progress,
+			...(progress === undefined ? {} : { progress }),
 			error: errorMessage ?? "",
 		})
 		.where("id", "=", translationJobId)
 		.returningAll()
 		.executeTakeFirst();
 	return updated;
+}
+
+export async function claimTranslationChunk(params: {
+	translationJobId: number;
+	chunkIndex: number;
+	leaseToken: string;
+	nowMs?: number;
+}): Promise<TranslationChunkClaim> {
+	const nowMs = params.nowMs ?? Date.now();
+	const leaseExpiresAt = nowMs + TRANSLATION_CHUNK_LEASE_MS;
+	const claimed = await db
+		.insertInto("translationChunkRuns")
+		.values({
+			translationJobId: params.translationJobId,
+			chunkIndex: params.chunkIndex,
+			leaseToken: params.leaseToken,
+			leaseExpiresAt,
+			completedAt: null,
+		})
+		.onConflict((oc) =>
+			oc
+				.columns(["translationJobId", "chunkIndex"])
+				.doUpdateSet({
+					leaseToken: params.leaseToken,
+					leaseExpiresAt,
+				})
+				.where("completedAt", "is", null)
+				.where("leaseExpiresAt", "<=", nowMs),
+		)
+		.returning("leaseToken")
+		.executeTakeFirst();
+
+	if (claimed?.leaseToken === params.leaseToken) return { status: "claimed" };
+
+	const existing = await db
+		.selectFrom("translationChunkRuns")
+		.select(["completedAt", "leaseExpiresAt"])
+		.where("translationJobId", "=", params.translationJobId)
+		.where("chunkIndex", "=", params.chunkIndex)
+		.executeTakeFirst();
+	if (existing?.completedAt !== null && existing?.completedAt !== undefined) {
+		return { status: "completed" };
+	}
+
+	return {
+		status: "busy",
+		retryAfterSeconds: Math.max(
+			1,
+			Math.ceil(((existing?.leaseExpiresAt ?? nowMs) - nowMs) / 1000) + 1,
+		),
+	};
+}
+
+export async function completeTranslationChunk(params: {
+	translationJobId: number;
+	chunkIndex: number;
+	leaseToken: string;
+	nowMs?: number;
+}): Promise<void> {
+	const nowMs = params.nowMs ?? Date.now();
+	await db
+		.updateTable("translationChunkRuns")
+		.set({ completedAt: nowMs, leaseExpiresAt: nowMs })
+		.where("translationJobId", "=", params.translationJobId)
+		.where("chunkIndex", "=", params.chunkIndex)
+		.where("leaseToken", "=", params.leaseToken)
+		.where("completedAt", "is", null)
+		.execute();
+}
+
+export async function releaseTranslationChunk(params: {
+	translationJobId: number;
+	chunkIndex: number;
+	leaseToken: string;
+}): Promise<void> {
+	await db
+		.deleteFrom("translationChunkRuns")
+		.where("translationJobId", "=", params.translationJobId)
+		.where("chunkIndex", "=", params.chunkIndex)
+		.where("leaseToken", "=", params.leaseToken)
+		.where("completedAt", "is", null)
+		.execute();
 }
 
 export async function ensurePageLocaleTranslationProof(
@@ -68,43 +160,33 @@ export async function ensurePageLocaleTranslationProof(
 		.execute();
 }
 
-export async function incrementTranslationProgress(
+export async function setTranslationProgress(
 	translationJobId: number,
-	inc: number,
+	translatedSegments: number,
+	totalSegments: number,
 ) {
-	return db.transaction().execute(async (tx) => {
-		// 端末状態（COMPLETED/FAILED）や 100 到達後は増分しない
-		await tx
-			.updateTable("translationJobs")
-			.set({
-				status: "IN_PROGRESS" satisfies TranslationStatus,
-				progress: sql`progress + ${inc}`,
-			})
-			.where("id", "=", translationJobId)
-			.where("status", "not in", ["COMPLETED", "FAILED"])
-			.where("progress", "<", 100)
-			.execute();
+	const progress =
+		totalSegments === 0
+			? 100
+			: Math.min(100, Math.floor((translatedSegments * 100) / totalSegments));
+	const status = progress === 100 ? "COMPLETED" : "IN_PROGRESS";
 
-		// 100 以上になったら完了＆100 でクランプ（冪等）
-		await tx
-			.updateTable("translationJobs")
-			.set({
-				status: "COMPLETED" satisfies TranslationStatus,
-				progress: 100,
-			})
-			.where("id", "=", translationJobId)
-			.where("progress", ">=", 100)
-			.where("status", "!=", "COMPLETED")
-			.execute();
+	await db
+		.updateTable("translationJobs")
+		.set({
+			status: status satisfies TranslationStatus,
+			progress,
+			error: "",
+		})
+		.where("id", "=", translationJobId)
+		.where("status", "not in", ["COMPLETED", "FAILED"])
+		.execute();
 
-		const result = await tx
-			.selectFrom("translationJobs")
-			.selectAll()
-			.where("id", "=", translationJobId)
-			.executeTakeFirst();
-
-		return result;
-	});
+	return db
+		.selectFrom("translationJobs")
+		.selectAll()
+		.where("id", "=", translationJobId)
+		.executeTakeFirst();
 }
 
 type SegmentTranslationData = {
@@ -118,4 +200,23 @@ export async function insertSegmentTranslations(
 	data: readonly SegmentTranslationData[],
 ) {
 	await db.insertInto("segmentTranslations").values(data).execute();
+}
+
+export async function getTranslatedSegmentIds(
+	segmentIds: readonly number[],
+	locale: string,
+	userId: string,
+): Promise<Set<number>> {
+	if (segmentIds.length === 0) return new Set();
+
+	const rows = await db
+		.selectFrom("segmentTranslations")
+		.select("segmentId")
+		.distinct()
+		.where("segmentId", "in", segmentIds)
+		.where("locale", "=", locale)
+		.where("userId", "=", userId)
+		.execute();
+
+	return new Set(rows.map((row) => row.segmentId));
 }

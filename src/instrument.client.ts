@@ -1,8 +1,10 @@
 import * as Sentry from "@sentry/tanstackstart-react";
 
-if (process.env.NODE_ENV === "production") {
+const sentryDsn = import.meta.env.VITE_SENTRY_DSN?.trim();
+
+if (import.meta.env.PROD && sentryDsn) {
 	Sentry.init({
-		dsn: "https://0cda4c09dab97bb05116614428effb0c@o4507906314207232.ingest.us.sentry.io/4508805630263296",
+		dsn: sentryDsn,
 		integrations: [
 			Sentry.replayIntegration(),
 			Sentry.browserProfilingIntegration(),

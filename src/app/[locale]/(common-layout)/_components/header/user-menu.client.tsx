@@ -16,7 +16,6 @@ import {
 
 interface UserMenuProps {
 	currentUser: { handle: string; name: string; image: string; plan: string };
-	hasGeminiApiKey?: boolean;
 	locale: string;
 }
 
@@ -34,11 +33,7 @@ async function handleSignOut() {
 	}
 }
 
-export function UserMenu({
-	currentUser,
-	hasGeminiApiKey = false,
-	locale,
-}: UserMenuProps) {
+export function UserMenu({ currentUser, locale }: UserMenuProps) {
 	return (
 		<DropdownMenu modal={false}>
 			<DropdownMenuTrigger>
@@ -72,7 +67,6 @@ export function UserMenu({
 				<DropdownMenuSeparator className="my-0" />
 				<LocaleSelector
 					currentHandle={currentUser.handle}
-					hasGeminiApiKey={hasGeminiApiKey}
 					localeSelectorClassName="w-[200px]"
 					userPlan={currentUser.plan}
 				/>

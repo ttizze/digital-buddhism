@@ -2,13 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { translateChunk } from "@/app/api/translate/chunk/_service/translate-chunk.server";
 import { db } from "@/db";
 import { resetDatabase } from "@/tests/db-helpers";
-import {
-	createGeminiApiKey,
-	createPageWithSegments,
-	createUser,
-} from "@/tests/factories";
+import { createPageWithSegments, createUser } from "@/tests/factories";
 import { setupDbPerFile } from "@/tests/test-db-manager";
-import { getVertexAIModelResponse } from "../_infra/vertexai";
+import { getGeminiModelResponse } from "../_infra/gemini";
 
 await setupDbPerFile(import.meta.url);
 
@@ -24,13 +20,13 @@ if (process.env.DEBUG_TEST_DB === "1") {
 	);
 }
 
-// 外部システムのみモック（Vertex AI）
-vi.mock("../_infra/vertexai", () => ({
-	getVertexAIModelResponse: vi.fn(),
+// 外部システムのみモック（Gemini API）
+vi.mock("../_infra/gemini", () => ({
+	getGeminiModelResponse: vi.fn(),
 }));
 
 /**
- * 翻訳テスト用のセットアップ（ユーザー、ページ、セグメント、Gemini API Keyを作成）
+ * 翻訳テスト用のセットアップ（ユーザー、ページ、セグメントを作成）
  */
 async function setupTranslationTest(data?: {
 	segments?: Array<{
@@ -56,8 +52,6 @@ async function setupTranslationTest(data?: {
 		slug: "test-page",
 		segments: segmentsData,
 	});
-	await createGeminiApiKey({ userId: user.id });
-
 	// 作成されたセグメントを取得（実際のIDを使用するため）
 	const segmentsResult = await db
 		.selectFrom("segments")
@@ -73,14 +67,15 @@ describe("translateChunk", () => {
 	beforeEach(async () => {
 		await resetDatabase();
 		vi.clearAllMocks();
+		vi.stubEnv("GEMINI_API_KEY", "test-gemini-api-key");
 	});
 
 	it("Geminiから正常レスポンスが返された場合、翻訳がデータベースに保存される", async () => {
 		// Arrange: テスト用データを作成
 		const { user, page, segments } = await setupTranslationTest();
 
-		// Vertex AIのモック（正常レスポンス）
-		vi.mocked(getVertexAIModelResponse).mockResolvedValue(`
+		// Gemini APIのモック（正常レスポンス）
+		vi.mocked(getGeminiModelResponse).mockResolvedValue(`
       [
         {"number": 0, "text": "こんにちは"},
         {"number": 1, "text": "世界"}
@@ -90,7 +85,7 @@ describe("translateChunk", () => {
 		// Act
 		await translateChunk(
 			user.id,
-			"gemini-2.5-flash-lite",
+			"gemini-3.1-flash-lite",
 			segments.map((s) => ({ id: s.id, number: s.number, text: s.text })),
 			"ja",
 			page.id,
@@ -109,7 +104,49 @@ describe("translateChunk", () => {
 		expect(translatedTexts.some((t) => t.text === "世界")).toBe(true);
 	});
 
-	it("Geminiが空レスポンスを返し続けた場合、リトライ後にエラーで失敗し翻訳が保存されない", async () => {
+	it("同じAI・言語のチャンクが再配信されても翻訳を二重生成しない", async () => {
+		const { user, page, segments } = await setupTranslationTest();
+		vi.mocked(getGeminiModelResponse).mockResolvedValue(`
+			[
+				{"number": 0, "text": "こんにちは"},
+				{"number": 1, "text": "世界"}
+			]
+		`);
+		const chunk = segments.map((segment) => ({
+			id: segment.id,
+			number: segment.number,
+			text: segment.text,
+		}));
+
+		await translateChunk(
+			user.id,
+			"gemini-3.1-flash-lite",
+			chunk,
+			"ja",
+			page.id,
+			"Test Page",
+			"",
+		);
+		await translateChunk(
+			user.id,
+			"gemini-3.1-flash-lite",
+			chunk,
+			"ja",
+			page.id,
+			"Test Page",
+			"",
+		);
+
+		expect(getGeminiModelResponse).toHaveBeenCalledOnce();
+		const saved = await db
+			.selectFrom("segmentTranslations")
+			.select("id")
+			.where("locale", "=", "ja")
+			.execute();
+		expect(saved).toHaveLength(2);
+	});
+
+	it("Geminiが空レスポンスを返した場合、Queue再試行用のエラーになり翻訳を保存しない", async () => {
 		// Arrange: テスト用データを作成
 		const { user, page, segments } = await setupTranslationTest({
 			segments: [
@@ -126,14 +163,14 @@ describe("translateChunk", () => {
 			],
 		});
 
-		// Vertex AIのモック（何度呼んでも空配列を返す）
-		vi.mocked(getVertexAIModelResponse).mockResolvedValue("[]");
+		// Provider内では再試行せず、Queueへ失敗を返す。
+		vi.mocked(getGeminiModelResponse).mockResolvedValue("[]");
 
 		// Act & Assert: エラーが発生する
 		await expect(
 			translateChunk(
 				user.id,
-				"gemini-2.5-flash-lite",
+				"gemini-3.1-flash-lite",
 				segments.map((s) => ({ id: s.id, number: s.number, text: s.text })),
 				"ja",
 				page.id,
@@ -156,50 +193,15 @@ describe("translateChunk", () => {
 			.where("locale", "=", "ja")
 			.executeTakeFirst();
 		expect(proofResult).toBeUndefined();
-	});
-
-	it("1回目は空レスポンスで2回目で正常レスポンスが返された場合、リトライ後に翻訳が保存される", async () => {
-		// Arrange: テスト用データを作成
-		const { user, page, segments } = await setupTranslationTest();
-
-		// Vertex AIのモック（1回目: 空レスポンス, 2回目: 正常レスポンス）
-		vi.mocked(getVertexAIModelResponse)
-			.mockResolvedValueOnce("[]")
-			.mockResolvedValueOnce(`
-        [
-          {"number": 0, "text": "こんにちは"},
-          {"number": 1, "text": "世界"}
-        ]
-      `);
-
-		// Act
-		await translateChunk(
-			user.id,
-			"gemini-2.5-flash-lite",
-			segments.map((s) => ({ id: s.id, number: s.number, text: s.text })),
-			"ja",
-			page.id,
-			"Test Page",
-			"",
-		);
-
-		// Assert: 翻訳結果がデータベースに保存されている（実際のDBで検証）
-		const translatedTexts = await db
-			.selectFrom("segmentTranslations")
-			.selectAll()
-			.where("locale", "=", "ja")
-			.execute();
-		expect(translatedTexts.length).toBeGreaterThanOrEqual(2);
-		expect(translatedTexts.some((t) => t.text === "こんにちは")).toBe(true);
-		expect(translatedTexts.some((t) => t.text === "世界")).toBe(true);
+		expect(getGeminiModelResponse).toHaveBeenCalledOnce();
 	});
 
 	it("PageLocaleTranslationProofが存在しない場合、新規レコードがMACHINE_DRAFTステータスで作成される", async () => {
 		// Arrange: テスト用データを作成
 		const { user, page, segments } = await setupTranslationTest();
 
-		// Vertex AIのモック（正常レスポンス）
-		vi.mocked(getVertexAIModelResponse).mockResolvedValue(
+		// Gemini APIのモック（正常レスポンス）
+		vi.mocked(getGeminiModelResponse).mockResolvedValue(
 			`[
 				{"number": 0, "text": "こんにちは"},
 				{"number": 1, "text": "世界"}
@@ -209,7 +211,7 @@ describe("translateChunk", () => {
 		// Act
 		await translateChunk(
 			user.id,
-			"gemini-2.5-flash-lite",
+			"gemini-3.1-flash-lite",
 			segments.map((s) => ({ id: s.id, number: s.number, text: s.text })),
 			"ja",
 			page.id,
@@ -244,8 +246,8 @@ describe("translateChunk", () => {
 			.returningAll()
 			.executeTakeFirstOrThrow();
 
-		// Vertex AIのモック（正常レスポンス）
-		vi.mocked(getVertexAIModelResponse).mockResolvedValue(
+		// Gemini APIのモック（正常レスポンス）
+		vi.mocked(getGeminiModelResponse).mockResolvedValue(
 			`[
 				{"number": 0, "text": "こんにちは"},
 				{"number": 1, "text": "世界"}
@@ -255,7 +257,7 @@ describe("translateChunk", () => {
 		// Act
 		await translateChunk(
 			user.id,
-			"gemini-2.5-flash-lite",
+			"gemini-3.1-flash-lite",
 			segments.map((s) => ({ id: s.id, number: s.number, text: s.text })),
 			"ja",
 			page.id,

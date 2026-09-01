@@ -21,10 +21,6 @@ vi.mock("@/routes/$locale/-profile-edit-data", () => ({
 vi.mock("sonner", () => ({
 	toast: { success: vi.fn(), error: vi.fn() },
 }));
-vi.mock(
-	"@/app/[locale]/(common-layout)/_components/gemini-api-key-dialog/gemini-api-key-dialog",
-	() => ({ GeminiApiKeyDialog: () => null }),
-);
 
 describe("SettingsForm", () => {
 	beforeEach(() => {

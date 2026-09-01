@@ -6,7 +6,6 @@ import { useActionState, useState } from "react";
 import { useLocale } from "use-intl";
 import { useTranslationJobToast } from "@/app/[locale]/_hooks/use-translation-job-toast";
 import { useTranslationJobs } from "@/app/[locale]/_hooks/use-translation-jobs";
-import { GeminiApiKeyDialog } from "@/app/[locale]/(common-layout)/_components/gemini-api-key-dialog/gemini-api-key-dialog";
 import { StartButton } from "@/app/[locale]/(common-layout)/_components/start-button";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,14 +23,12 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { type TranslateActionState, translateAction } from "./action";
-import { canTranslateWithoutGeminiApiKey } from "./can-translate-without-gemini-api-key";
 import { DialogLocaleSelector } from "./dialog-locale-selector";
 
 type AddTranslateDialogProps = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	currentHandle: string | undefined;
-	hasGeminiApiKey: boolean;
 	pageSlug?: string;
 	userPlan: string;
 };
@@ -40,7 +37,6 @@ export function AddTranslateDialog({
 	open,
 	onOpenChange,
 	currentHandle,
-	hasGeminiApiKey,
 	pageSlug,
 	userPlan,
 }: AddTranslateDialogProps) {
@@ -58,135 +54,104 @@ export function AddTranslateDialog({
 	});
 	const [targetLocale, setTargetLocale] = useState(currentLocale);
 	const isPremium = userPlan === "premium";
-	const [selectedModel, setSelectedModel] = useState("gemini-2.0-flash");
-	const [isApiKeyDialogOpen, setIsApiKeyDialogOpen] = useState(false);
-	const canTranslate = canTranslateWithoutGeminiApiKey(
-		hasGeminiApiKey,
-		selectedModel,
-	);
+	const [selectedModel, setSelectedModel] = useState("gemini-3.1-flash-lite");
 	const { toastJobs } = useTranslationJobs(
 		translateState.success ? (translateState.data?.translationJobs ?? []) : [],
 	);
 
 	useTranslationJobToast(toastJobs);
 	return (
-		<>
-			<Dialog onOpenChange={onOpenChange} open={open}>
-				<DialogContent className="rounded-xl">
-					{!currentHandle ? (
-						<div className="text-center">
-							<DialogHeader>
-								<DialogTitle className="text-lg text-center mb-4">
-									Please log in to Add Translation
-								</DialogTitle>
-							</DialogHeader>
-							<StartButton />
+		<Dialog onOpenChange={onOpenChange} open={open}>
+			<DialogContent className="rounded-xl">
+				{!currentHandle ? (
+					<div className="text-center">
+						<DialogHeader>
+							<DialogTitle className="text-lg text-center mb-4">
+								Please log in to Add Translation
+							</DialogTitle>
+						</DialogHeader>
+						<StartButton />
+					</div>
+				) : (
+					<>
+						<DialogHeader>
+							<DialogTitle>Add New Translation</DialogTitle>
+						</DialogHeader>
+						<div className="space-y-2">
+							<Label htmlFor="language">Language</Label>
+							<DialogLocaleSelector
+								onChange={(value) => setTargetLocale(value)}
+								targetLocale={targetLocale}
+							/>
 						</div>
-					) : (
-						<>
-							<DialogHeader>
-								<DialogTitle>Add New Translation</DialogTitle>
-							</DialogHeader>
-							<div className="space-y-2">
-								<Label htmlFor="language">Language</Label>
-								<DialogLocaleSelector
-									onChange={(value) => setTargetLocale(value)}
-									targetLocale={targetLocale}
-								/>
-							</div>
-							<div className="space-y-2">
-								<Label htmlFor="ai-model">AI Model</Label>
-								<Select
-									onValueChange={(value) => setSelectedModel(value)}
-									value={selectedModel}
-								>
-									<SelectTrigger className="rounded-xl">
-										<SelectValue placeholder="Select a model" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="gemini-2.0-flash">
-											Gemini 2.0 Flash
-										</SelectItem>
-										<SelectItem value="gemini-2.5-flash-lite">
-											Gemini 2.5 Flash Lite
-										</SelectItem>
-										{isPremium && (
-											<>
-												<SelectItem value="gemini-2.5-flash">
-													Gemini 2.5 Flash
-												</SelectItem>
-												<SelectItem value="gpt-5-nano-2025-08-07">
-													GPT-5 Nano
-												</SelectItem>
-												<SelectItem value="deepseek-reasoner">
-													DeepSeek Reasoner (Thinking Mode)
-												</SelectItem>
-											</>
-										)}
-									</SelectContent>
-								</Select>
-							</div>
+						<div className="space-y-2">
+							<Label htmlFor="ai-model">AI Model</Label>
+							<Select
+								onValueChange={(value) => setSelectedModel(value)}
+								value={selectedModel}
+							>
+								<SelectTrigger className="rounded-xl">
+									<SelectValue placeholder="Select a model" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="gemini-3.1-flash-lite">
+										Gemini 3.1 Flash Lite
+									</SelectItem>
+									{isPremium && (
+										<>
+											<SelectItem value="gemini-3.7-flash">
+												Gemini 3.7 Flash
+											</SelectItem>
+											<SelectItem value="gemini-3.1-pro-preview">
+												Gemini 3.1 Pro Preview
+											</SelectItem>
+											<SelectItem value="gpt-5-nano-2025-08-07">
+												GPT-5 Nano
+											</SelectItem>
+											<SelectItem value="deepseek-reasoner">
+												DeepSeek Reasoner (Thinking Mode)
+											</SelectItem>
+										</>
+									)}
+								</SelectContent>
+							</Select>
+						</div>
 
-							{canTranslate ? (
-								<form action={action}>
-									<input
-										name="targetLocale"
-										type="hidden"
-										value={targetLocale}
-									/>
-									<input name="pageSlug" type="hidden" value={pageSlug} />
-									<input name="aiModel" type="hidden" value={selectedModel} />
-									<Button
-										className="w-full"
-										disabled={isTranslating}
-										type="submit"
-									>
-										{isTranslating ? (
-											<Loader2 className="w-4 h-4 animate-spin" />
-										) : (
-											"Translate"
-										)}
-									</Button>
-								</form>
-							) : (
-								<Button
-									className="w-full"
-									onClick={() => setIsApiKeyDialogOpen(true)}
-									type="button"
-								>
-									Set API Key
-								</Button>
-							)}
-							{translateState.message && (
-								<p className="text-red-500">{translateState.message}</p>
-							)}
-							{!translateState.success &&
-								translateState.zodErrors?.pageSlug && (
-									<p className="text-red-500">
-										{translateState.zodErrors.pageSlug[0]}
-									</p>
+						<form action={action}>
+							<input name="targetLocale" type="hidden" value={targetLocale} />
+							<input name="pageSlug" type="hidden" value={pageSlug} />
+							<input name="aiModel" type="hidden" value={selectedModel} />
+							<Button className="w-full" disabled={isTranslating} type="submit">
+								{isTranslating ? (
+									<Loader2 className="w-4 h-4 animate-spin" />
+								) : (
+									"Translate"
 								)}
+							</Button>
+						</form>
+						{translateState.message && (
+							<p className="text-red-500">{translateState.message}</p>
+						)}
+						{!translateState.success && translateState.zodErrors?.pageSlug && (
+							<p className="text-red-500">
+								{translateState.zodErrors.pageSlug[0]}
+							</p>
+						)}
 
-							{!translateState.success && translateState.zodErrors?.aiModel && (
+						{!translateState.success && translateState.zodErrors?.aiModel && (
+							<p className="text-red-500">
+								{translateState.zodErrors.aiModel[0]}
+							</p>
+						)}
+						{!translateState.success &&
+							translateState.zodErrors?.targetLocale && (
 								<p className="text-red-500">
-									{translateState.zodErrors.aiModel[0]}
+									{translateState.zodErrors.targetLocale[0]}
 								</p>
 							)}
-							{!translateState.success &&
-								translateState.zodErrors?.targetLocale && (
-									<p className="text-red-500">
-										{translateState.zodErrors.targetLocale[0]}
-									</p>
-								)}
-						</>
-					)}
-				</DialogContent>
-			</Dialog>
-
-			<GeminiApiKeyDialog
-				isOpen={isApiKeyDialogOpen}
-				onOpenChange={setIsApiKeyDialogOpen}
-			/>
-		</>
+					</>
+				)}
+			</DialogContent>
+		</Dialog>
 	);
 }

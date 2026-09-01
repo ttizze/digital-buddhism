@@ -1,3 +1,4 @@
+import { env } from "cloudflare:workers";
 import {
 	ClientOnly,
 	createFileRoute,
@@ -9,6 +10,8 @@ import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/tanstack-router";
 import { useEffect } from "react";
 import { IntlProvider } from "use-intl";
+import { resolveAuthProviderAvailability } from "@/app/_constants/auth-config.server";
+import { AuthProviderAvailabilityContext } from "@/app/_constants/auth-providers";
 import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { AnalyticsConsent } from "@/app/[locale]/_components/analytics-consent.client";
 import { Toaster } from "@/components/ui/sonner";
@@ -29,7 +32,8 @@ const messages = {
 const cookieConsentMessageLocales = new Set(["en", "ja", "es", "ko", "zh"]);
 
 const loadLocaleRuntimeData = createServerFn({ method: "GET" }).handler(() => ({
-	gaTrackingId: process.env.GOOGLE_ANALYTICS_ID ?? "",
+	authProviders: resolveAuthProviderAvailability(env),
+	gaTrackingId: env.GOOGLE_ANALYTICS_ID ?? "",
 }));
 
 export const Route = createFileRoute("/$locale")({
@@ -60,7 +64,7 @@ function LocalePreference({ locale }: { locale: string }) {
 
 function LocaleShell() {
 	const { locale } = Route.useParams();
-	const { gaTrackingId } = Route.useLoaderData();
+	const { authProviders, gaTrackingId } = Route.useLoaderData();
 	const messageLocale = locale in messages ? locale : "en";
 	const localeMessages = messages[messageLocale as keyof typeof messages];
 	const consentMessageLocale = cookieConsentMessageLocales.has(locale)
@@ -70,21 +74,23 @@ function LocaleShell() {
 		messages[consentMessageLocale as keyof typeof messages].CookieConsent;
 
 	return (
-		<IntlProvider locale={locale} messages={localeMessages} timeZone="UTC">
-			<NuqsAdapter>
-				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-					<LocalePreference locale={locale} />
-					<ClientOnly fallback={null}>
-						<AnalyticsConsent
-							gaTrackingId={gaTrackingId}
-							locale={locale}
-							message={consentMessages}
-						/>
-					</ClientOnly>
-					<Outlet />
-					<Toaster closeButton richColors />
-				</ThemeProvider>
-			</NuqsAdapter>
-		</IntlProvider>
+		<AuthProviderAvailabilityContext.Provider value={authProviders}>
+			<IntlProvider locale={locale} messages={localeMessages} timeZone="UTC">
+				<NuqsAdapter>
+					<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+						<LocalePreference locale={locale} />
+						<ClientOnly fallback={null}>
+							<AnalyticsConsent
+								gaTrackingId={gaTrackingId}
+								locale={locale}
+								message={consentMessages}
+							/>
+						</ClientOnly>
+						<Outlet />
+						<Toaster closeButton richColors />
+					</ThemeProvider>
+				</NuqsAdapter>
+			</IntlProvider>
+		</AuthProviderAvailabilityContext.Provider>
 	);
 }

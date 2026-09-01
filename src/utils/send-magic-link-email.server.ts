@@ -1,7 +1,8 @@
+import { env } from "cloudflare:workers";
 import { Resend } from "resend";
 
 const createResendClient = () => {
-	const apiKey = process.env.AUTH_RESEND_KEY;
+	const apiKey = env.AUTH_RESEND_KEY;
 	if (!apiKey) {
 		throw new Error("AUTH_RESEND_KEY is required to send a magic-link email");
 	}
@@ -16,7 +17,7 @@ async function resendSendEmail(
 ) {
 	const resend = createResendClient();
 	const { data, error } = await resend.emails.send({
-		from: from || process.env.EMAIL_FROM || "noreply@mail.reimei.dev",
+		from: from || env.EMAIL_FROM || "noreply@mail.reimei.dev",
 		to: [email],
 		subject,
 		html,

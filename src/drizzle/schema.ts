@@ -252,6 +252,34 @@ export const translationJobs = sqliteTable(
 	],
 );
 
+export const translationChunkRuns = sqliteTable(
+	"translation_chunk_runs",
+	{
+		translationJobId: integer("translation_job_id").notNull(),
+		chunkIndex: integer("chunk_index").notNull(),
+		leaseToken: text("lease_token").notNull(),
+		leaseExpiresAt: integer("lease_expires_at").notNull(),
+		completedAt: integer("completed_at"),
+	},
+	(table) => [
+		primaryKey({
+			columns: [table.translationJobId, table.chunkIndex],
+			name: "translation_chunk_runs_translation_job_id_chunk_index_pk",
+		}),
+		check(
+			"translation_chunk_runs_chunk_index_check",
+			sql`${table.chunkIndex} >= 0`,
+		),
+		foreignKey({
+			columns: [table.translationJobId],
+			foreignColumns: [translationJobs.id],
+			name: "translation_chunk_runs_translation_job_id_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("cascade"),
+	],
+);
+
 export const segmentTranslations = sqliteTable(
 	"segment_translations",
 	{

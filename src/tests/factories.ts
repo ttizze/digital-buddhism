@@ -218,17 +218,3 @@ export async function createPageWithAnnotations(data: {
 	}
 	return { targetPage, annotationPage };
 }
-
-export async function createGeminiApiKey(data: {
-	userId: string;
-	apiKey?: string;
-}) {
-	return db
-		.insertInto("geminiApiKeys")
-		.values({
-			userId: data.userId,
-			apiKey: data.apiKey ?? "dummy-api-key",
-		})
-		.returningAll()
-		.executeTakeFirstOrThrow();
-}

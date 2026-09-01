@@ -11,7 +11,7 @@ export type TranslatedElement = {
 	text: string;
 };
 
-/** action → /api/translate へ渡すパラメータ */
+/** 翻訳ジョブのオーケストレーターへ渡すパラメータ */
 export interface TranslateJobParams {
 	userId: string;
 	pageId: number;
@@ -23,7 +23,7 @@ export interface TranslateJobParams {
 	translationContext: string;
 }
 
-/** /api/translate → /api/translate/chunk へ渡すパラメータ */
+/** オーケストレーターからチャンク処理へ渡すパラメータ */
 export interface TranslateChunkParams extends TranslateJobParams {
 	/** チャンク分割後のセグメント（id, number, text を含む） */
 	segments: SegmentElement[];
@@ -32,3 +32,11 @@ export interface TranslateChunkParams extends TranslateJobParams {
 	totalChunks: number;
 	chunkIndex: number;
 }
+
+export type TranslationQueueMessage =
+	| { type: "orchestrate"; params: TranslateJobParams }
+	| { type: "chunk"; params: TranslateChunkParams };
+
+export type TranslationQueueBinding = {
+	send(message: TranslationQueueMessage): Promise<unknown>;
+};

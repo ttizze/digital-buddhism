@@ -20,9 +20,23 @@ const databasePath = join(
 );
 
 let setupClient: Client;
-let incrementTranslationProgress: typeof import("./mutations.server")["incrementTranslationProgress"];
+let getOrCreateAIUser: typeof import("./mutations.server")["getOrCreateAIUser"];
+let setTranslationProgress: typeof import("./mutations.server")["setTranslationProgress"];
+let claimTranslationChunk: typeof import("./mutations.server")["claimTranslationChunk"];
+let completeTranslationChunk: typeof import("./mutations.server")["completeTranslationChunk"];
+let releaseTranslationChunk: typeof import("./mutations.server")["releaseTranslationChunk"];
 
 async function createTranslationJobsTable() {
+	await setupClient.execute(`
+		CREATE TABLE users (
+			id TEXT PRIMARY KEY,
+			handle TEXT NOT NULL UNIQUE,
+			name TEXT NOT NULL,
+			is_ai INTEGER NOT NULL,
+			image TEXT NOT NULL,
+			email TEXT NOT NULL UNIQUE
+		)
+	`);
 	await setupClient.execute(`
 		CREATE TABLE translation_jobs (
 			id INTEGER PRIMARY KEY,
@@ -37,11 +51,28 @@ async function createTranslationJobsTable() {
 			updated_at INTEGER NOT NULL
 		)
 	`);
+	await setupClient.execute(`
+		CREATE TABLE translation_chunk_runs (
+			translation_job_id INTEGER NOT NULL,
+			chunk_index INTEGER NOT NULL,
+			lease_token TEXT NOT NULL,
+			lease_expires_at INTEGER NOT NULL,
+			completed_at INTEGER,
+			PRIMARY KEY (translation_job_id, chunk_index),
+			FOREIGN KEY (translation_job_id) REFERENCES translation_jobs(id) ON DELETE CASCADE
+		)
+	`);
 }
 
-describe("incrementTranslationProgress の libSQL トランザクション", () => {
+describe("translation mutations", () => {
 	beforeAll(async () => {
-		({ incrementTranslationProgress } = await import("./mutations.server"));
+		({
+			claimTranslationChunk,
+			completeTranslationChunk,
+			getOrCreateAIUser,
+			releaseTranslationChunk,
+			setTranslationProgress,
+		} = await import("./mutations.server"));
 	});
 
 	beforeEach(async () => {
@@ -49,7 +80,9 @@ describe("incrementTranslationProgress の libSQL トランザクション", () 
 		vi.stubEnv("TURSO_AUTH_TOKEN", "");
 		await disposeDb();
 		setupClient = createClient({ url: `file:${databasePath}` });
+		await setupClient.execute("DROP TABLE IF EXISTS translation_chunk_runs");
 		await setupClient.execute("DROP TABLE IF EXISTS translation_jobs");
+		await setupClient.execute("DROP TABLE IF EXISTS users");
 		await createTranslationJobsTable();
 		await setupClient.execute({
 			sql: `
@@ -68,8 +101,8 @@ describe("incrementTranslationProgress の libSQL トランザクション", () 
 		await unlink(databasePath).catch(() => undefined);
 	});
 
-	it("多段更新を1つのトランザクションとしてcommitする", async () => {
-		const result = await incrementTranslationProgress(1, 10);
+	it("翻訳済み件数から100%へ更新する", async () => {
+		const result = await setTranslationProgress(1, 10, 10);
 
 		expect(result?.status).toBe("COMPLETED");
 		expect(result?.progress).toBe(100);
@@ -80,7 +113,7 @@ describe("incrementTranslationProgress の libSQL トランザクション", () 
 		expect(row.rows).toEqual([{ status: "COMPLETED", progress: 100 }]);
 	});
 
-	it("後段の更新が失敗したら前段の更新もrollbackする", async () => {
+	it("更新に失敗したら既存進捗を維持する", async () => {
 		await setupClient.execute(`
 			CREATE TRIGGER fail_translation_completion
 			BEFORE UPDATE OF progress ON translation_jobs
@@ -90,7 +123,7 @@ describe("incrementTranslationProgress の libSQL トランザクション", () 
 			END
 		`);
 
-		await expect(incrementTranslationProgress(1, 10)).rejects.toThrow(
+		await expect(setTranslationProgress(1, 10, 10)).rejects.toThrow(
 			"completion failed",
 		);
 
@@ -98,5 +131,75 @@ describe("incrementTranslationProgress の libSQL トランザクション", () 
 			"SELECT status, progress FROM translation_jobs WHERE id = 1",
 		);
 		expect(row.rows).toEqual([{ status: "PENDING", progress: 95 }]);
+	});
+
+	it("同じAIモデルの並行作成を一つのユーザーへ収束させる", async () => {
+		const ids = await Promise.all([
+			getOrCreateAIUser("test-model"),
+			getOrCreateAIUser("test-model"),
+		]);
+
+		expect(new Set(ids).size).toBe(1);
+		const row = await setupClient.execute(
+			"SELECT count(*) AS count FROM users WHERE handle = 'test-model'",
+		);
+		expect(row.rows).toEqual([{ count: 1 }]);
+	});
+
+	it("同じジョブ・チャンクは同時に一つのleaseだけを取得する", async () => {
+		await expect(
+			claimTranslationChunk({
+				translationJobId: 1,
+				chunkIndex: 0,
+				leaseToken: "first",
+				nowMs: 1_000,
+			}),
+		).resolves.toEqual({ status: "claimed" });
+		await expect(
+			claimTranslationChunk({
+				translationJobId: 1,
+				chunkIndex: 0,
+				leaseToken: "duplicate",
+				nowMs: 2_000,
+			}),
+		).resolves.toMatchObject({ status: "busy" });
+
+		await completeTranslationChunk({
+			translationJobId: 1,
+			chunkIndex: 0,
+			leaseToken: "first",
+			nowMs: 3_000,
+		});
+		await expect(
+			claimTranslationChunk({
+				translationJobId: 1,
+				chunkIndex: 0,
+				leaseToken: "after-completion",
+				nowMs: 4_000,
+			}),
+		).resolves.toEqual({ status: "completed" });
+	});
+
+	it("失敗したleaseを解放するとQueue再配信が取得できる", async () => {
+		await claimTranslationChunk({
+			translationJobId: 1,
+			chunkIndex: 1,
+			leaseToken: "failed-attempt",
+			nowMs: 1_000,
+		});
+		await releaseTranslationChunk({
+			translationJobId: 1,
+			chunkIndex: 1,
+			leaseToken: "failed-attempt",
+		});
+
+		await expect(
+			claimTranslationChunk({
+				translationJobId: 1,
+				chunkIndex: 1,
+				leaseToken: "retry",
+				nowMs: 2_000,
+			}),
+		).resolves.toEqual({ status: "claimed" });
 	});
 });

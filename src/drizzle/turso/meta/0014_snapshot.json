@@ -1,0 +1,2473 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "8c67eb60-02b9-41ba-b7d2-d23591e72b6a",
+  "prevId": "092c8bf4-4fde-44f8-8960-439dfcea4ddf",
+  "tables": {
+    "accounts": {
+      "name": "accounts",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "refresh_token": {
+          "name": "refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "access_token": {
+          "name": "access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "id_token": {
+          "name": "id_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refresh_token_expires_at": {
+          "name": "refresh_token_expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "access_token_expires_at": {
+          "name": "access_token_expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "accounts_provider_accountId_key": {
+          "name": "accounts_provider_accountId_key",
+          "columns": [
+            "provider_id",
+            "account_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "accounts_userId_fkey": {
+          "name": "accounts_userId_fkey",
+          "tableFrom": "accounts",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "gemini_api_keys": {
+      "name": "gemini_api_keys",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "api_key": {
+          "name": "api_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "gemini_api_keys_user_id_idx": {
+          "name": "gemini_api_keys_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "gemini_api_keys_user_id_key": {
+          "name": "gemini_api_keys_user_id_key",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "gemini_api_keys_user_id_fkey": {
+          "name": "gemini_api_keys_user_id_fkey",
+          "tableFrom": "gemini_api_keys",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "import_files": {
+      "name": "import_files",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "import_run_id": {
+          "name": "import_run_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "path": {
+          "name": "path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "checksum": {
+          "name": "checksum",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PENDING'"
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "import_files_import_run_id_path_key": {
+          "name": "import_files_import_run_id_path_key",
+          "columns": [
+            "import_run_id",
+            "path"
+          ],
+          "isUnique": true
+        },
+        "import_files_path_idx": {
+          "name": "import_files_path_idx",
+          "columns": [
+            "path"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "import_files_import_run_id_fkey": {
+          "name": "import_files_import_run_id_fkey",
+          "tableFrom": "import_files",
+          "tableTo": "import_runs",
+          "columnsFrom": [
+            "import_run_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "import_files_status_check": {
+          "name": "import_files_status_check",
+          "value": "\"import_files\".\"status\" IN ('PENDING', 'COMPLETED', 'FAILED')"
+        }
+      }
+    },
+    "import_runs": {
+      "name": "import_runs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'RUNNING'"
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "import_runs_status_check": {
+          "name": "import_runs_status_check",
+          "value": "\"import_runs\".\"status\" IN ('RUNNING', 'COMPLETED', 'FAILED')"
+        }
+      }
+    },
+    "notifications": {
+      "name": "notifications",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "read": {
+          "name": "read",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "segment_translation_id": {
+          "name": "segment_translation_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "notifications_actor_id_idx": {
+          "name": "notifications_actor_id_idx",
+          "columns": [
+            "actor_id"
+          ],
+          "isUnique": false
+        },
+        "notifications_user_id_idx": {
+          "name": "notifications_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "notifications_actor_id_fkey": {
+          "name": "notifications_actor_id_fkey",
+          "tableFrom": "notifications",
+          "tableTo": "users",
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "notifications_segment_translation_id_fkey": {
+          "name": "notifications_segment_translation_id_fkey",
+          "tableFrom": "notifications",
+          "tableTo": "segment_translations",
+          "columnsFrom": [
+            "segment_translation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "notifications_user_id_fkey": {
+          "name": "notifications_user_id_fkey",
+          "tableFrom": "notifications",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "page_locale_translation_proofs": {
+      "name": "page_locale_translation_proofs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "page_id": {
+          "name": "page_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "translation_proof_status": {
+          "name": "translation_proof_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'MACHINE_DRAFT'"
+        }
+      },
+      "indexes": {
+        "page_locale_translation_proofs_page_id_locale_key": {
+          "name": "page_locale_translation_proofs_page_id_locale_key",
+          "columns": [
+            "page_id",
+            "locale"
+          ],
+          "isUnique": true
+        },
+        "page_locale_translation_proofs_translation_proof_status_idx": {
+          "name": "page_locale_translation_proofs_translation_proof_status_idx",
+          "columns": [
+            "translation_proof_status"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "page_locale_translation_proofs_page_id_fkey": {
+          "name": "page_locale_translation_proofs_page_id_fkey",
+          "tableFrom": "page_locale_translation_proofs",
+          "tableTo": "tipitaka_pages",
+          "columnsFrom": [
+            "page_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "page_locale_translation_proofs_status_check": {
+          "name": "page_locale_translation_proofs_status_check",
+          "value": "\"page_locale_translation_proofs\".\"translation_proof_status\" IN ('MACHINE_DRAFT', 'HUMAN_TOUCHED', 'PROOFREAD', 'VALIDATED')"
+        }
+      }
+    },
+    "segment_annotation_links": {
+      "name": "segment_annotation_links",
+      "columns": {
+        "target_segment_id": {
+          "name": "target_segment_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "annotation_segment_id": {
+          "name": "annotation_segment_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "segment_annotation_links_annotation_segment_id_idx": {
+          "name": "segment_annotation_links_annotation_segment_id_idx",
+          "columns": [
+            "annotation_segment_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "segment_annotation_links_annotation_segment_id_fkey": {
+          "name": "segment_annotation_links_annotation_segment_id_fkey",
+          "tableFrom": "segment_annotation_links",
+          "tableTo": "segments",
+          "columnsFrom": [
+            "annotation_segment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "segment_annotation_links_target_segment_id_fkey": {
+          "name": "segment_annotation_links_target_segment_id_fkey",
+          "tableFrom": "segment_annotation_links",
+          "tableTo": "segments",
+          "columnsFrom": [
+            "target_segment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "segment_annotation_links_pkey": {
+          "columns": [
+            "target_segment_id",
+            "annotation_segment_id"
+          ],
+          "name": "segment_annotation_links_pkey"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "segment_annotation_links_distinct_segments_check": {
+          "name": "segment_annotation_links_distinct_segments_check",
+          "value": "\"segment_annotation_links\".\"target_segment_id\" <> \"segment_annotation_links\".\"annotation_segment_id\""
+        }
+      }
+    },
+    "segment_gloss_sets": {
+      "name": "segment_gloss_sets",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "segment_id": {
+          "name": "segment_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ai_model": {
+          "name": "ai_model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "segment_gloss_sets_segment_id_locale_idx": {
+          "name": "segment_gloss_sets_segment_id_locale_idx",
+          "columns": [
+            "segment_id",
+            "locale"
+          ],
+          "isUnique": false
+        },
+        "segment_gloss_sets_id_segment_id_locale_key": {
+          "name": "segment_gloss_sets_id_segment_id_locale_key",
+          "columns": [
+            "id",
+            "segment_id",
+            "locale"
+          ],
+          "isUnique": true
+        },
+        "segment_gloss_sets_user_id_idx": {
+          "name": "segment_gloss_sets_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "segment_gloss_sets_segment_id_fkey": {
+          "name": "segment_gloss_sets_segment_id_fkey",
+          "tableFrom": "segment_gloss_sets",
+          "tableTo": "segments",
+          "columnsFrom": [
+            "segment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "segment_gloss_sets_user_id_fkey": {
+          "name": "segment_gloss_sets_user_id_fkey",
+          "tableFrom": "segment_gloss_sets",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "segment_gloss_unit_votes": {
+      "name": "segment_gloss_unit_votes",
+      "columns": {
+        "gloss_unit_id": {
+          "name": "gloss_unit_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "is_upvote": {
+          "name": "is_upvote",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        }
+      },
+      "indexes": {
+        "segment_gloss_unit_votes_gloss_unit_id_idx": {
+          "name": "segment_gloss_unit_votes_gloss_unit_id_idx",
+          "columns": [
+            "gloss_unit_id"
+          ],
+          "isUnique": false
+        },
+        "segment_gloss_unit_votes_gloss_unit_id_user_id_key": {
+          "name": "segment_gloss_unit_votes_gloss_unit_id_user_id_key",
+          "columns": [
+            "gloss_unit_id",
+            "user_id"
+          ],
+          "isUnique": true
+        },
+        "segment_gloss_unit_votes_user_id_idx": {
+          "name": "segment_gloss_unit_votes_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "segment_gloss_unit_votes_gloss_unit_id_fkey": {
+          "name": "segment_gloss_unit_votes_gloss_unit_id_fkey",
+          "tableFrom": "segment_gloss_unit_votes",
+          "tableTo": "segment_gloss_units",
+          "columnsFrom": [
+            "gloss_unit_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "segment_gloss_unit_votes_user_id_fkey": {
+          "name": "segment_gloss_unit_votes_user_id_fkey",
+          "tableFrom": "segment_gloss_unit_votes",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "segment_gloss_units": {
+      "name": "segment_gloss_units",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "gloss_set_id": {
+          "name": "gloss_set_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "start_offset": {
+          "name": "start_offset",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "end_offset": {
+          "name": "end_offset",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "surface": {
+          "name": "surface",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "gloss": {
+          "name": "gloss",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "point": {
+          "name": "point",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "segment_gloss_units_gloss_set_id_position_key": {
+          "name": "segment_gloss_units_gloss_set_id_position_key",
+          "columns": [
+            "gloss_set_id",
+            "position"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "segment_gloss_units_gloss_set_id_fkey": {
+          "name": "segment_gloss_units_gloss_set_id_fkey",
+          "tableFrom": "segment_gloss_units",
+          "tableTo": "segment_gloss_sets",
+          "columnsFrom": [
+            "gloss_set_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "segment_gloss_units_position_check": {
+          "name": "segment_gloss_units_position_check",
+          "value": "\"segment_gloss_units\".\"position\" >= 0"
+        },
+        "segment_gloss_units_offset_check": {
+          "name": "segment_gloss_units_offset_check",
+          "value": "\"segment_gloss_units\".\"start_offset\" >= 0 AND \"segment_gloss_units\".\"end_offset\" > \"segment_gloss_units\".\"start_offset\""
+        }
+      }
+    },
+    "segment_metadata": {
+      "name": "segment_metadata",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "segment_id": {
+          "name": "segment_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "metadata_type_id": {
+          "name": "metadata_type_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        }
+      },
+      "indexes": {
+        "segment_metadata_metadata_type_id_idx": {
+          "name": "segment_metadata_metadata_type_id_idx",
+          "columns": [
+            "metadata_type_id"
+          ],
+          "isUnique": false
+        },
+        "segment_metadata_segment_id_idx": {
+          "name": "segment_metadata_segment_id_idx",
+          "columns": [
+            "segment_id"
+          ],
+          "isUnique": false
+        },
+        "segment_metadata_segment_id_metadata_type_id_value_key": {
+          "name": "segment_metadata_segment_id_metadata_type_id_value_key",
+          "columns": [
+            "segment_id",
+            "metadata_type_id",
+            "value"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "segment_metadata_metadata_type_id_fkey": {
+          "name": "segment_metadata_metadata_type_id_fkey",
+          "tableFrom": "segment_metadata",
+          "tableTo": "segment_metadata_types",
+          "columnsFrom": [
+            "metadata_type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "segment_metadata_segment_id_fkey": {
+          "name": "segment_metadata_segment_id_fkey",
+          "tableFrom": "segment_metadata",
+          "tableTo": "segments",
+          "columnsFrom": [
+            "segment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "segment_metadata_types": {
+      "name": "segment_metadata_types",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "segment_metadata_types_key_key": {
+          "name": "segment_metadata_types_key_key",
+          "columns": [
+            "key"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "segment_translations": {
+      "name": "segment_translations",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "segment_id": {
+          "name": "segment_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "text": {
+          "name": "text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "point": {
+          "name": "point",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "segment_translations_segment_id_locale_idx": {
+          "name": "segment_translations_segment_id_locale_idx",
+          "columns": [
+            "segment_id",
+            "locale"
+          ],
+          "isUnique": false
+        },
+        "segment_translations_id_segment_id_locale_key": {
+          "name": "segment_translations_id_segment_id_locale_key",
+          "columns": [
+            "id",
+            "segment_id",
+            "locale"
+          ],
+          "isUnique": true
+        },
+        "segment_translations_user_id_idx": {
+          "name": "segment_translations_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "segment_translations_segment_id_fkey": {
+          "name": "segment_translations_segment_id_fkey",
+          "tableFrom": "segment_translations",
+          "tableTo": "segments",
+          "columnsFrom": [
+            "segment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "segment_translations_user_id_fkey": {
+          "name": "segment_translations_user_id_fkey",
+          "tableFrom": "segment_translations",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "segments": {
+      "name": "segments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tipitaka_page_id": {
+          "name": "tipitaka_page_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "number": {
+          "name": "number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "text": {
+          "name": "text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "text_and_occurrence_hash": {
+          "name": "text_and_occurrence_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_book_code": {
+          "name": "source_book_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "source_chapter_number": {
+          "name": "source_chapter_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "source_paragraph_number": {
+          "name": "source_paragraph_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "source_paragraph_occurrence": {
+          "name": "source_paragraph_occurrence",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        }
+      },
+      "indexes": {
+        "segments_tipitaka_page_id_idx": {
+          "name": "segments_tipitaka_page_id_idx",
+          "columns": [
+            "tipitaka_page_id"
+          ],
+          "isUnique": false
+        },
+        "segments_source_locator_idx": {
+          "name": "segments_source_locator_idx",
+          "columns": [
+            "tipitaka_page_id",
+            "source_book_code",
+            "source_paragraph_number",
+            "source_paragraph_occurrence",
+            "number"
+          ],
+          "isUnique": false
+        },
+        "segments_tipitaka_page_id_number_key": {
+          "name": "segments_tipitaka_page_id_number_key",
+          "columns": [
+            "tipitaka_page_id",
+            "number"
+          ],
+          "isUnique": true
+        },
+        "segments_tipitaka_page_id_text_occurrence_hash_key": {
+          "name": "segments_tipitaka_page_id_text_occurrence_hash_key",
+          "columns": [
+            "tipitaka_page_id",
+            "text_and_occurrence_hash"
+          ],
+          "isUnique": true
+        },
+        "segments_text_and_occurrence_hash_idx": {
+          "name": "segments_text_and_occurrence_hash_idx",
+          "columns": [
+            "text_and_occurrence_hash"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "segments_tipitaka_page_id_fkey": {
+          "name": "segments_tipitaka_page_id_fkey",
+          "tableFrom": "segments",
+          "tableTo": "tipitaka_pages",
+          "columnsFrom": [
+            "tipitaka_page_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "segments_source_paragraph_locator_check": {
+          "name": "segments_source_paragraph_locator_check",
+          "value": "(\"segments\".\"source_paragraph_number\" IS NULL AND \"segments\".\"source_paragraph_occurrence\" IS NULL) OR (\"segments\".\"source_paragraph_number\" IS NOT NULL AND \"segments\".\"source_paragraph_occurrence\" >= 1)"
+        }
+      }
+    },
+    "selected_segment_gloss_sets": {
+      "name": "selected_segment_gloss_sets",
+      "columns": {
+        "segment_id": {
+          "name": "segment_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "gloss_set_id": {
+          "name": "gloss_set_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "selected_by_user_id": {
+          "name": "selected_by_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "selected_at": {
+          "name": "selected_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        }
+      },
+      "indexes": {
+        "selected_segment_gloss_sets_gloss_set_id_key": {
+          "name": "selected_segment_gloss_sets_gloss_set_id_key",
+          "columns": [
+            "gloss_set_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "selected_segment_gloss_sets_gloss_segment_locale_fkey": {
+          "name": "selected_segment_gloss_sets_gloss_segment_locale_fkey",
+          "tableFrom": "selected_segment_gloss_sets",
+          "tableTo": "segment_gloss_sets",
+          "columnsFrom": [
+            "gloss_set_id",
+            "segment_id",
+            "locale"
+          ],
+          "columnsTo": [
+            "id",
+            "segment_id",
+            "locale"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "selected_segment_gloss_sets_selected_by_user_id_fkey": {
+          "name": "selected_segment_gloss_sets_selected_by_user_id_fkey",
+          "tableFrom": "selected_segment_gloss_sets",
+          "tableTo": "users",
+          "columnsFrom": [
+            "selected_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "selected_segment_gloss_sets_segment_id_locale_pk": {
+          "columns": [
+            "segment_id",
+            "locale"
+          ],
+          "name": "selected_segment_gloss_sets_segment_id_locale_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "selected_segment_translations": {
+      "name": "selected_segment_translations",
+      "columns": {
+        "segment_id": {
+          "name": "segment_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "translation_id": {
+          "name": "translation_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "selected_by_user_id": {
+          "name": "selected_by_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "selected_at": {
+          "name": "selected_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        }
+      },
+      "indexes": {
+        "selected_segment_translations_translation_id_key": {
+          "name": "selected_segment_translations_translation_id_key",
+          "columns": [
+            "translation_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "selected_segment_translations_translation_segment_locale_fkey": {
+          "name": "selected_segment_translations_translation_segment_locale_fkey",
+          "tableFrom": "selected_segment_translations",
+          "tableTo": "segment_translations",
+          "columnsFrom": [
+            "translation_id",
+            "segment_id",
+            "locale"
+          ],
+          "columnsTo": [
+            "id",
+            "segment_id",
+            "locale"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "selected_segment_translations_selected_by_user_id_fkey": {
+          "name": "selected_segment_translations_selected_by_user_id_fkey",
+          "tableFrom": "selected_segment_translations",
+          "tableTo": "users",
+          "columnsFrom": [
+            "selected_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "selected_segment_translations_segment_id_locale_pk": {
+          "columns": [
+            "segment_id",
+            "locale"
+          ],
+          "name": "selected_segment_translations_segment_id_locale_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "sessions": {
+      "name": "sessions",
+      "columns": {
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "sessions_token_key": {
+          "name": "sessions_token_key",
+          "columns": [
+            "token"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "sessions_userId_fkey": {
+          "name": "sessions_userId_fkey",
+          "tableFrom": "sessions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "tipitaka_page_annotation_targets": {
+      "name": "tipitaka_page_annotation_targets",
+      "columns": {
+        "annotation_page_id": {
+          "name": "annotation_page_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "target_page_id": {
+          "name": "target_page_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "tipitaka_page_annotation_targets_target_page_id_idx": {
+          "name": "tipitaka_page_annotation_targets_target_page_id_idx",
+          "columns": [
+            "target_page_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "tipitaka_page_annotation_targets_annotation_page_id_fkey": {
+          "name": "tipitaka_page_annotation_targets_annotation_page_id_fkey",
+          "tableFrom": "tipitaka_page_annotation_targets",
+          "tableTo": "tipitaka_pages",
+          "columnsFrom": [
+            "annotation_page_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "tipitaka_page_annotation_targets_target_page_id_fkey": {
+          "name": "tipitaka_page_annotation_targets_target_page_id_fkey",
+          "tableFrom": "tipitaka_page_annotation_targets",
+          "tableTo": "tipitaka_pages",
+          "columnsFrom": [
+            "target_page_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "tipitaka_page_annotation_targets_pkey": {
+          "columns": [
+            "annotation_page_id",
+            "target_page_id"
+          ],
+          "name": "tipitaka_page_annotation_targets_pkey"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "tipitaka_page_annotation_targets_distinct_pages_check": {
+          "name": "tipitaka_page_annotation_targets_distinct_pages_check",
+          "value": "\"tipitaka_page_annotation_targets\".\"annotation_page_id\" <> \"tipitaka_page_annotation_targets\".\"target_page_id\""
+        },
+        "tipitaka_page_annotation_targets_position_check": {
+          "name": "tipitaka_page_annotation_targets_position_check",
+          "value": "\"tipitaka_page_annotation_targets\".\"position\" >= 0"
+        }
+      }
+    },
+    "tipitaka_pages": {
+      "name": "tipitaka_pages",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "import_file_id": {
+          "name": "import_file_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "catalog_key": {
+          "name": "catalog_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "text_level": {
+          "name": "text_level",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "mdast_json": {
+          "name": "mdast_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        }
+      },
+      "indexes": {
+        "tipitaka_pages_parent_id_idx": {
+          "name": "tipitaka_pages_parent_id_idx",
+          "columns": [
+            "parent_id"
+          ],
+          "isUnique": false
+        },
+        "tipitaka_pages_import_file_id_idx": {
+          "name": "tipitaka_pages_import_file_id_idx",
+          "columns": [
+            "import_file_id"
+          ],
+          "isUnique": false
+        },
+        "tipitaka_pages_parent_position_id_idx": {
+          "name": "tipitaka_pages_parent_position_id_idx",
+          "columns": [
+            "parent_id",
+            "position",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "tipitaka_pages_catalog_key_key": {
+          "name": "tipitaka_pages_catalog_key_key",
+          "columns": [
+            "catalog_key"
+          ],
+          "isUnique": true
+        },
+        "tipitaka_pages_slug_key": {
+          "name": "tipitaka_pages_slug_key",
+          "columns": [
+            "slug"
+          ],
+          "isUnique": true
+        },
+        "tipitaka_pages_single_root_key": {
+          "name": "tipitaka_pages_single_root_key",
+          "columns": [
+            "1"
+          ],
+          "isUnique": true,
+          "where": "\"tipitaka_pages\".\"parent_id\" IS NULL"
+        }
+      },
+      "foreignKeys": {
+        "tipitaka_pages_parent_id_fkey": {
+          "name": "tipitaka_pages_parent_id_fkey",
+          "tableFrom": "tipitaka_pages",
+          "tableTo": "tipitaka_pages",
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "cascade"
+        },
+        "tipitaka_pages_import_file_id_fkey": {
+          "name": "tipitaka_pages_import_file_id_fkey",
+          "tableFrom": "tipitaka_pages",
+          "tableTo": "import_files",
+          "columnsFrom": [
+            "import_file_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "tipitaka_pages_text_level_check": {
+          "name": "tipitaka_pages_text_level_check",
+          "value": "\"tipitaka_pages\".\"text_level\" IS NULL OR \"tipitaka_pages\".\"text_level\" IN ('MULA', 'ATTHAKATHA', 'TIKA', 'OTHER')"
+        },
+        "tipitaka_pages_root_text_level_check": {
+          "name": "tipitaka_pages_root_text_level_check",
+          "value": "\"tipitaka_pages\".\"parent_id\" IS NOT NULL OR \"tipitaka_pages\".\"text_level\" IS NULL"
+        },
+        "tipitaka_pages_position_check": {
+          "name": "tipitaka_pages_position_check",
+          "value": "\"tipitaka_pages\".\"position\" >= 0"
+        }
+      }
+    },
+    "tipitaka_read_model_jobs": {
+      "name": "tipitaka_read_model_jobs",
+      "columns": {
+        "page_id": {
+          "name": "page_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "requested_at": {
+          "name": "requested_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        }
+      },
+      "indexes": {
+        "tipitaka_read_model_jobs_requested_at_idx": {
+          "name": "tipitaka_read_model_jobs_requested_at_idx",
+          "columns": [
+            "requested_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "tipitaka_read_model_jobs_page_id_fkey": {
+          "name": "tipitaka_read_model_jobs_page_id_fkey",
+          "tableFrom": "tipitaka_read_model_jobs",
+          "tableTo": "tipitaka_pages",
+          "columnsFrom": [
+            "page_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "tipitaka_read_model_jobs_page_id_locale_pk": {
+          "columns": [
+            "page_id",
+            "locale"
+          ],
+          "name": "tipitaka_read_model_jobs_page_id_locale_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "translation_chunk_runs": {
+      "name": "translation_chunk_runs",
+      "columns": {
+        "translation_job_id": {
+          "name": "translation_job_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chunk_index": {
+          "name": "chunk_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lease_token": {
+          "name": "lease_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lease_expires_at": {
+          "name": "lease_expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "translation_chunk_runs_translation_job_id_fkey": {
+          "name": "translation_chunk_runs_translation_job_id_fkey",
+          "tableFrom": "translation_chunk_runs",
+          "tableTo": "translation_jobs",
+          "columnsFrom": [
+            "translation_job_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "translation_chunk_runs_translation_job_id_chunk_index_pk": {
+          "columns": [
+            "translation_job_id",
+            "chunk_index"
+          ],
+          "name": "translation_chunk_runs_translation_job_id_chunk_index_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "translation_chunk_runs_chunk_index_check": {
+          "name": "translation_chunk_runs_chunk_index_check",
+          "value": "\"translation_chunk_runs\".\"chunk_index\" >= 0"
+        }
+      }
+    },
+    "translation_jobs": {
+      "name": "translation_jobs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "page_id": {
+          "name": "page_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ai_model": {
+          "name": "ai_model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PENDING'"
+        },
+        "progress": {
+          "name": "progress",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "error": {
+          "name": "error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        }
+      },
+      "indexes": {
+        "translation_jobs_userId_idx": {
+          "name": "translation_jobs_userId_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "translation_jobs_pageId_fkey": {
+          "name": "translation_jobs_pageId_fkey",
+          "tableFrom": "translation_jobs",
+          "tableTo": "tipitaka_pages",
+          "columnsFrom": [
+            "page_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "translation_jobs_userId_fkey": {
+          "name": "translation_jobs_userId_fkey",
+          "tableFrom": "translation_jobs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "translation_jobs_status_check": {
+          "name": "translation_jobs_status_check",
+          "value": "\"translation_jobs\".\"status\" IN ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED')"
+        }
+      }
+    },
+    "translation_votes": {
+      "name": "translation_votes",
+      "columns": {
+        "translation_id": {
+          "name": "translation_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "is_upvote": {
+          "name": "is_upvote",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        }
+      },
+      "indexes": {
+        "translation_votes_translation_id_idx": {
+          "name": "translation_votes_translation_id_idx",
+          "columns": [
+            "translation_id"
+          ],
+          "isUnique": false
+        },
+        "translation_votes_translation_id_user_id_key": {
+          "name": "translation_votes_translation_id_user_id_key",
+          "columns": [
+            "translation_id",
+            "user_id"
+          ],
+          "isUnique": true
+        },
+        "translation_votes_user_id_idx": {
+          "name": "translation_votes_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "translation_votes_translation_id_fkey": {
+          "name": "translation_votes_translation_id_fkey",
+          "tableFrom": "translation_votes",
+          "tableTo": "segment_translations",
+          "columnsFrom": [
+            "translation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "translation_votes_user_id_fkey": {
+          "name": "translation_votes_user_id_fkey",
+          "tableFrom": "translation_votes",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "user_settings": {
+      "name": "user_settings",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "target_locales": {
+          "name": "target_locales",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[\"RAY\"]'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        }
+      },
+      "indexes": {
+        "user_settings_user_id_key": {
+          "name": "user_settings_user_id_key",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "user_settings_user_id_fkey": {
+          "name": "user_settings_user_id_fkey",
+          "tableFrom": "user_settings",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "users": {
+      "name": "users",
+      "columns": {
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'/avatar.png'"
+        },
+        "plan": {
+          "name": "plan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'free'"
+        },
+        "total_points": {
+          "name": "total_points",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "is_ai": {
+          "name": "is_ai",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Credentials'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'new_user'"
+        },
+        "handle": {
+          "name": "handle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "profile": {
+          "name": "profile",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "twitter_handle": {
+          "name": "twitter_handle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "email_verified": {
+          "name": "email_verified",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "users_email_key": {
+          "name": "users_email_key",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        },
+        "users_handle_key": {
+          "name": "users_handle_key",
+          "columns": [
+            "handle"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "verifications": {
+      "name": "verifications",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "identifier": {
+          "name": "identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {
+      "tipitaka_pages_single_root_key": {
+        "columns": {
+          "1": {
+            "isExpression": true
+          }
+        }
+      }
+    }
+  }
+}

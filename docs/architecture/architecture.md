@@ -56,9 +56,12 @@ Digital Buddhism は、Tipiṭakaの原文・翻訳・注釈を配信するCloud
 - `src/db`: Kysely の接続、DB型、SQLite向けの値変換、テスト用DBヘルパー
 - `src/drizzle`: スキーマとTurso用マイグレーション
 - ランタイムのDB接続は `TURSO_DATABASE_URL` と `TURSO_AUTH_TOKEN` から作る
-- ローカル開発・テストは、チェックイン済みマイグレーションを適用した一時
-  `file:` SQLite DBを使う
+- ローカル開発は、Nix管理の`sqld`を`http://127.0.0.1:18080`で起動し、
+  `.data/digital-buddshim.sqld`をDB・import・read model・ローカルWorker間で共有する
+- テストはテスト単位の一時`file:` SQLite DBを使う
 - 本番はTursoの共有DBを使い、ローカルテストやCIから本番DBへ接続しない
+- ローカルWorkerはCloudflare Vite pluginのworkerd/Miniflareで動かし、KV・Queue・
+  Images・R2は`wrangler.jsonc`と同じbinding名・APIを使う
 
 取得・更新ロジックは、利用するルートに近い `_db` または `db` 配下に置きます。
 DB層は接続とデータの取得・更新に集中し、業務判断はdomain/service層で行います。

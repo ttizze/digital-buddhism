@@ -3,27 +3,15 @@
 import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, SaveIcon } from "lucide-react";
-import {
-	type FormEvent,
-	useEffect,
-	useRef,
-	useState,
-	useTransition,
-} from "react";
+import { type FormEvent, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/app/[locale]/_service/auth-client";
 import type { SanitizedUser } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	updateProfile,
-	updateProfileImage,
-} from "@/routes/$locale/-profile-edit-data";
-import type {
-	ProfileEditState,
-	ProfileImageEditState,
-} from "../_service/profile-edit";
+import { updateProfile } from "@/routes/$locale/-profile-edit-data";
+import type { ProfileEditState } from "../_service/profile-edit";
 
 interface ProfileFormProps {
 	currentUser: SanitizedUser;
@@ -33,10 +21,7 @@ interface ProfileFormProps {
 export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 	const router = useRouter();
 	const updateProfileFn = useServerFn(updateProfile);
-	const updateProfileImageFn = useServerFn(updateProfileImage);
-	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [isEditPending, startEditTransition] = useTransition();
-	const [isImageUploading, startImageTransition] = useTransition();
 	const [editState, setEditState] = useState<ProfileEditState>({
 		success: true,
 		data: {
@@ -45,32 +30,6 @@ export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 			twitterHandle: currentUser.twitterHandle || "",
 		},
 	});
-	const [imageState, setImageState] = useState<ProfileImageEditState>({
-		success: true,
-		data: {
-			imageUrl: currentUser.image,
-		},
-	});
-
-	useEffect(() => {
-		const updateImageSession = async () => {
-			if (
-				imageState.success &&
-				imageState.data?.imageUrl &&
-				imageState.message
-			) {
-				toast.success(imageState.message);
-				await authClient.updateUser({
-					image: imageState.data.imageUrl,
-				});
-			} else if (!imageState.success && imageState.message) {
-				toast.error(imageState.message);
-			}
-		};
-
-		void updateImageSession();
-	}, [imageState]);
-
 	useEffect(() => {
 		const updateNameSession = async () => {
 			if (editState.success && editState.message) {
@@ -99,39 +58,6 @@ export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 		void updateNameSession();
 	}, [editState]);
 
-	const handleImageClick = () => {
-		fileInputRef.current?.click();
-	};
-
-	const handleImageSubmit = (event: FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		const file = fileInputRef.current?.files?.[0];
-		if (!file) {
-			setImageState({ success: false, message: "No image provided" });
-			return;
-		}
-		if (file.size > 5 * 1024 * 1024) {
-			setImageState({
-				success: false,
-				message: "Image size exceeds 5MB limit. Please choose a smaller file.",
-			});
-			return;
-		}
-
-		const formData = new FormData(event.currentTarget);
-		formData.set("image", file);
-		formData.set("locale", locale);
-		startImageTransition(() => {
-			void (async () => {
-				const result = await updateProfileImageFn({ data: formData });
-				setImageState(result);
-				if (result.success) {
-					await router.invalidate({ sync: true });
-				}
-			})();
-		});
-	};
-
 	const handleProfileSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		const formData = new FormData(event.currentTarget);
@@ -149,52 +75,6 @@ export function ProfileForm({ currentUser, locale }: ProfileFormProps) {
 
 	return (
 		<div className="space-y-6">
-			{/* ---------- Avatar ---------- */}
-			<form className="space-y-4" onSubmit={handleImageSubmit}>
-				<div className="mt-3">
-					<Label htmlFor="profile-image">Icon</Label>
-				</div>
-				<div className="relative group">
-					<button
-						className="w-40 h-40 rounded-full overflow-hidden focus:outline-hidden focus:ring-2 focus:ring-blue-500 relative"
-						disabled={isImageUploading}
-						onClick={handleImageClick}
-						type="button"
-					>
-						<img
-							alt="Profile"
-							className="transition-opacity group-hover:opacity-75"
-							height={160}
-							src={
-								imageState.success
-									? imageState.data?.imageUrl
-									: currentUser.image
-							}
-							width={160}
-						/>
-						<span className="absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-0 transition-opacity group-hover:opacity-100">
-							Change Image
-						</span>
-					</button>
-				</div>
-				<Input
-					accept="image/*"
-					className="hidden"
-					id="profile-image"
-					name="image"
-					onChange={(event) => {
-						if (event.currentTarget.files?.[0]) {
-							event.currentTarget.form?.requestSubmit();
-						}
-					}}
-					ref={fileInputRef}
-					type="file"
-				/>
-				{imageState.success === false && (
-					<div className="text-red-500 text-sm mt-1">{imageState.message}</div>
-				)}
-			</form>
-
 			{/* ---------- Profile info ---------- */}
 			<form className="space-y-4" onSubmit={handleProfileSubmit}>
 				<input name="handle" type="hidden" value={currentUser.handle} />

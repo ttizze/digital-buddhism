@@ -46,13 +46,7 @@ vi.mock("@tanstack/react-router", () => ({
 
 describe("LocaleSelector", () => {
 	it("renders button with the selected locale name and icon", () => {
-		render(
-			<LocaleSelector
-				currentHandle=""
-				hasGeminiApiKey={false}
-				userPlan="free"
-			/>,
-		);
+		render(<LocaleSelector currentHandle="" userPlan="free" />);
 
 		// useLocale は "en" を返すので、buildLocaleOptions により選択肢は "English" と "French" になり、
 		// selectedOption は "en" のため "English" が表示される
@@ -60,13 +54,7 @@ describe("LocaleSelector", () => {
 	});
 	it("opens popover and displays locale options", async () => {
 		const user = await userEvent.setup();
-		render(
-			<LocaleSelector
-				currentHandle=""
-				hasGeminiApiKey={false}
-				userPlan="free"
-			/>,
-		);
+		render(<LocaleSelector currentHandle="" userPlan="free" />);
 		const button = await screen.findByTestId("locale-selector-button");
 		await user.click(button);
 		// ポップオーバー内に検索ボックスが表示される
@@ -78,13 +66,7 @@ describe("LocaleSelector", () => {
 
 	it("navigates to the selected locale on command item select", async () => {
 		const user = userEvent.setup();
-		render(
-			<LocaleSelector
-				currentHandle=""
-				hasGeminiApiKey={false}
-				userPlan="free"
-			/>,
-		);
+		render(<LocaleSelector currentHandle="" userPlan="free" />);
 
 		// ポップオーバーを開くため、ボタンをクリック
 		const button = screen.getByTestId("locale-selector-button");

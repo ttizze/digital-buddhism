@@ -96,7 +96,7 @@ async function fetchPageWithPageSegments(pageId: number) {
 			,
 			SLUG,
 			TARGET_LOCALE,
-			AI_MODEL = "gemini-2.5-flash",
+			AI_MODEL = "gemini-3.1-pro-preview",
 			USER_HANDLE = "tipitaka",
 		] = process.argv;
 
@@ -150,7 +150,6 @@ async function fetchPageWithPageSegments(pageId: number) {
 			await fetch(`${BASE_URL}/api/translate`, {
 				method: "POST",
 				body: JSON.stringify({
-					provider: "vertex",
 					translationJobId: job.id,
 					aiModel: AI_MODEL,
 					userId: user.id,

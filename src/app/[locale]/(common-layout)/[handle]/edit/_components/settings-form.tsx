@@ -6,7 +6,6 @@ import { Loader2, SaveIcon } from "lucide-react";
 import { type FormEvent, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { BASE_URL } from "@/app/_constants/base-url";
-import { GeminiApiKeyDialog } from "@/app/[locale]/(common-layout)/_components/gemini-api-key-dialog/gemini-api-key-dialog";
 import type { SanitizedUser } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +22,6 @@ export function SettingsForm({ currentUser, locale }: SettingsFormProps) {
 	const router = useRouter();
 	const updateProfileFn = useServerFn(updateProfile);
 	const [showHandleInput, setShowHandleInput] = useState(false);
-	const [isApiKeyDialogOpen, setIsApiKeyDialogOpen] = useState(false);
 	const [isEditPending, startEditTransition] = useTransition();
 	const [editState, setEditState] = useState<ProfileEditState>({
 		success: true,
@@ -145,22 +143,6 @@ export function SettingsForm({ currentUser, locale }: SettingsFormProps) {
 					</div>
 				</div>
 			</div>
-
-			<div className="space-y-2">
-				<Label className="text-base font-medium">Gemini API Key</Label>
-				<Button
-					className="w-full"
-					onClick={() => setIsApiKeyDialogOpen(true)}
-					type="button"
-					variant="outline"
-				>
-					Set API Key
-				</Button>
-			</div>
-			<GeminiApiKeyDialog
-				isOpen={isApiKeyDialogOpen}
-				onOpenChange={setIsApiKeyDialogOpen}
-			/>
 
 			<Button className="w-full h-10" disabled={isEditPending} type="submit">
 				{isEditPending ? (

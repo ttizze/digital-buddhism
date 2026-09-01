@@ -1,5 +1,5 @@
-import { createServerLogger } from "@/app/_service/logger.server";
 import type { TransactionClient } from "@/app/[locale]/_service/sync-segments";
+import { createCliLogger } from "../../../../logger";
 import type { MetadataDraft } from "../domain/collect-metadata-drafts";
 
 /**
@@ -20,7 +20,7 @@ export async function syncSegmentMetadata(
 	segmentIds: Set<number>,
 	metadataDrafts: MetadataDraft[],
 ): Promise<void> {
-	const logger = createServerLogger("sync-segment-metadata", {
+	const logger = createCliLogger("sync-segment-metadata", {
 		segmentCount: segmentIds.size,
 	});
 

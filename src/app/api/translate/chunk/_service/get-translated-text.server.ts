@@ -1,20 +1,15 @@
+import { env } from "cloudflare:workers";
 import { supportedLocaleOptions } from "@/app/_constants/locale";
 import { createServerLogger } from "@/app/_service/logger.server";
 import type { SegmentElement } from "../../types";
-import {
-	fetchGeminiApiKeyByUserId,
-	fetchUserPlanByUserId,
-} from "../_db/queries.server";
 import { getProviderFromModel } from "../_domain/get-provider-from-model";
 import { getDeepSeekModelResponse } from "../_infra/deepseek";
 import { getGeminiModelResponse } from "../_infra/gemini";
 import { getOpenAIModelResponse } from "../_infra/openai";
-import { getVertexAIModelResponse } from "../_infra/vertexai";
 
 const logger = createServerLogger("translate-chunk");
 
 export async function getTranslatedText(
-	userId: string,
 	aiModel: string,
 	segments: SegmentElement[],
 	targetLocale: string,
@@ -29,31 +24,11 @@ export async function getTranslatedText(
 		supportedLocaleOptions.find((sl) => sl.code === targetLocale)?.name ||
 		targetLocale;
 
-	// ユーザーIDからプラン情報を取得
-	const userPlan = await fetchUserPlanByUserId(userId);
-
 	// モデル名からproviderを判定
-	const provider = getProviderFromModel(aiModel, userPlan ?? undefined);
-
-	if (provider === "gemini") {
-		const geminiApiKey = await fetchGeminiApiKeyByUserId(userId);
-		if (!geminiApiKey || geminiApiKey === "undefined") {
-			throw new Error(
-				"Gemini API key is not set. Page will not be translated.",
-			);
-		}
-		return await getGeminiModelResponse({
-			geminiApiKey,
-			model: aiModel,
-			title,
-			sourceText,
-			targetLocale: targetLocaleName,
-			translationContext,
-		});
-	}
+	const provider = getProviderFromModel(aiModel);
 
 	if (provider === "openai") {
-		const openaiApiKey = process.env.OPENAI_API_KEY;
+		const openaiApiKey = env.OPENAI_API_KEY;
 		if (!openaiApiKey) {
 			throw new Error(
 				"OPENAI_API_KEY environment variable is not set. Page will not be translated.",
@@ -70,7 +45,7 @@ export async function getTranslatedText(
 	}
 
 	if (provider === "deepseek") {
-		const deepseekApiKey = process.env.DEEPSEEK_API_KEY;
+		const deepseekApiKey = env.DEEPSEEK_API_KEY;
 		if (!deepseekApiKey) {
 			logger.error("DEEPSEEK_API_KEY not found in environment");
 			throw new Error(
@@ -87,8 +62,14 @@ export async function getTranslatedText(
 		});
 	}
 
-	// default Vertex AI
-	return await getVertexAIModelResponse({
+	const geminiApiKey = env.GEMINI_API_KEY;
+	if (!geminiApiKey) {
+		throw new Error(
+			"GEMINI_API_KEY environment variable is not set. Page will not be translated.",
+		);
+	}
+	return await getGeminiModelResponse({
+		apiKey: geminiApiKey,
 		model: aiModel,
 		title,
 		sourceText,

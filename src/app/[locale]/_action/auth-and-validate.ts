@@ -53,7 +53,7 @@ export async function authAndValidate<T extends z.ZodTypeAny>(
 		const failedFields = Object.keys(parsed.error.flatten().fieldErrors);
 		logger.warn({ failedFields }, "Zod validation errors");
 		// 開発環境では入力値もデバッグ出力
-		if (process.env.NODE_ENV === "development") {
+		if (import.meta.env.DEV) {
 			const rawData = Object.fromEntries(formData.entries());
 			logger.debug({ rawData }, "Zod validation raw data");
 		}

@@ -1,7 +1,10 @@
-import { createTranslationJob } from "@/app/[locale]/_db/mutations.server";
+import {
+	createTranslationJob,
+	failActiveTranslationJobs,
+} from "@/app/[locale]/_db/mutations.server";
 import { fetchPageIdBySlug } from "@/app/[locale]/_db/page-utility-queries.server";
 import { hasSegmentsForPageId } from "@/app/[locale]/_db/segment-exists.server";
-import { enqueueTranslate } from "@/app/[locale]/_infrastructure/qstash/enqueue-translate.server";
+import { enqueueTranslationMessage } from "@/app/[locale]/_infrastructure/translation-queue/context.server";
 import type { TranslationJobForToast } from "@/app/types/translation-job";
 import { fetchAnnotationPageIdsForPage } from "../db/queries.server";
 
@@ -43,14 +46,17 @@ async function createAndEnqueueJob(
 
 	// TODO: translationContext をサポートする
 	// locale-selector からの翻訳でもユーザーの translationContext を選択できるようにする
-	await enqueueTranslate({
-		translationJobId: job.id,
-		aiModel: params.aiModel,
-		userId: params.userId,
-		targetLocale: params.locale,
-		pageId: params.pageId,
-		annotationPageId: params.annotationPageId,
-		translationContext: "",
+	await enqueueTranslationMessage({
+		type: "orchestrate",
+		params: {
+			translationJobId: job.id,
+			aiModel: params.aiModel,
+			userId: params.userId,
+			targetLocale: params.locale,
+			pageId: params.pageId,
+			annotationPageId: params.annotationPageId,
+			translationContext: "",
+		},
 	});
 
 	return job;
@@ -71,6 +77,13 @@ export async function translatePage(
 	const page = await fetchPageIdBySlug(params.pageSlug);
 	if (!page) return { success: false, message: "Page not found" };
 	const pageId = page.id;
+	await failActiveTranslationJobs({
+		pageId,
+		userId: params.userId,
+		locale: params.locale,
+		aiModel: params.aiModel,
+		reason: "Superseded by a new translation run",
+	});
 
 	const [mainJob, annotationPageIds] = await Promise.all([
 		createAndEnqueueJob({

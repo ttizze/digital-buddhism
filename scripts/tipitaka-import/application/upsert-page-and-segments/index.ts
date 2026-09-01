@@ -1,8 +1,8 @@
-import { createServerLogger } from "@/app/_service/logger.server";
 import type { SegmentDraft } from "@/app/[locale]/_domain/remark-hash-and-segments";
 import { syncSegments } from "@/app/[locale]/_service/sync-segments";
 import { db } from "@/db";
 import type { JsonValue, TipitakaTextLevel } from "@/drizzle/types";
+import { createCliLogger } from "../../logger";
 import { upsertPage } from "./db/mutations.server";
 import { syncPageSegmentMetadata } from "./sync-segment-metadata-and-annotation-links";
 
@@ -17,7 +17,7 @@ export async function upsertPageAndSegments(p: {
 	importFileId: number | null;
 	segments: SegmentDraft[];
 }) {
-	const logger = createServerLogger("upsert-page-and-segments", {
+	const logger = createCliLogger("upsert-page-and-segments", {
 		catalogKey: p.catalogKey,
 		pageSlug: p.pageSlug,
 	});

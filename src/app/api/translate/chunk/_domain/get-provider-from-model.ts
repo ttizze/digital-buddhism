@@ -1,9 +1,6 @@
-type TranslationProvider = "gemini" | "vertex" | "openai" | "deepseek";
+type TranslationProvider = "gemini" | "openai" | "deepseek";
 
-export function getProviderFromModel(
-	aiModel: string,
-	userPlan?: string,
-): TranslationProvider {
+export function getProviderFromModel(aiModel: string): TranslationProvider {
 	if (aiModel.startsWith("gpt-")) {
 		return "openai";
 	}
@@ -11,10 +8,7 @@ export function getProviderFromModel(
 		return "deepseek";
 	}
 	if (aiModel.startsWith("gemini-")) {
-		return "vertex";
-	}
-	if (userPlan === "premium") {
-		return "vertex";
+		return "gemini";
 	}
 	return "gemini";
 }

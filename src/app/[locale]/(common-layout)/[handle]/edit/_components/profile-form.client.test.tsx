@@ -4,12 +4,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mockUsers } from "@/tests/mock";
 import { ProfileForm } from "./profile-form";
 
-const { invalidateMock, updateProfileImageMock, updateProfileMock } =
-	vi.hoisted(() => ({
-		invalidateMock: vi.fn(),
-		updateProfileImageMock: vi.fn(),
-		updateProfileMock: vi.fn(),
-	}));
+const { invalidateMock, updateProfileMock } = vi.hoisted(() => ({
+	invalidateMock: vi.fn(),
+	updateProfileMock: vi.fn(),
+}));
 
 vi.mock("@tanstack/react-router", () => ({
 	useRouter: () => ({ invalidate: invalidateMock }),
@@ -19,7 +17,6 @@ vi.mock("@tanstack/react-start", () => ({
 }));
 vi.mock("@/routes/$locale/-profile-edit-data", () => ({
 	updateProfile: updateProfileMock,
-	updateProfileImage: updateProfileImageMock,
 }));
 vi.mock("sonner", () => ({
 	toast: { success: vi.fn(), error: vi.fn() },

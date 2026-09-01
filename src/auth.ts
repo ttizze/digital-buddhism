@@ -1,36 +1,38 @@
+import { env } from "cloudflare:workers";
 import { createId } from "@paralleldrive/cuid2";
 import { betterAuth } from "better-auth";
 import { customSession, magicLink } from "better-auth/plugins";
+import { resolveServerAuthConfig } from "./app/_constants/auth-config.server";
+import { BASE_URL } from "./app/_constants/base-url";
 import { db } from "./db";
 import { sendMagicLinkEmail } from "./utils/send-magic-link-email.server";
 
+const serverAuthConfig = resolveServerAuthConfig(env);
+
 export const auth = betterAuth({
+	baseURL: BASE_URL,
+	secret: serverAuthConfig.betterAuthSecret,
 	plugins: [
-		magicLink({
-			sendMagicLink: async ({ email, token, url }) => {
-				await sendMagicLinkEmail(email, url, token);
-			},
-		}),
+		...(serverAuthConfig.magicLinkEnabled
+			? [
+					magicLink({
+						sendMagicLink: async ({ email, token, url }) => {
+							await sendMagicLinkEmail(email, url, token);
+						},
+					}),
+				]
+			: []),
 		customSession(async ({ session }) => {
-			const [currentUser, geminiApiKey] = await Promise.all([
-				db
-					.selectFrom("users")
-					.selectAll()
-					.where("id", "=", session.userId)
-					.executeTakeFirst(),
-				db
-					.selectFrom("geminiApiKeys")
-					.selectAll()
-					.where("userId", "=", session.userId)
-					.executeTakeFirst(),
-			]);
+			const currentUser = await db
+				.selectFrom("users")
+				.selectAll()
+				.where("id", "=", session.userId)
+				.executeTakeFirst();
 
 			if (!currentUser) {
 				throw new Error("User not found");
 			}
 
-			// Check if the user has a Gemini API key
-			const hasGeminiApiKey = !!(geminiApiKey && geminiApiKey.apiKey !== "");
 			return {
 				user: {
 					id: currentUser.id,
@@ -44,7 +46,6 @@ export const auth = betterAuth({
 					image: currentUser.image,
 					createdAt: currentUser.createdAt,
 					updatedAt: currentUser.updatedAt,
-					hasGeminiApiKey,
 				},
 				session,
 			};
@@ -82,11 +83,13 @@ export const auth = betterAuth({
 			},
 		},
 	},
-	// ソーシャルプロバイダー設定
-	socialProviders: {
-		google: {
-			clientId: process.env.AUTH_GOOGLE_ID as string,
-			clientSecret: process.env.AUTH_GOOGLE_SECRET as string,
-		},
-	},
+	socialProviders:
+		serverAuthConfig.googleClientId && serverAuthConfig.googleClientSecret
+			? {
+					google: {
+						clientId: serverAuthConfig.googleClientId,
+						clientSecret: serverAuthConfig.googleClientSecret,
+					},
+				}
+			: {},
 });

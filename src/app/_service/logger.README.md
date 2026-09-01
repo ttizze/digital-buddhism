@@ -5,9 +5,9 @@
 ## 特徴
 
 - **高速**: Pinoは非常に高速なログライブラリです
-- **構造化ログ**: JSON形式でログを出力（本番環境）
-- **開発体験**: 開発環境では`pino-pretty`で読みやすく表示
-- **Sentry統合**: サーバー側ロガーはSentryと自動統合
+- **構造化ログ**: すべての環境でJSON形式のログを出力
+- **ランタイム分離**: WorkerはCloudflare binding、Tipitaka CLIはBunの環境変数を参照
+- **Sentry統合**: Worker側ロガーはSentryと自動統合
 
 ## 基本的な使い方
 
@@ -35,33 +35,46 @@ logger.error({ err: error }, "Failed to load page");
 
 通常、クライアント側ではログを出力しません。エラーはSentryが自動的にキャプチャします。
 
+### Tipitaka取込CLI
+
+```typescript
+import { createCliLogger } from "../../logger";
+
+const logger = createCliLogger("tipitaka-import");
+```
+
+CLIコードからWorker用の`logger.server.ts`をimportしません。Worker用ロガーは
+`cloudflare:workers`のbindingに依存し、通常のBunプロセスでは解決できないためです。
+
 ## ログレベル
 
-ログレベルは環境に応じて自動的に設定されますが、環境変数`LOG_LEVEL`で明示的に上書きすることもできます。
+ログレベルは`LOG_LEVEL`で明示的に上書きできます。WorkerはCloudflare binding、
+Tipitaka CLIはBunプロセスの環境変数から読みます。
 
 ### ログレベルの優先順位
 
-1. **環境変数 `LOG_LEVEL`**（最優先 - 明示的に設定されている場合）
-2. **テスト環境のデフォルト**: `error`（`VITEST`環境または`NODE_ENV=test`）
-3. **CI環境のデフォルト**: `warn`（`CI`環境変数が設定されている場合）
-4. **本番環境のデフォルト**: `info`（`NODE_ENV=production`）
-5. **開発環境のデフォルト**: `debug`（それ以外）
+1. **`LOG_LEVEL`**（Worker bindingまたはCLI環境変数）
+2. **Workerテスト環境**: `error`
+3. **Worker本番環境**: `info`
+4. **Worker開発環境**: `debug`
+5. **Tipitaka CLI**: `info`（エントリーポイントは未指定時に`debug`を設定）
 
 ### 利用可能なログレベル
 
 - `debug`: すべてのログを出力（開発環境のデフォルト）
 - `info`: 情報レベル以上を出力（本番環境のデフォルト）
-- `warn`: 警告以上を出力（CI環境のデフォルト）
+- `warn`: 警告以上を出力
 - `error`: エラーのみ出力（テスト環境のデフォルト）
 
 ### 環境別のデフォルト設定
 
 | 環境 | デフォルトレベル | 検知方法 | 理由 |
 |------|-----------------|----------|------|
-| テスト環境 | `error` | `VITEST`環境変数または`NODE_ENV=test` | テスト中のログ出力を抑制し、テスト結果を見やすくする |
-| CI環境 | `warn` | `CI`環境変数 | エラーと警告のみ記録して、CIログを簡潔に保つ |
-| 本番環境 | `info` | `NODE_ENV=production` | エラー、警告、重要なビジネスイベントを記録 |
-| 開発環境 | `debug` | それ以外 | すべてのログを出力して開発時のデバッグを支援 |
+| Workerテスト | `error` | `import.meta.env.MODE` | テスト結果を見やすくする |
+| Worker本番 | `info` | `import.meta.env.PROD` | エラー、警告、重要なビジネスイベントを記録 |
+| Worker開発 | `debug` | それ以外 | 開発時のデバッグを支援 |
+| Tipitaka CLI | `info` | CLI logger単体 | 通常のCLIログ量を抑える |
+| `bun run tipitaka` | `debug` | CLIエントリーポイント | 取込進捗を出力する |
 
 ### 明示的な設定
 
@@ -230,20 +243,9 @@ if (shouldLog) {
 
 ただし、エラーや警告は**常に記録**してください。
 
-## 開発環境での表示
+## 出力形式
 
-開発環境（`NODE_ENV=development`）では、自動的に`pino-pretty`で読みやすく表示されます。
-パイプは不要です。
-
-本番環境で一時的にpretty表示したい場合は環境変数を使用：
-
-```bash
-LOG_PRETTY=true bun run start
-```
-
-## 本番環境での出力
-
-本番環境では、JSON形式で構造化ログが出力されます：
+開発・テスト・本番のすべてで、Cloudflare Workersが直接処理できるJSON形式の構造化ログを出力します：
 
 ```json
 {
@@ -264,13 +266,6 @@ LOG_PRETTY=true bun run start
 
 1. **削除する**: 問題が解決したら削除（推奨）
 2. **DEBUGレベルにする**: 本番環境ではデフォルトで出力されないが、必要に応じて有効化可能
-3. **環境変数で制御**: 特定の調査のみ有効化したい場合
-
-```typescript
-// 環境変数で制御する例（特定の調査のみ）
-if (process.env.ENABLE_SPECIFIC_DEBUG === "true") {
-  logger.debug({ ... }, "Specific debug information");
-}
 ```
 
 **通常のDEBUGログとの違い**:
@@ -281,13 +276,7 @@ if (process.env.ENABLE_SPECIFIC_DEBUG === "true") {
 
 本番環境で問題が発生した場合、DEBUGログを有効化して正常フローを追跡できます：
 
-```bash
-# 一時的にDEBUGログを有効化
-LOG_LEVEL=debug bun run start
-
-# または環境変数で設定
-export LOG_LEVEL=debug
-```
+Cloudflare Workerの`LOG_LEVEL` bindingを`debug`へ変更してください。
 
 **使用シナリオ**:
 - 特定のリクエストで問題が発生している場合

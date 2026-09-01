@@ -33,7 +33,6 @@ export async function createContentPage({
 			const { mdastJson, segments } = await markdownToMdastWithSegments({
 				header: title,
 				markdown: body,
-				autoUploadImages: false,
 			});
 			const slug = slugify(`tipitaka-${entry.fileKey}`);
 

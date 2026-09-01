@@ -6,6 +6,12 @@ import {
 	type KvNamespaceBinding,
 	runWithTipitakaReadModelStore,
 } from "./app/[locale]/_infrastructure/tipitaka-read-model/store";
+import { runWithTranslationQueue } from "./app/[locale]/_infrastructure/translation-queue/context.server";
+import {
+	consumeTranslationQueue,
+	type TranslationQueueBatch,
+} from "./app/api/translate/queue-consumer.server";
+import type { TranslationQueueBinding } from "./app/api/translate/types";
 import { runWithDatabaseRequestContext } from "./db/request-context";
 
 type WorkerEnv = {
@@ -13,6 +19,7 @@ type WorkerEnv = {
 	TURSO_DATABASE_URL?: string;
 	TURSO_AUTH_TOKEN?: string;
 	TIPITAKA_READ_MODELS: KvNamespaceBinding;
+	TRANSLATION_QUEUE: TranslationQueueBinding;
 };
 type WorkerExecutionContext = {
 	waitUntil(promise: Promise<unknown>): void;
@@ -50,13 +57,15 @@ const workerEntry = {
 		if (cachedResponse) return cachedResponse;
 
 		const readModelStore = createKvReadModelStore(env.TIPITAKA_READ_MODELS);
-		const response = await runWithTipitakaReadModelStore(readModelStore, () =>
-			runWithDatabaseRequestContext(
-				{
-					url: env.TURSO_DATABASE_URL,
-					authToken: env.TURSO_AUTH_TOKEN,
-				},
-				() => handler.fetch(request),
+		const response = await runWithTranslationQueue(env.TRANSLATION_QUEUE, () =>
+			runWithTipitakaReadModelStore(readModelStore, () =>
+				runWithDatabaseRequestContext(
+					{
+						url: env.TURSO_DATABASE_URL,
+						authToken: env.TURSO_AUTH_TOKEN,
+					},
+					() => handler.fetch(request),
+				),
 			),
 		);
 		const headers = new Headers(response.headers);
@@ -98,6 +107,22 @@ const workerEntry = {
 		env: WorkerEnv,
 		ctx: WorkerExecutionContext,
 	) {
+		ctx.waitUntil(runTipitakaProjector(env));
+	},
+	async queue(
+		batch: TranslationQueueBatch,
+		env: WorkerEnv,
+		ctx: WorkerExecutionContext,
+	) {
+		await runWithTranslationQueue(env.TRANSLATION_QUEUE, () =>
+			runWithDatabaseRequestContext(
+				{
+					url: env.TURSO_DATABASE_URL,
+					authToken: env.TURSO_AUTH_TOKEN,
+				},
+				() => consumeTranslationQueue(batch),
+			),
+		);
 		ctx.waitUntil(runTipitakaProjector(env));
 	},
 };

@@ -23,7 +23,6 @@ import { Route as ApiOgRouteImport } from './routes/api/og'
 import { Route as ApiSegmentGlossesRouteImport } from './routes/api/segment-glosses'
 import { Route as ApiSegmentTranslationsRouteImport } from './routes/api/segment-translations'
 import { Route as ApiSentryExampleApiRouteImport } from './routes/api/sentry-example-api'
-import { Route as ApiTranslateRouteImport } from './routes/api/translate'
 import { Route as ApiTranslationJobsRouteImport } from './routes/api/translation-jobs'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as LocaleCommonIndexRouteImport } from './routes/$locale._common.index'
@@ -31,7 +30,6 @@ import { Route as LocaleCommonHandleRouteImport } from './routes/$locale._common
 import { Route as LocaleCommonSearchRouteImport } from './routes/$locale._common.search'
 import { Route as LocaleCommonTipitakaRouteImport } from './routes/$locale._common.tipitaka'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as ApiTranslateChunkRouteImport } from './routes/api/translate/chunk'
 import { Route as SitemapSitemapChar123idChar125DotxmlRouteImport } from './routes/sitemap/sitemap/{$id}[.]xml'
 import { Route as LocaleCommonHandleEditRouteImport } from './routes/$locale._common.$handle.edit'
 import { Route as LocaleCommonAuthLoginRouteImport } from './routes/$locale._common.auth.login'
@@ -106,11 +104,6 @@ const ApiSentryExampleApiRoute = ApiSentryExampleApiRouteImport.update({
   path: '/api/sentry-example-api',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiTranslateRoute = ApiTranslateRouteImport.update({
-  id: '/api/translate',
-  path: '/api/translate',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiTranslationJobsRoute = ApiTranslationJobsRouteImport.update({
   id: '/api/translation-jobs',
   path: '/api/translation-jobs',
@@ -145,11 +138,6 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
-} as any)
-const ApiTranslateChunkRoute = ApiTranslateChunkRouteImport.update({
-  id: '/chunk',
-  path: '/chunk',
-  getParentRoute: () => ApiTranslateRoute,
 } as any)
 const SitemapSitemapChar123idChar125DotxmlRoute =
   SitemapSitemapChar123idChar125DotxmlRouteImport.update({
@@ -188,14 +176,12 @@ export interface FileRoutesByFullPath {
   '/api/segment-glosses': typeof ApiSegmentGlossesRoute
   '/api/segment-translations': typeof ApiSegmentTranslationsRoute
   '/api/sentry-example-api': typeof ApiSentryExampleApiRoute
-  '/api/translate': typeof ApiTranslateRouteWithChildren
   '/api/translation-jobs': typeof ApiTranslationJobsRoute
   '/auth/login': typeof AuthLoginRoute
   '/$locale/$handle': typeof LocaleCommonHandleRouteWithChildren
   '/$locale/search': typeof LocaleCommonSearchRoute
   '/$locale/tipitaka': typeof LocaleCommonTipitakaRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/translate/chunk': typeof ApiTranslateChunkRoute
   '/sitemap/sitemap/{$id}.xml': typeof SitemapSitemapChar123idChar125DotxmlRoute
   '/$locale/': typeof LocaleCommonIndexRoute
   '/$locale/$handle/edit': typeof LocaleCommonHandleEditRoute
@@ -216,14 +202,12 @@ export interface FileRoutesByTo {
   '/api/segment-glosses': typeof ApiSegmentGlossesRoute
   '/api/segment-translations': typeof ApiSegmentTranslationsRoute
   '/api/sentry-example-api': typeof ApiSentryExampleApiRoute
-  '/api/translate': typeof ApiTranslateRouteWithChildren
   '/api/translation-jobs': typeof ApiTranslationJobsRoute
   '/auth/login': typeof AuthLoginRoute
   '/$locale/$handle': typeof LocaleCommonHandleRouteWithChildren
   '/$locale/search': typeof LocaleCommonSearchRoute
   '/$locale/tipitaka': typeof LocaleCommonTipitakaRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/translate/chunk': typeof ApiTranslateChunkRoute
   '/sitemap/sitemap/{$id}.xml': typeof SitemapSitemapChar123idChar125DotxmlRoute
   '/$locale/$handle/edit': typeof LocaleCommonHandleEditRoute
   '/$locale/auth/login': typeof LocaleCommonAuthLoginRoute
@@ -245,14 +229,12 @@ export interface FileRoutesById {
   '/api/segment-glosses': typeof ApiSegmentGlossesRoute
   '/api/segment-translations': typeof ApiSegmentTranslationsRoute
   '/api/sentry-example-api': typeof ApiSentryExampleApiRoute
-  '/api/translate': typeof ApiTranslateRouteWithChildren
   '/api/translation-jobs': typeof ApiTranslationJobsRoute
   '/auth/login': typeof AuthLoginRoute
   '/$locale/_common/$handle': typeof LocaleCommonHandleRouteWithChildren
   '/$locale/_common/search': typeof LocaleCommonSearchRoute
   '/$locale/_common/tipitaka': typeof LocaleCommonTipitakaRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/translate/chunk': typeof ApiTranslateChunkRoute
   '/sitemap/sitemap/{$id}.xml': typeof SitemapSitemapChar123idChar125DotxmlRoute
   '/$locale/_common/': typeof LocaleCommonIndexRoute
   '/$locale/_common/$handle/edit': typeof LocaleCommonHandleEditRoute
@@ -275,14 +257,12 @@ export interface FileRouteTypes {
     | '/api/segment-glosses'
     | '/api/segment-translations'
     | '/api/sentry-example-api'
-    | '/api/translate'
     | '/api/translation-jobs'
     | '/auth/login'
     | '/$locale/$handle'
     | '/$locale/search'
     | '/$locale/tipitaka'
     | '/api/auth/$'
-    | '/api/translate/chunk'
     | '/sitemap/sitemap/{$id}.xml'
     | '/$locale/'
     | '/$locale/$handle/edit'
@@ -303,14 +283,12 @@ export interface FileRouteTypes {
     | '/api/segment-glosses'
     | '/api/segment-translations'
     | '/api/sentry-example-api'
-    | '/api/translate'
     | '/api/translation-jobs'
     | '/auth/login'
     | '/$locale/$handle'
     | '/$locale/search'
     | '/$locale/tipitaka'
     | '/api/auth/$'
-    | '/api/translate/chunk'
     | '/sitemap/sitemap/{$id}.xml'
     | '/$locale/$handle/edit'
     | '/$locale/auth/login'
@@ -331,14 +309,12 @@ export interface FileRouteTypes {
     | '/api/segment-glosses'
     | '/api/segment-translations'
     | '/api/sentry-example-api'
-    | '/api/translate'
     | '/api/translation-jobs'
     | '/auth/login'
     | '/$locale/_common/$handle'
     | '/$locale/_common/search'
     | '/$locale/_common/tipitaka'
     | '/api/auth/$'
-    | '/api/translate/chunk'
     | '/sitemap/sitemap/{$id}.xml'
     | '/$locale/_common/'
     | '/$locale/_common/$handle/edit'
@@ -357,7 +333,6 @@ export interface RootRouteChildren {
   ApiSegmentGlossesRoute: typeof ApiSegmentGlossesRoute
   ApiSegmentTranslationsRoute: typeof ApiSegmentTranslationsRoute
   ApiSentryExampleApiRoute: typeof ApiSentryExampleApiRoute
-  ApiTranslateRoute: typeof ApiTranslateRouteWithChildren
   ApiTranslationJobsRoute: typeof ApiTranslationJobsRoute
   AuthLoginRoute: typeof AuthLoginRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -464,13 +439,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSentryExampleApiRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/translate': {
-      id: '/api/translate'
-      path: '/api/translate'
-      fullPath: '/api/translate'
-      preLoaderRoute: typeof ApiTranslateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/translation-jobs': {
       id: '/api/translation-jobs'
       path: '/api/translation-jobs'
@@ -519,13 +487,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/api/translate/chunk': {
-      id: '/api/translate/chunk'
-      path: '/chunk'
-      fullPath: '/api/translate/chunk'
-      preLoaderRoute: typeof ApiTranslateChunkRouteImport
-      parentRoute: typeof ApiTranslateRoute
     }
     '/sitemap/sitemap/{$id}.xml': {
       id: '/sitemap/sitemap/{$id}.xml'
@@ -608,18 +569,6 @@ const LocaleRouteChildren: LocaleRouteChildren = {
 const LocaleRouteWithChildren =
   LocaleRoute._addFileChildren(LocaleRouteChildren)
 
-interface ApiTranslateRouteChildren {
-  ApiTranslateChunkRoute: typeof ApiTranslateChunkRoute
-}
-
-const ApiTranslateRouteChildren: ApiTranslateRouteChildren = {
-  ApiTranslateChunkRoute: ApiTranslateChunkRoute,
-}
-
-const ApiTranslateRouteWithChildren = ApiTranslateRoute._addFileChildren(
-  ApiTranslateRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LocaleRoute: LocaleRouteWithChildren,
@@ -631,7 +580,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSegmentGlossesRoute: ApiSegmentGlossesRoute,
   ApiSegmentTranslationsRoute: ApiSegmentTranslationsRoute,
   ApiSentryExampleApiRoute: ApiSentryExampleApiRoute,
-  ApiTranslateRoute: ApiTranslateRouteWithChildren,
   ApiTranslationJobsRoute: ApiTranslationJobsRoute,
   AuthLoginRoute: AuthLoginRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

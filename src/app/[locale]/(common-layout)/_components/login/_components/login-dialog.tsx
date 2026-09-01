@@ -3,6 +3,7 @@
 import { useLocation } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 import { useLocale } from "use-intl";
+import { useAuthProviderAvailability } from "@/app/_constants/auth-providers";
 import {
 	Dialog,
 	DialogContent,
@@ -35,6 +36,7 @@ export function LoginDialog({
 }: LoginDialogProps) {
 	const [open, setOpen] = useState(defaultOpen);
 	const locale = useLocale();
+	const authProviders = useAuthProviderAvailability();
 	const redirectTo = useLocation({
 		select: (location) => `${location.pathname}${location.searchStr}`,
 	});
@@ -49,12 +51,21 @@ export function LoginDialog({
 						Read and translate the Tipitaka.
 					</DialogDescription>
 				</DialogTitle>
-				<GoogleForm redirectTo={redirectTo} />
-				<Separator className="my-4" />
-				<div className="text-center text-sm text-gray-500 my-2">
-					Or continue with email
-				</div>
-				<MagicLinkForm redirectTo={redirectTo} />
+				{authProviders.google && <GoogleForm redirectTo={redirectTo} />}
+				{authProviders.google && authProviders.magicLink && (
+					<>
+						<Separator className="my-4" />
+						<div className="text-center text-sm text-gray-500 my-2">
+							Or continue with email
+						</div>
+					</>
+				)}
+				{authProviders.magicLink && <MagicLinkForm redirectTo={redirectTo} />}
+				{!authProviders.google && !authProviders.magicLink && (
+					<p className="text-center text-sm text-muted-foreground">
+						Authentication is not configured for this environment.
+					</p>
+				)}
 				<div className="text-center text-sm text-gray-500 my-2">
 					Login means you agree to our{" "}
 					<a className="underline" href={`/${locale}/terms`}>
