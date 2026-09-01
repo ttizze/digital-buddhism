@@ -6,7 +6,6 @@ import { ArticleJsonLd, BreadcrumbJsonLd } from "@/components/seo/json-ld";
 import type { NavigationData, PageTitleTree } from "../_db/queries";
 import { ChildPages } from "./child-pages";
 import { ContentWithTranslations } from "./content-with-translations";
-import { PageNavigation } from "./page-navigation";
 
 export function PageContent({
 	pageDetail,
@@ -46,12 +45,11 @@ export function PageContent({
 					{ name: pageDetail.title, url: articleUrl },
 				]}
 			/>
-			<PageNavigation
-				data={navigationData}
+			<ContentWithTranslations
 				locale={locale}
-				pageId={pageDetail.id}
+				navigationData={navigationData}
+				pageDetail={pageDetail}
 			/>
-			<ContentWithTranslations locale={locale} pageDetail={pageDetail} />
 			<ChildPages locale={locale} pages={childPages} />
 
 			{floatingControls}

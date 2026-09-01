@@ -7,15 +7,17 @@ import { mdastToMarkdown } from "@/app/[locale]/_domain/mdast-to-markdown";
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
 import type { PageDetail } from "@/app/[locale]/types";
 import { getPageAnnotationsData } from "@/routes/$locale/-page-annotations-data";
+import type { NavigationData } from "../_db/queries";
 import { extractTocItems } from "../_domain/extract-toc-items";
 import { mdastToReact } from "./mdast-to-react";
+import { PageNavigation } from "./page-navigation";
 import { usePageSegmentGlosses } from "./segment-glosses/use-page-segment-glosses";
 import { SegmentGlossVoteProvider } from "./segment-glosses/vote-context";
-import { SubHeader } from "./sub-header";
 
 interface ContentWithTranslationsProps {
 	pageDetail: PageDetail;
 	locale: string;
+	navigationData: NavigationData | null;
 }
 
 type PageAnnotationsData = Awaited<ReturnType<typeof getPageAnnotationsData>>;
@@ -88,6 +90,7 @@ function getDisplayEntry(
 export function ContentWithTranslations({
 	pageDetail,
 	locale,
+	navigationData,
 }: ContentWithTranslationsProps) {
 	const [visibleAnnotations] = useQueryState(
 		"annotations",
@@ -126,14 +129,18 @@ export function ContentWithTranslations({
 	if (!titleSegment) return null;
 	return (
 		<SegmentGlossVoteProvider locale={locale} mutate={mutateGlossUnits}>
+			<PageNavigation
+				data={navigationData}
+				locale={locale}
+				markdown={markdown}
+				pageId={displayPageDetail.id}
+				slug={displayPageDetail.slug}
+				title={displayPageDetail.title}
+				tocItems={tocItems}
+			/>
 			<h1 className="mb-0! ">
 				<SegmentElement segment={titleSegment} />
 			</h1>
-			<SubHeader
-				markdown={markdown}
-				pageDetail={displayPageDetail}
-				tocItems={tocItems}
-			/>
 			<div className="js-content">{content}</div>
 		</SegmentGlossVoteProvider>
 	);

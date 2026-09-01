@@ -2,7 +2,7 @@
 import { List } from "lucide-react";
 import { useTranslations } from "use-intl";
 import type { TocItem } from "../../_domain/extract-toc-items";
-import { IconPopoverTrigger } from "../page-navigation/icon-popover-trigger";
+import { IconPopoverTrigger } from "./icon-popover-trigger";
 import Toc from "./toc";
 
 export function TocTrigger({ items }: { items: TocItem[] }) {
