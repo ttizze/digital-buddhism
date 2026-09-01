@@ -27,9 +27,14 @@ const LOCAL_WORKER_ENV_KEYS = [
 
 export default defineConfig(({ command, mode }) => {
 	const publicEnv = loadEnv(mode, process.cwd());
+	// Cloudflare Workers Builds の非本番ブランチビルド（プレビュー版、昇格されない）は
+	// 本番ドメイン必須の対象外にする。WORKERS_CI_BRANCH はビルド環境が注入する。
+	const ciBranch = process.env.WORKERS_CI_BRANCH;
+	const isPreviewCiBuild = ciBranch !== undefined && ciBranch !== "main";
 	if (
 		command === "build" &&
 		mode === "production" &&
+		!isPreviewCiBuild &&
 		!publicEnv.VITE_PUBLIC_DOMAIN
 	) {
 		throw new Error("VITE_PUBLIC_DOMAIN is required for production builds");
