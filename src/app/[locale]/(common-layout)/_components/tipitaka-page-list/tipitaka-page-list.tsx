@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
 import type { TipitakaPageTreeNode } from "./domain/extract-tipitaka-page-tree";
 
 type TipitakaPageListProps = {
@@ -38,18 +37,16 @@ function TipitakaTreeList({
 						params={{ locale, pageSlug: node.slug }}
 						to="/$locale/tipitaka/$pageSlug"
 					>
-						<SegmentElement
-							className="break-all overflow-wrap-anywhere"
-							interactive={false}
-							segment={{
-								id: node.titleSegmentId,
-								pageId: node.id,
-								number: 0,
-								text: node.titleText,
-								translationText: node.titleTranslationText,
-							}}
-							tagName="span"
-						/>
+						<span
+							className={`block break-all overflow-wrap-anywhere seg-src ${node.titleTranslationText === null ? "" : "seg-has-tr"}`}
+						>
+							{node.titleText}
+						</span>
+						{node.titleTranslationText === null ? null : (
+							<span className="block break-all overflow-wrap-anywhere seg-tr">
+								{node.titleTranslationText}
+							</span>
+						)}
 					</Link>
 					{node.children.length > 0 ? (
 						<div className="ml-4 border-l pl-3">

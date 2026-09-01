@@ -12,7 +12,6 @@ export interface SegmentPipelineResult {
 /**
  * remarkHashAndSegments を末尾に持つ unified プロセッサを実行し、
  * MDAST(JSON) + SegmentDraft[] を返す共通ランナー。
- * Markdown 入口と HTML 入口の両方がこれを使う。
  */
 export async function runSegmentPipeline<Tree>(
 	processor: {

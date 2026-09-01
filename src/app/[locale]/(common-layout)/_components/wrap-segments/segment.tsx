@@ -1,5 +1,4 @@
 import type { JSX, ReactNode } from "react";
-import { sanitizeAndParseText } from "@/app/[locale]/_utils/sanitize-and-parse-text";
 import { renderGlossedChildren } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/segment-glosses/render-glossed-children";
 import type { Segment } from "@/app/[locale]/types";
 
@@ -23,7 +22,7 @@ function SegmentPair({
 	children,
 }: SegmentElementProps) {
 	const hasTr = segment.translationText != null;
-	const sourceChildren = children ?? sanitizeAndParseText(segment.text ?? "");
+	const sourceChildren = children ?? segment.text ?? "";
 	const renderedSource =
 		segment.glossUnits && segment.glossUnits.length > 0
 			? renderGlossedChildren(
@@ -37,7 +36,7 @@ function SegmentPair({
 		<>
 			<Tag
 				{...tagProps}
-				className={`${className} seg-src ${hasTr ? "seg-has-tr" : ""}`}
+				className={`${className} seg-src ${hasTr ? "seg-has-tr" : ""} ${children === undefined ? "whitespace-pre-wrap" : ""}`}
 				data-number-id={segment.number}
 			>
 				{renderedSource}
@@ -45,7 +44,7 @@ function SegmentPair({
 			{hasTr && (
 				<Tag
 					{...tagProps}
-					className={`${className} seg-tr ${interactive ? "cursor-pointer select-text" : ""}`}
+					className={`${className} seg-tr whitespace-pre-wrap break-words ${interactive ? "cursor-pointer select-text" : ""}`}
 					data-number-id={segment.number}
 					id={tagProps?.id ? `${tagProps.id}-tr` : undefined}
 					{...(interactive && {
@@ -54,7 +53,7 @@ function SegmentPair({
 						"data-segment-id": segment.id,
 					})}
 				>
-					{sanitizeAndParseText(segment.translationText ?? "")}
+					{segment.translationText}
 				</Tag>
 			)}
 		</>

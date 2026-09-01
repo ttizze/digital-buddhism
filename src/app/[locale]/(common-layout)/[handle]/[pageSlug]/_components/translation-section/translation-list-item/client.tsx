@@ -6,7 +6,6 @@ import { useTranslations } from "use-intl";
 import { useHydrated } from "@/app/_hooks/use-hydrated";
 import { authClient } from "@/app/[locale]/_service/auth-client";
 import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form";
-import { sanitizeAndParseText } from "@/app/[locale]/_utils/sanitize-and-parse-text.client";
 import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,7 +68,9 @@ export function TranslationListItem({
 			<span className="flex items-start justify-between">
 				<span className="flex">
 					<span className="shrink-0 w-5 text-2xl">•</span>
-					<span>{sanitizeAndParseText(translation.text)}</span>
+					<span className="whitespace-pre-wrap break-words">
+						{translation.text}
+					</span>
 				</span>
 				{isOwner && (
 					<DropdownMenu modal={false}>

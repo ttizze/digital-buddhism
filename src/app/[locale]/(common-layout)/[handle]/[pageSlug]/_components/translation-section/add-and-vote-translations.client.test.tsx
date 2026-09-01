@@ -113,6 +113,39 @@ describe("AddAndVoteTranslations", () => {
 		});
 	});
 
+	it("取得した翻訳はHTMLとして解釈せず本文へ反映する", async () => {
+		vi.mocked(useSegmentTranslations).mockReturnValue({
+			data: [
+				{
+					...firstTranslation,
+					text: "<strong>first</strong>\nsecond line",
+				},
+			],
+			error: undefined,
+			isLoading: false,
+			isValidating: false,
+			mutate: vi.fn(),
+		});
+		const translationElement = document.createElement("span");
+		translationElement.innerHTML = "<em>old</em>";
+
+		render(
+			<AddAndVoteTranslations
+				open
+				segmentId={10}
+				translationElement={translationElement}
+			/>,
+		);
+
+		await waitFor(() => {
+			expect(translationElement.textContent).toBe(
+				"<strong>first</strong>\nsecond line",
+			);
+		});
+		expect(translationElement.querySelector("strong")).toBeNull();
+		expect(translationElement.querySelector("em")).toBeNull();
+	});
+
 	it("PATCHが返した最新順位を再GETせず確定状態にする", async () => {
 		const mutate = vi.fn().mockResolvedValue(undefined);
 		vi.mocked(useSegmentTranslations).mockReturnValue({

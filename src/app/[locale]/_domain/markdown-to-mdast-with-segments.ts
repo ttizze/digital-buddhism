@@ -15,7 +15,6 @@ interface Params {
 /**
  * Markdown 文字列を MDAST(JSON) + SegmentDraft[] に変換するヘルパー。
  *   – header を渡すと SegmentDraft の number=0 相当としてハッシュ化に利用できる。
- *   – HTML 版(html-to-mdast-with-segments.ts)と対になる関数。
  */
 export async function markdownToMdastWithSegments({
 	header,

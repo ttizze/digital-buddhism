@@ -4,7 +4,6 @@ import { ChevronDown, ChevronUp, Languages } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "use-intl";
 import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form";
-import { sanitizeTextToHtml } from "@/app/[locale]/_utils/sanitize-and-parse-text.client";
 import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
 import type { ActionResponse } from "@/app/types";
 import { Button } from "@/components/ui/button";
@@ -45,7 +44,7 @@ export function AddAndVoteTranslations({
 
 	useEffect(() => {
 		if (bestTranslationText !== undefined) {
-			translationElement.innerHTML = sanitizeTextToHtml(bestTranslationText);
+			translationElement.textContent = bestTranslationText;
 		}
 	}, [bestTranslationText, translationElement]);
 
