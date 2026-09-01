@@ -31,3 +31,27 @@ export function buildAlternates(
 		},
 	};
 }
+
+type StaticHeadConfig = {
+	title: string;
+	description: string;
+	robots: { index: boolean; follow: boolean };
+};
+
+/** 静的ページ用の head() 定義（title / description / robots）を組み立てる */
+export function buildStaticHead({
+	title,
+	description,
+	robots,
+}: StaticHeadConfig) {
+	return {
+		meta: [
+			{ title },
+			{ name: "description", content: description },
+			{
+				name: "robots",
+				content: `${robots.index ? "index" : "noindex"}, ${robots.follow ? "follow" : "nofollow"}`,
+			},
+		],
+	};
+}

@@ -2,6 +2,7 @@
 "use client";
 import { FileText } from "lucide-react";
 import { useQueryState } from "nuqs";
+import { useTranslations } from "use-intl";
 import type { View } from "@/app/_constants/view";
 import { viewQueryState } from "@/app/[locale]/(common-layout)/_components/view-query";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export function ViewCycle({ afterClick, userLocale, sourceLocale }: Props) {
+	const t = useTranslations("FloatingControls");
 	const [view, setQueryView] = useQueryState("view", viewQueryState);
 
 	const sourceLabel =
@@ -54,10 +56,10 @@ export function ViewCycle({ afterClick, userLocale, sourceLocale }: Props) {
 	/* アクセシブルラベル */
 	const label =
 		view === "user"
-			? "Currently: User language only (Click to change)"
+			? t("viewUserOnly")
 			: view === "source"
-				? "Currently: Source only (Click to change)"
-				: "Currently: Both languages (Click to change)";
+				? t("viewSourceOnly")
+				: t("viewBoth");
 
 	return (
 		<Button

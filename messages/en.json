@@ -1,4 +1,69 @@
 {
+	"StartButton": {
+		"start": "Start"
+	},
+	"UserMenu": {
+		"logOut": "Log out"
+	},
+	"ModeToggle": {
+		"light": "Light Theme",
+		"dark": "Dark Theme"
+	},
+	"LoginDialog": {
+		"title": "Login to Tipiṭaka",
+		"description": "Read and translate the Tipitaka.",
+		"continueWithEmail": "Or continue with email",
+		"notConfigured": "Authentication is not configured for this environment.",
+		"agreement": "Login means you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
+	},
+	"LocaleSelector": {
+		"select": "Select",
+		"searchPlaceholder": "search...",
+		"empty": "No locales found.",
+		"addNew": "+ Add New"
+	},
+	"AddTranslateDialog": {
+		"loginTitle": "Please log in to Add Translation",
+		"title": "Add New Translation",
+		"language": "Language",
+		"aiModel": "AI Model",
+		"selectModelPlaceholder": "Select a model",
+		"translate": "Translate"
+	},
+	"TranslationJobs": {
+		"title": "Translation Jobs"
+	},
+	"Notifications": {
+		"empty": "No notifications",
+		"vote": "<actor>{actorName}</actor> voted for <segment>{segmentText}</segment> on <page>{pageTitle}</page>"
+	},
+	"TranslationSection": {
+		"by": "by:",
+		"otherTranslations": "Other translations",
+		"loading": "Loading translations...",
+		"loadFailed": "Failed to load translations",
+		"addTranslationPlaceholder": "Or enter your translation...",
+		"submit": "Submit",
+		"delete": "Delete",
+		"deleting": "Deleting..."
+	},
+	"FloatingControls": {
+		"view": "View",
+		"share": "Share",
+		"copied": "Copied to clipboard",
+		"showAnnotation": "Show {label}",
+		"hideAnnotation": "Hide {label}",
+		"viewUserOnly": "Currently: User language only (Click to change)",
+		"viewSourceOnly": "Currently: Source only (Click to change)",
+		"viewBoth": "Currently: Both languages (Click to change)"
+	},
+	"PageNavigation": {
+		"pageTreeTitle": "Page tree",
+		"loading": "Loading page tree…",
+		"unavailable": "Page tree unavailable.",
+		"tocTitle": "Table of Contents",
+		"exportMarkdown": "Export markdown"
+	},
 	"Footer": {
 		"privacyPolicy": "Privacy Policy",
 		"termsOfService": "Terms of Service"

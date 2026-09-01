@@ -1,6 +1,7 @@
 "use client";
 import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
 import { Suspense, useEffect } from "react";
+import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useScrollVisibility } from "./hooks/use-scroll-visibility";
@@ -22,6 +23,7 @@ export function FloatingControls({
 	userLocale,
 	sourceLocale,
 }: FloatingControlsProps) {
+	const t = useTranslations("FloatingControls");
 	const { isVisible, ignoreNextScroll } = useScrollVisibility();
 	const [visibleAnnotations, setVisibleAnnotations] = useQueryState(
 		"annotations",
@@ -67,7 +69,7 @@ export function FloatingControls({
 						/>
 					</Suspense>
 					<span className="text-[10px] leading-none text-muted-foreground transition-colors group-hover:text-foreground">
-						View
+						{t("view")}
 					</span>
 				</div>
 
@@ -79,7 +81,11 @@ export function FloatingControls({
 							className="h-10 px-3 rounded-full text-sm cursor-pointer"
 							key={uniqueKey}
 							onClick={() => toggleAnnotationType(annotationType)}
-							title={`${isActive ? "Hide" : "Show"} ${annotationType.label}`}
+							title={
+								isActive
+									? t("hideAnnotation", { label: annotationType.label })
+									: t("showAnnotation", { label: annotationType.label })
+							}
 							variant={isActive ? "default" : "outline"}
 						>
 							{annotationType.label}
@@ -90,7 +96,7 @@ export function FloatingControls({
 				<div className="flex flex-col items-center gap-1 group">
 					<ShareDialog />
 					<span className="text-[10px] leading-none text-muted-foreground transition-colors group-hover:text-foreground">
-						Share
+						{t("share")}
 					</span>
 				</div>
 			</div>

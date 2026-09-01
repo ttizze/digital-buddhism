@@ -1,6 +1,7 @@
 "use client";
 
 import { DownloadIcon } from "lucide-react";
+import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,
@@ -29,10 +30,11 @@ export function ExportMarkdownButton({
 	title,
 	slug,
 }: ExportMarkdownButtonProps) {
+	const t = useTranslations("PageNavigation");
 	const hasContent = markdown.trim().length > 0;
 	const baseName = toSafeFileName(title || slug);
 	const fileName = `${baseName}.md`;
-	const label = "Export markdown";
+	const label = t("exportMarkdown");
 
 	const handleClick = () => {
 		if (!hasContent) return;

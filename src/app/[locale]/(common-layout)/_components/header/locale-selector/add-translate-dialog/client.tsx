@@ -3,7 +3,7 @@
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2 } from "lucide-react";
 import { useActionState, useState } from "react";
-import { useLocale } from "use-intl";
+import { useLocale, useTranslations } from "use-intl";
 import { useTranslationJobToast } from "@/app/[locale]/_hooks/use-translation-job-toast";
 import { useTranslationJobs } from "@/app/[locale]/_hooks/use-translation-jobs";
 import { StartButton } from "@/app/[locale]/(common-layout)/_components/start-button";
@@ -41,6 +41,7 @@ export function AddTranslateDialog({
 	userPlan,
 }: AddTranslateDialogProps) {
 	const currentLocale = useLocale();
+	const t = useTranslations("AddTranslateDialog");
 	const translateActionFn = useServerFn(translateAction);
 	const [translateState, action, isTranslating] = useActionState<
 		TranslateActionState,
@@ -63,7 +64,7 @@ export function AddTranslateDialog({
 					<div className="text-center">
 						<DialogHeader>
 							<DialogTitle className="text-lg text-center mb-4">
-								Please log in to Add Translation
+								{t("loginTitle")}
 							</DialogTitle>
 						</DialogHeader>
 						<StartButton />
@@ -71,23 +72,23 @@ export function AddTranslateDialog({
 				) : (
 					<>
 						<DialogHeader>
-							<DialogTitle>Add New Translation</DialogTitle>
+							<DialogTitle>{t("title")}</DialogTitle>
 						</DialogHeader>
 						<div className="space-y-2">
-							<Label htmlFor="language">Language</Label>
+							<Label htmlFor="language">{t("language")}</Label>
 							<DialogLocaleSelector
 								onChange={(value) => setTargetLocale(value)}
 								targetLocale={targetLocale}
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="ai-model">AI Model</Label>
+							<Label htmlFor="ai-model">{t("aiModel")}</Label>
 							<Select
 								onValueChange={(value) => setSelectedModel(value)}
 								value={selectedModel}
 							>
 								<SelectTrigger className="rounded-xl">
-									<SelectValue placeholder="Select a model" />
+									<SelectValue placeholder={t("selectModelPlaceholder")} />
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="gemini-3.1-flash-lite">
@@ -121,7 +122,7 @@ export function AddTranslateDialog({
 								{isTranslating ? (
 									<Loader2 className="w-4 h-4 animate-spin" />
 								) : (
-									"Translate"
+									t("translate")
 								)}
 							</Button>
 						</form>

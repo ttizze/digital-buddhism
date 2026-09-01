@@ -2,8 +2,8 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronUp, Languages } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useLocale } from "use-intl";
-import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form.client";
+import { useLocale, useTranslations } from "use-intl";
+import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form";
 import { sanitizeTextToHtml } from "@/app/[locale]/_utils/sanitize-and-parse-text.client";
 import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
 import type { ActionResponse } from "@/app/types";
@@ -28,6 +28,7 @@ export function AddAndVoteTranslations({
 	open,
 	translationElement,
 }: AddAndVoteTranslationsProps) {
+	const t = useTranslations("TranslationSection");
 	const [showAll, setShowAll] = useState(false);
 	const [isVoting, setIsVoting] = useState(false);
 	const userLocale = useLocale();
@@ -90,7 +91,7 @@ export function AddAndVoteTranslations({
 		return (
 			<span className="w-full">
 				<span className="flex mt-2 items-center justify-end text-gray-500 text-sm">
-					<Languages className="w-4 h-4 mr-1" /> Loading translations...
+					<Languages className="w-4 h-4 mr-1" /> {t("loading")}
 				</span>
 			</span>
 		);
@@ -100,7 +101,7 @@ export function AddAndVoteTranslations({
 		return (
 			<span className="w-full">
 				<span className="flex mt-2 items-center justify-end text-red-500 text-sm">
-					Failed to load translations
+					{t("loadFailed")}
 				</span>
 			</span>
 		);
@@ -123,7 +124,7 @@ export function AddAndVoteTranslations({
 					to="/$locale/$handle"
 				>
 					<span className="text-sm text-gray-500 text-right flex items-center">
-						by: {bestTranslation.userName}
+						{t("by")} {bestTranslation.userName}
 					</span>
 				</Link>
 				<VoteButtons
@@ -134,7 +135,7 @@ export function AddAndVoteTranslations({
 				/>
 			</span>
 			<span className="flex mt-2 items-center justify-end text-gray-500 text-sm">
-				<Languages className="w-4 h-4 mr-1" /> Other translations
+				<Languages className="w-4 h-4 mr-1" /> {t("otherTranslations")}
 			</span>
 			{displayedTranslations.map((displayedTranslation) => (
 				<TranslationListItem

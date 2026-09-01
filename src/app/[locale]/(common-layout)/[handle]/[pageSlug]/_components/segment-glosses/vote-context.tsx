@@ -2,7 +2,7 @@
 
 import { createContext, type ReactNode, useContext, useState } from "react";
 import type { KeyedMutator } from "swr";
-import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form.client";
+import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form";
 import {
 	type SegmentGlossUnit,
 	segmentGlossVoteResponseSchema,

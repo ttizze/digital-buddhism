@@ -7,6 +7,7 @@ import {
 	Loader2,
 	XCircle,
 } from "lucide-react";
+import { useTranslations } from "use-intl";
 import type {
 	TranslationJobForToast,
 	TranslationJobStatus,
@@ -30,31 +31,34 @@ const statusIcon = (status: TranslationJobStatus) => {
 	}
 };
 
-export const JobsView = ({ jobs }: { jobs: TranslationJobForToast[] }) => (
-	<div className="w-64 py-2">
-		<p className="text-sm font-medium mb-2 flex items-center">
-			<Languages className="w-4 h-4 mr-2" />
-			Translation Jobs
-		</p>
-		{jobs.map((j) => (
-			<div className="mb-2 last:mb-0" key={j.id}>
-				<span className="flex items-center gap-2">
-					{statusIcon(j.status)}
-					<Link
-						className="min-w-[48px] cursor-pointer flex items-center capitalize hover:underline"
-						params={{ locale: j.locale, pageSlug: j.page.slug }}
-						to="/$locale/tipitaka/$pageSlug"
-					>
-						<LinkIcon className="w-4 h-4 mr-1" />
-						{j.locale}
-					</Link>
-					<Progress
-						className="flex-1 h-2 mx-2"
-						value={j.progress ?? (j.status === "COMPLETED" ? 100 : 0)}
-					/>
-				</span>
-				{j.error && <p className="text-xs text-red-500 mt-1">{j.error}</p>}
-			</div>
-		))}
-	</div>
-);
+export const JobsView = ({ jobs }: { jobs: TranslationJobForToast[] }) => {
+	const t = useTranslations("TranslationJobs");
+	return (
+		<div className="w-64 py-2">
+			<p className="text-sm font-medium mb-2 flex items-center">
+				<Languages className="w-4 h-4 mr-2" />
+				{t("title")}
+			</p>
+			{jobs.map((j) => (
+				<div className="mb-2 last:mb-0" key={j.id}>
+					<span className="flex items-center gap-2">
+						{statusIcon(j.status)}
+						<Link
+							className="min-w-[48px] cursor-pointer flex items-center capitalize hover:underline"
+							params={{ locale: j.locale, pageSlug: j.page.slug }}
+							to="/$locale/tipitaka/$pageSlug"
+						>
+							<LinkIcon className="w-4 h-4 mr-1" />
+							{j.locale}
+						</Link>
+						<Progress
+							className="flex-1 h-2 mx-2"
+							value={j.progress ?? (j.status === "COMPLETED" ? 100 : 0)}
+						/>
+					</span>
+					{j.error && <p className="text-xs text-red-500 mt-1">{j.error}</p>}
+				</div>
+			))}
+		</div>
+	);
+};

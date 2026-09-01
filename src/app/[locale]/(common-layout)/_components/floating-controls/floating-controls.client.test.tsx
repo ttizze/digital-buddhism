@@ -4,6 +4,14 @@ import { NuqsTestingAdapter } from "nuqs/adapters/testing";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FloatingControls } from "./floating-controls.client";
 
+vi.mock("use-intl", async () => {
+	const { createEnTranslator } = await import("@/tests/en-translations");
+	return {
+		useLocale: () => "en",
+		useTranslations: (namespace?: string) => createEnTranslator(namespace),
+	};
+});
+
 vi.mock("./share-dialog", () => ({
 	ShareDialog: () => null,
 }));

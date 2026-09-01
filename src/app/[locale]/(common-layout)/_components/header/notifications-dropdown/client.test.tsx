@@ -7,6 +7,14 @@ import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import type { NotificationJson } from "@/app/api/notifications/_types/notification";
 import { NotificationsDropdownClient } from "./client";
 
+vi.mock("use-intl", async () => {
+	const { createEnTranslator } = await import("@/tests/en-translations");
+	return {
+		useLocale: () => "en",
+		useTranslations: (namespace?: string) => createEnTranslator(namespace),
+	};
+});
+
 vi.mock("swr", () => ({ default: vi.fn() }));
 vi.mock("@tanstack/react-router", () => ({
 	Link: ({

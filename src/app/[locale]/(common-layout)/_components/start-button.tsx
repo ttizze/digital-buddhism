@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "use-intl";
 import { useHydrated } from "@/app/_hooks/use-hydrated";
 import { authClient } from "@/app/[locale]/_service/auth-client";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ interface StartButtonProps {
 }
 
 export function StartButton({ className }: StartButtonProps) {
+	const t = useTranslations("StartButton");
 	const hydrated = useHydrated();
 	const { data: session } = authClient.useSession();
 	const isLoggedIn = hydrated && !!session;
@@ -36,7 +38,7 @@ export function StartButton({ className }: StartButtonProps) {
 				>
 					<div className="flex items-center gap-2">
 						<span className="sr-only">login and start</span>
-						Start
+						{t("start")}
 					</div>
 				</Button>
 			}

@@ -1,7 +1,72 @@
 {
+	"StartButton": {
+		"start": "Empezar"
+	},
+	"UserMenu": {
+		"logOut": "Cerrar sesión"
+	},
+	"ModeToggle": {
+		"light": "Tema claro",
+		"dark": "Tema oscuro"
+	},
+	"LoginDialog": {
+		"title": "Iniciar sesión en Tipiṭaka",
+		"description": "Lee y traduce el Tipitaka.",
+		"continueWithEmail": "O continúa con tu correo",
+		"notConfigured": "La autenticación no está configurada en este entorno.",
+		"agreement": "Al iniciar sesión aceptas nuestros <terms>Términos de servicio</terms> y nuestra <privacy>Política de privacidad</privacy>."
+	},
+	"LocaleSelector": {
+		"select": "Seleccionar",
+		"searchPlaceholder": "buscar...",
+		"empty": "No se encontraron idiomas.",
+		"addNew": "+ Añadir nuevo"
+	},
+	"AddTranslateDialog": {
+		"loginTitle": "Inicia sesión para añadir una traducción",
+		"title": "Añadir nueva traducción",
+		"language": "Idioma",
+		"aiModel": "Modelo de IA",
+		"selectModelPlaceholder": "Selecciona un modelo",
+		"translate": "Traducir"
+	},
+	"TranslationJobs": {
+		"title": "Trabajos de traducción"
+	},
+	"Notifications": {
+		"empty": "No hay notificaciones",
+		"vote": "<actor>{actorName}</actor> votó por <segment>{segmentText}</segment> en <page>{pageTitle}</page>"
+	},
+	"TranslationSection": {
+		"by": "por:",
+		"otherTranslations": "Otras traducciones",
+		"loading": "Cargando traducciones...",
+		"loadFailed": "No se pudieron cargar las traducciones",
+		"addTranslationPlaceholder": "O escribe tu traducción...",
+		"submit": "Enviar",
+		"delete": "Eliminar",
+		"deleting": "Eliminando..."
+	},
+	"FloatingControls": {
+		"view": "Vista",
+		"share": "Compartir",
+		"copied": "Copiado al portapapeles",
+		"showAnnotation": "Mostrar {label}",
+		"hideAnnotation": "Ocultar {label}",
+		"viewUserOnly": "Actual: solo traducción (clic para cambiar)",
+		"viewSourceOnly": "Actual: solo original (clic para cambiar)",
+		"viewBoth": "Actual: ambos idiomas (clic para cambiar)"
+	},
+	"PageNavigation": {
+		"pageTreeTitle": "Árbol de páginas",
+		"loading": "Cargando el árbol de páginas…",
+		"unavailable": "Árbol de páginas no disponible.",
+		"tocTitle": "Índice",
+		"exportMarkdown": "Exportar Markdown"
+	},
 	"Footer": {
-		"privacyPolicy": "Privacy Policy",
-		"termsOfService": "Terms of Service"
+		"privacyPolicy": "Política de privacidad",
+		"termsOfService": "Términos de servicio"
 	},
 	"Header": {
 		"HelpPopover": {

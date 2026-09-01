@@ -14,24 +14,13 @@ if (typeof window.HTMLElement.prototype.scrollIntoView !== "function") {
 	window.HTMLElement.prototype.scrollIntoView = () => {};
 }
 // use-intl and TanStack Router hooks are mocked for the isolated component test.
-const mockTranslations = () => {
-	const t = ((key: string) => key) as unknown as {
-		(key: string): string;
-		rich: (key: string) => string;
-		markup: (key: string) => string;
-		raw: (key: string) => string;
-		has: (key: string) => boolean;
+vi.mock("use-intl", async () => {
+	const { createEnTranslator } = await import("@/tests/en-translations");
+	return {
+		useLocale: () => "en",
+		useTranslations: (namespace?: string) => createEnTranslator(namespace),
 	};
-	t.rich = (key) => key;
-	t.markup = (key) => key;
-	t.raw = (key) => key;
-	t.has = () => true;
-	return t;
-};
-vi.mock("use-intl", () => ({
-	useLocale: () => "en",
-	useTranslations: () => mockTranslations(),
-}));
+});
 
 const navigateMock = vi.hoisted(() => vi.fn());
 vi.mock("@tanstack/react-router", () => ({

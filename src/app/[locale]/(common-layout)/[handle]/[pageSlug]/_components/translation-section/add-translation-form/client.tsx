@@ -2,10 +2,10 @@
 import { ArrowUpFromLine } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
-import { useLocale } from "use-intl";
+import { useLocale, useTranslations } from "use-intl";
 import { useHydrated } from "@/app/_hooks/use-hydrated";
 import { authClient } from "@/app/[locale]/_service/auth-client";
-import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form.client";
+import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form";
 import { StartButton } from "@/app/[locale]/(common-layout)/_components/start-button";
 import type { ActionResponse } from "@/app/types";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ export function AddTranslationForm({
 	segmentId,
 	onTranslationAdded,
 }: AddTranslationFormProps) {
+	const t = useTranslations("TranslationSection");
 	const hydrated = useHydrated();
 	const locale = useLocale();
 	const { data: session } = authClient.useSession();
@@ -108,7 +109,7 @@ export function AddTranslationForm({
 						type="submit"
 					>
 						<ArrowUpFromLine className="h-4 w-4" />
-						Submit
+						{t("submit")}
 					</Button>
 				</span>
 			</form>
