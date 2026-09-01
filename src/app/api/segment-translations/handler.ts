@@ -247,7 +247,13 @@ export async function deleteSegmentTranslation(
 	}
 
 	const { translationId } = parsed.data;
-	await deleteOwnTranslation(currentUser.handle, translationId);
+	const deleted = await deleteOwnTranslation(currentUser.handle, translationId);
+	if (!deleted) {
+		return Response.json(
+			{ error: "Translation not found or unauthorized" },
+			{ status: 404 },
+		);
+	}
 
 	return Response.json({ success: true });
 }

@@ -76,7 +76,50 @@ function hasNestedBlock(node: BlockNode): boolean {
 }
 
 function extractText(node: BlockNode): string {
-	return mdastToString(node, { includeImageAlt: false }).trim();
+	// pb/note の span はメタデータ・注記であり、翻訳対象テキストとハッシュには含めない
+	return mdastToString(node, {
+		includeImageAlt: false,
+		includeHtml: false,
+	}).trim();
+}
+
+const PB_SPAN_REGEX =
+	/<span\s+class="pb"((?:\s+data-(?:ed|n|value)="[^"]*")*)\s*><\/span>/;
+const PB_ATTRIBUTE_REGEX = /data-(ed|n|value)="([^"]*)"/g;
+
+const PB_EDITION_MAP: Record<string, string> = {
+	V: "VRI",
+	VRI: "VRI",
+	M: "MYANMAR",
+	P: "PTS",
+	T: "THAI",
+	O: "OTHER",
+	OTHER: "OTHER",
+};
+
+function parsePageBreak(
+	html: string,
+): { typeKey: string; value: string } | null {
+	const pbMatch = html.match(PB_SPAN_REGEX);
+	if (!pbMatch) return null;
+
+	const attributes = new Map<string, string>();
+	for (const attribute of pbMatch[1].matchAll(PB_ATTRIBUTE_REGEX)) {
+		attributes.set(attribute[1], attribute[2]);
+	}
+
+	// {pb:x} は版名かページ番号か曖昧な data-value になるため、既知の版名なら版として扱う
+	const ambiguous = attributes.get("value");
+	const ambiguousIsEdition =
+		ambiguous !== undefined && ambiguous.toUpperCase() in PB_EDITION_MAP;
+	const edition =
+		attributes.get("ed") ?? (ambiguousIsEdition ? ambiguous : undefined);
+	const pageCode =
+		attributes.get("n") ?? (ambiguousIsEdition ? undefined : ambiguous) ?? "";
+	const normalizedEdition = edition
+		? PB_EDITION_MAP[edition.toUpperCase()] || edition.toUpperCase()
+		: "OTHER";
+	return { typeKey: `${normalizedEdition}_PAGEBREAK`, value: pageCode };
 }
 
 function extractPageBreaksFromNode(node: BlockNode): Array<{
@@ -88,29 +131,8 @@ function extractPageBreaksFromNode(node: BlockNode): Array<{
 
 	for (const child of node.children) {
 		if (child.type === "html") {
-			const htmlNode = child as Html;
-			const html = htmlNode.value;
-			// <span class="pb" data-ed="..." data-n="..."></span> を抽出
-			const pbMatch = html.match(
-				/<span\s+class="pb"\s+data-ed="([^"]+)"\s+data-n="([^"]+)"><\/span>/,
-			);
-			if (pbMatch) {
-				const edition = pbMatch[1].toUpperCase();
-				const pageCode = pbMatch[2];
-				const editionMap: Record<string, string> = {
-					V: "VRI",
-					M: "MYANMAR",
-					P: "PTS",
-					T: "THAI",
-					O: "OTHER",
-					OTHER: "OTHER",
-				};
-				const normalizedEdition = editionMap[edition] || edition;
-				pageBreaks.push({
-					typeKey: `${normalizedEdition}_PAGEBREAK`,
-					value: pageCode,
-				});
-			}
+			const pageBreak = parsePageBreak((child as Html).value);
+			if (pageBreak) pageBreaks.push(pageBreak);
 		}
 	}
 	return pageBreaks;
@@ -237,11 +259,7 @@ function createSegmentFromBlockNode(
 	}
 
 	metadata.push(...extractPageBreaksFromNode(node));
-	text = cleanedText
-		.replace(PARA_NOTATION_REGEX, "")
-		.replace(/\{pb:[^}]+\}/g, "")
-		.replace(/\{pb\}/g, "")
-		.trim();
+	text = cleanedText.trim();
 
 	if (!text) {
 		return {

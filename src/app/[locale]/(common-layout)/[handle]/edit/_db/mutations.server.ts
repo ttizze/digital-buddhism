@@ -9,24 +9,5 @@ export async function updateUser(
 		twitterHandle: string | undefined;
 	},
 ) {
-	const updatedUser = await db
-		.updateTable("users")
-		.set(data)
-		.where("id", "=", userId)
-		.returning([
-			"id",
-			"handle",
-			"name",
-			"image",
-			"emailVerified",
-			"createdAt",
-			"updatedAt",
-			"profile",
-			"twitterHandle",
-			"totalPoints",
-			"isAi as isAI",
-			"plan",
-		])
-		.executeTakeFirst();
-	return updatedUser;
+	await db.updateTable("users").set(data).where("id", "=", userId).execute();
 }
