@@ -41,10 +41,7 @@ function renderRich(message: string, values?: RichValues): ReactNode {
 		match = tagRegex.exec(message);
 	}
 	if (lastIndex < message.length) parts.push(message.slice(lastIndex));
-	return parts.map((part, index) => (
-		// biome-ignore lint/suspicious/noArrayIndexKey: 静的なテスト用レンダリングで並び替えは発生しない
-		<Fragment key={index}>{part}</Fragment>
-	));
+	return parts.map((part, index) => <Fragment key={index}>{part}</Fragment>);
 }
 
 /**

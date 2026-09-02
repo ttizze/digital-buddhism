@@ -1,7 +1,7 @@
 /**
  * remark プラグイン: MDAST からセグメントを生成し、安定ハッシュ/番号/メタデータを付与する。
  * - header があれば 0 番のセグメントとして先頭に追加
- * - ブロック要素（段落/見出し/リスト項目/引用/表セル）を 1 セグメントとして抽出（ネストは除外）
+ * - ブロック要素（段落/見出し/リスト項目/引用）を 1 セグメントとして抽出（ネストは除外）
  * - {para:n} を paragraphNumber に、<span class="pb" ...> を metadata.items に格納
  * - 同一テキストでも出現回数込みで一意なハッシュを生成
  * - ノードには HTML 変換用の data-number-id を付与
@@ -17,7 +17,6 @@ import type {
 	Paragraph,
 	Root,
 	RootContent,
-	TableCell,
 } from "mdast";
 import { toString as mdastToString } from "mdast-util-to-string";
 import type { Plugin } from "unified";
@@ -45,14 +44,13 @@ export type SegmentDraft = Omit<
 };
 
 /* mdast で「1 ブロック」とみなすノード型 */
-type BlockNode = Paragraph | Heading | ListItem | Blockquote | TableCell;
+type BlockNode = Paragraph | Heading | ListItem | Blockquote;
 
 const BLOCK_TYPES: ReadonlyArray<BlockNode["type"]> = [
 	"paragraph",
 	"heading",
 	"listItem",
 	"blockquote",
-	"tableCell",
 ] as const;
 
 const PARA_NOTATION_REGEX = /^\{para:([^}]+)\}\s*/;

@@ -56,7 +56,6 @@ function LocalePreference({ locale }: { locale: string }) {
 	useEffect(() => {
 		const localeCookie = `NEXT_LOCALE=${encodeURIComponent(locale)}`;
 		if (!document.cookie.split("; ").includes(localeCookie)) {
-			// biome-ignore lint/suspicious/noDocumentCookie: The locale preference must also work where Cookie Store is unavailable.
 			document.cookie = `${localeCookie}; Path=/; SameSite=Lax`;
 		}
 	}, [locale]);

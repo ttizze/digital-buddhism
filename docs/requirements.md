@@ -167,5 +167,5 @@
 
 ## 測り方（確認方法）
 - `bun run build` のclient/server出力とchunk警告を確認すること
-- `bun run typecheck` / `bun x biome ci .` が通ること
+- `bun run typecheck` / `bun run format:check` / `bun run lint` が通ること
 - 変更した画面・ルートで最低限の手動動作確認を行うこと

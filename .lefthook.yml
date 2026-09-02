@@ -1,9 +1,11 @@
 # lefthook設定ファイル
-# コミット対象だけをBiomeで修正し、修正結果も同じcommitへ含める
+# コミット対象だけをoxfmtで修正し、oxlintで検査する
 no_tty: true
 
 pre-commit:
   commands:
-    biome:
-      run: bunx @biomejs/biome check --write --files-ignore-unknown=true --no-errors-on-unmatched {staged_files}
+    oxfmt:
+      run: bunx oxfmt --write --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
+    oxlint:
+      run: bunx oxlint --no-error-on-unmatched-pattern {staged_files}

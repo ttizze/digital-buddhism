@@ -4,7 +4,7 @@ import type { ActionResponse } from "@/app/types";
 import reservedHandles from "../_components/reserved-handles.json";
 import { updateUser } from "../_db/mutations.server";
 
-const RESERVED_HANDLES = [...new Set([...reservedHandles])];
+const RESERVED_HANDLES = [...new Set(reservedHandles)];
 
 const profileEditSchema = v.object({
 	name: v.pipe(

@@ -1,5 +1,4 @@
 import type { Root } from "mdast";
-import { gfmToMarkdown } from "mdast-util-gfm";
 import { toMarkdown } from "mdast-util-to-markdown";
 import type { JsonValue } from "@/drizzle/types";
 
@@ -25,7 +24,7 @@ export function mdastToMarkdown(mdastJson: JsonValue): string {
 	if (!root) return "";
 
 	try {
-		return toMarkdown(root, { extensions: [gfmToMarkdown()] });
+		return toMarkdown(root);
 	} catch {
 		return "";
 	}

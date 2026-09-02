@@ -44,6 +44,7 @@ If the DB is already populated and only KV needs rebuilding, run
 Run the repository checks inside `nix develop`:
 
 ```bash
+bun run format:check
 bun run lint
 bun run typecheck
 bun run doctor

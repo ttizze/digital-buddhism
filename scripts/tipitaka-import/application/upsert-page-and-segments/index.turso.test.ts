@@ -21,7 +21,7 @@ const databasePath = join(
 );
 
 let setupClient: Client;
-let upsertPageAndSegments: typeof import("./index")["upsertPageAndSegments"];
+let upsertPageAndSegments: (typeof import("./index"))["upsertPageAndSegments"];
 
 async function createImportTables() {
 	await setupClient.execute(`
