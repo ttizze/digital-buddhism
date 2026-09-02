@@ -36,7 +36,7 @@ vi.mock("@/app/[locale]/(common-layout)/_components/header/user-slot", () => ({
 }));
 
 vi.mock(
-	"@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-form-on-click.client",
+	"@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-form-on-click",
 	() => ({ TranslationFormOnClick: () => null }),
 );
 

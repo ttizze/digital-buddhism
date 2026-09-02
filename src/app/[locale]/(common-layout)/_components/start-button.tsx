@@ -1,5 +1,3 @@
-"use client";
-
 import { useTranslations } from "use-intl";
 import { useHydrated } from "@/app/_hooks/use-hydrated";
 import { authClient } from "@/app/[locale]/_service/auth-client";
@@ -37,7 +35,7 @@ export function StartButton({ className }: StartButtonProps) {
 					variant="default"
 				>
 					<div className="flex items-center gap-2">
-						<span className="sr-only">login and start</span>
+						<span className="sr-only">{t("accessibleLabel")}</span>
 						{t("start")}
 					</div>
 				</Button>

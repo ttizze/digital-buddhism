@@ -34,12 +34,6 @@ export interface Accounts {
 	userId: string;
 }
 
-export interface GeminiApiKeys {
-	apiKey: Generated<string>;
-	id: Generated<number>;
-	userId: string;
-}
-
 export interface ImportFiles {
 	checksum: string | null;
 	finishedAt: Date | null;
@@ -264,7 +258,6 @@ export interface Verifications {
 
 export interface DB {
 	accounts: Accounts;
-	geminiApiKeys: GeminiApiKeys;
 	importFiles: ImportFiles;
 	importRuns: ImportRuns;
 	notifications: Notifications;

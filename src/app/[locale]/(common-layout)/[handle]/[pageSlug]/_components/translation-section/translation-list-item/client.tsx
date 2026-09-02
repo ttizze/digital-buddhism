@@ -1,4 +1,3 @@
-"use client";
 import { Link } from "@tanstack/react-router";
 import { EllipsisVertical, Trash2 } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
@@ -21,7 +20,7 @@ interface TranslationItemProps {
 	isVoting: boolean;
 	onVote: (translationId: number, isUpvote: boolean) => void;
 	onDeleted?: () => void;
-	locale?: string;
+	locale: string;
 }
 
 export function TranslationListItem({
@@ -29,7 +28,7 @@ export function TranslationListItem({
 	isVoting,
 	onVote,
 	onDeleted,
-	locale = "en",
+	locale,
 }: TranslationItemProps) {
 	const hydrated = useHydrated();
 	const t = useTranslations("TranslationSection");

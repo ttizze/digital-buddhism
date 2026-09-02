@@ -26,11 +26,11 @@ jobs:
           echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
 
           ISSUE_DATA=$(gh issue view $ISSUE_NUMBER --json number,title,labels)
-          EXISTING_LABELS=$(echo "$ISSUE_DATA" | jq -r '.labels[].name')
+          HAS_LABELS=$(echo "$ISSUE_DATA" | jq -r '.labels | length > 0')
 
-          echo "Debug: Current labels: EXISTING_LABELS=$EXISTING_LABELS"
+          echo "Debug: Has labels: HAS_LABELS=$HAS_LABELS"
 
-          if [ "$EXISTING_LABELS" != "[]" ]; then
+          if [ "$HAS_LABELS" = "true" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
             echo "Skipping comment as labels already exist."
           else

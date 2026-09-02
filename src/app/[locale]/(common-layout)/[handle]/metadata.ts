@@ -1,4 +1,5 @@
 import { buildAlternates } from "@/app/_lib/seo-helpers";
+import { getMessages } from "@/app/_constants/messages";
 
 export function getProfileMetadata(
 	locale: string,
@@ -10,9 +11,13 @@ export function getProfileMetadata(
 	},
 ) {
 	const title = `${pageOwner.name} (@${pageOwner.handle}) | Tipiṭaka`;
+	const messages = getMessages(locale);
 	const description =
 		pageOwner.profile ||
-		`${pageOwner.name}さんのTipiṭakaプロフィール。翻訳活動を確認できます。`;
+		messages.Profile.metadataDescription.replace(
+			"{name}",
+			() => pageOwner.name,
+		);
 
 	return {
 		title,

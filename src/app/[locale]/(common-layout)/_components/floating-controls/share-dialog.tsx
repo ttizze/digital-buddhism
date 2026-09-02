@@ -1,5 +1,3 @@
-"use client";
-
 import { CopyIcon, Share } from "lucide-react";
 import { useState } from "react";
 import {

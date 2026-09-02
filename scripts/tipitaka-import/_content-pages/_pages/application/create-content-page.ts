@@ -4,7 +4,6 @@ import { upsertPageAndSegments } from "../../../application/upsert-page-and-segm
 import { parseDirSegment } from "../../../domain/parse-dir-segment/parse-dir-segment";
 import type { TipitakaFileMeta } from "../../../types";
 import { slugify } from "../../../utils/slugify";
-import { findTipitakaPageBySlug } from "../db/pages";
 import { removeHeader } from "../domain/remove-header";
 import { getFilePath } from "../utils/get-file-path";
 
@@ -36,7 +35,7 @@ export async function createContentPage({
 			});
 			const slug = slugify(`tipitaka-${entry.fileKey}`);
 
-			await upsertPageAndSegments({
+			const page = await upsertPageAndSegments({
 				catalogKey: slug,
 				pageSlug: slug,
 				mdastJson,
@@ -46,7 +45,7 @@ export async function createContentPage({
 				importFileId,
 				segments,
 			});
-			return (await findTipitakaPageBySlug(slug)).id;
+			return page.id;
 		},
 	});
 }

@@ -1,12 +1,8 @@
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import {
-	getRequestHeaders,
-	setResponseHeader,
-} from "@tanstack/react-start/server";
+import { setResponseHeader } from "@tanstack/react-start/server";
 import * as v from "valibot";
-import { fetchUserByHandle } from "@/app/_db/queries.server";
-import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
+import { getCurrentUser } from "@/app/_service/auth-server";
 import { updateProfileForUser } from "@/app/[locale]/(common-layout)/[handle]/edit/_service/profile-edit";
 import { supportedLocaleSchema } from "./-supported-locale-schema";
 
@@ -28,10 +24,6 @@ const profileEditFormInput = (value: unknown) => {
 	return value;
 };
 
-async function getCurrentUser() {
-	return getCurrentUserFromHeaders(new Headers(getRequestHeaders()));
-}
-
 export const getProfileEditData = createServerFn({ method: "GET" })
 	.validator(profileEditDataInput)
 	.handler(async ({ data }) => {
@@ -43,8 +35,7 @@ export const getProfileEditData = createServerFn({ method: "GET" })
 			throw redirect({ href: `/${data.locale}/auth/login` });
 		}
 
-		const user = await fetchUserByHandle(currentUser.handle);
-		return user ? currentUser : null;
+		return currentUser;
 	});
 
 export const updateProfile = createServerFn({ method: "POST" })

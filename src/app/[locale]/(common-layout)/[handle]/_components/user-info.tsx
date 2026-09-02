@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import Linkify from "linkify-react";
 import { Settings } from "lucide-react";
+import { useTranslations } from "use-intl";
 import { BASE_URL } from "@/app/_constants/base-url";
 import { ProfilePageJsonLd } from "@/components/seo/json-ld";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,6 +15,7 @@ export function UserInfo({
 	data: ProfilePageData;
 	locale: string;
 }) {
+	const t = useTranslations("Profile");
 	const { pageOwner } = data;
 	const profileUrl = `${BASE_URL}/${locale}/${pageOwner.handle}`;
 	const avatar = (
@@ -65,7 +67,7 @@ export function UserInfo({
 										variant="secondary"
 									>
 										<Settings className="w-4 h-4" />
-										<span className="ml-2 text-sm">Edit Profile</span>
+										<span className="ml-2 text-sm">{t("editProfile")}</span>
 									</Button>
 								</Link>
 							)}

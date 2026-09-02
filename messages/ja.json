@@ -1,9 +1,56 @@
 {
 	"StartButton": {
-		"start": "はじめる"
+		"start": "はじめる",
+		"accessibleLabel": "ログインして始める"
 	},
 	"UserMenu": {
 		"logOut": "ログアウト"
+	},
+	"MagicLinkForm": {
+		"invalidEmail": "有効なメールアドレスを入力してください",
+		"sendFailed": "マジックリンクを送信できませんでした。もう一度お試しください。",
+		"sent": "メールを送信しました",
+		"checkInbox": "受信トレイをご確認ください。",
+		"email": "メールアドレス",
+		"send": "メールを送信"
+	},
+	"GlossUnit": {
+		"ariaLabel": "{surface}の語義「{gloss}」を評価",
+		"glossLabel": "語義",
+		"voteLabel": "この語義を評価"
+	},
+	"Profile": {
+		"metadataDescription": "{name}さんのTipiṭakaプロフィール。翻訳活動を確認できます。",
+		"displayName": "表示名",
+		"profile": "プロフィール",
+		"twitterHandle": "Twitterハンドル",
+		"twitterPlaceholder": "@から入力（例: @tipitaka）",
+		"save": "保存",
+		"handle": "ハンドル",
+		"cancel": "キャンセル",
+		"edit": "編集",
+		"handleWarning": "ハンドルを変更すると:",
+		"handleEffectUpdateUrls": "ページのすべてのURLが変わります",
+		"handleEffectBreakLinks": "既存のページリンクが無効になります",
+		"handleEffectReleaseHandle": "現在のハンドルを他の人が取得できるようになります",
+		"newHandle": "新しいハンドル",
+		"editProfile": "プロフィールを編集",
+		"handlePlaceholder": "ハンドル名"
+	},
+	"Search": {
+		"inputPlaceholder": "検索...",
+		"submit": "検索",
+		"linkLabel": "ページを検索",
+		"loading": "読み込み中...",
+		"noResults": "検索結果がありません。",
+		"pagination": "検索結果のページ",
+		"previous": "前へ",
+		"next": "次へ",
+		"category": {
+			"title": "タイトル",
+			"user": "ユーザー",
+			"content": "本文"
+		}
 	},
 	"ModeToggle": {
 		"light": "ライトテーマ",
@@ -43,10 +90,10 @@
 		"otherTranslations": "他の翻訳",
 		"loading": "翻訳を読み込み中...",
 		"loadFailed": "翻訳の読み込みに失敗しました",
-		"addTranslationPlaceholder": "または自分の翻訳を入力...",
 		"submit": "送信",
 		"delete": "削除",
-		"deleting": "削除中..."
+		"deleting": "削除中...",
+		"addPlaceholder": "翻訳を入力..."
 	},
 	"FloatingControls": {
 		"view": "表示",

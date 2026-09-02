@@ -30,7 +30,7 @@ vi.mock("@tanstack/react-router", () => ({
 	),
 }));
 
-vi.mock("@sentry/react", () => ({
+vi.mock("@sentry/tanstackstart-react", () => ({
 	captureException: vi.fn(),
 }));
 

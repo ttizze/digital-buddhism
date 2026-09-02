@@ -102,26 +102,6 @@ export const importFiles = sqliteTable(
 	],
 );
 
-export const geminiApiKeys = sqliteTable(
-	"gemini_api_keys",
-	{
-		id: integer().primaryKey({ autoIncrement: true }).notNull(),
-		apiKey: text("api_key").default("").notNull(),
-		userId: text("user_id").notNull(),
-	},
-	(table) => [
-		index("gemini_api_keys_user_id_idx").on(table.userId),
-		uniqueIndex("gemini_api_keys_user_id_key").on(table.userId),
-		foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "gemini_api_keys_user_id_fkey",
-		})
-			.onUpdate("cascade")
-			.onDelete("cascade"),
-	],
-);
-
 export const importRuns = sqliteTable(
 	"import_runs",
 	{

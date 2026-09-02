@@ -1,12 +1,10 @@
-"use client";
-
-import { createContext, type ReactNode, useContext, useState } from "react";
+import { createContext, type ReactNode, useContext } from "react";
 import type { KeyedMutator } from "swr";
-import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form";
 import {
 	parseSegmentGlossVoteResponse,
 	type SegmentGlossUnit,
 } from "@/app/api/segment-glosses/_domain/segment-glosses";
+import { useVoteRequest } from "../use-vote-request";
 
 type GlossVoteContextValue = {
 	vote: (glossUnitId: number, isUpvote: boolean) => Promise<void>;
@@ -24,28 +22,12 @@ export function SegmentGlossVoteProvider({
 	locale: string;
 	mutate: KeyedMutator<SegmentGlossUnit[]>;
 }) {
-	const [votingGlossUnitId, setVotingGlossUnitId] = useState<number | null>(
-		null,
-	);
-
-	const vote = async (glossUnitId: number, isUpvote: boolean) => {
-		if (votingGlossUnitId !== null) return;
-
-		setVotingGlossUnitId(glossUnitId);
-
-		try {
-			const response = await fetchAuthedForm({
-				url: "/api/segment-glosses",
-				method: "PATCH",
-				body: {
-					glossUnitId: String(glossUnitId),
-					isUpvote: String(isUpvote),
-				},
-				locale,
-			});
-			if (!response?.ok) return;
-
-			const body = parseSegmentGlossVoteResponse(await response.json());
+	const { vote, votingTargetId: votingGlossUnitId } = useVoteRequest({
+		url: "/api/segment-glosses",
+		targetField: "glossUnitId",
+		locale,
+		parseResponse: parseSegmentGlossVoteResponse,
+		onSuccess: async (body) => {
 			await mutate(
 				(current) =>
 					current?.map((unit) =>
@@ -55,12 +37,8 @@ export function SegmentGlossVoteProvider({
 					),
 				{ revalidate: false },
 			);
-		} catch {
-			// 通信失敗時は最後にサーバーから確定した一覧を維持する。
-		} finally {
-			setVotingGlossUnitId(null);
-		}
-	};
+		},
+	});
 
 	return (
 		<GlossVoteContext.Provider value={{ vote, votingGlossUnitId }}>

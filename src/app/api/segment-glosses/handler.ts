@@ -1,17 +1,14 @@
 import * as v from "valibot";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
-import { PRIVATE_RESPONSE_HEADERS } from "@/app/api/_utils/private-response-headers";
+import {
+	positiveIntegerFromString,
+	voteValueFromString,
+} from "@/app/api/_utils/request-schemas";
 import { withAuthedFormData } from "@/app/api/_utils/with-authed-form-data";
+import { privateJsonResponse } from "@/app/api/_utils/with-authed-request";
 import { db } from "@/db";
 import { handleGlossUnitVote } from "./_db/mutation.server";
 import { parseSegmentGlossUnits } from "./_domain/segment-glosses";
-
-const positiveIntegerFromString = v.pipe(
-	v.string(),
-	v.toNumber(),
-	v.integer(),
-	v.minValue(1),
-);
 
 const getSchema = v.object({
 	pageId: positiveIntegerFromString,
@@ -20,10 +17,7 @@ const getSchema = v.object({
 
 const patchSchema = v.object({
 	glossUnitId: positiveIntegerFromString,
-	isUpvote: v.pipe(
-		v.picklist(["true", "false"]),
-		v.transform((value) => value === "true"),
-	),
+	isUpvote: voteValueFromString,
 });
 
 export async function getSegmentGlosses(request: Request): Promise<Response> {
@@ -32,7 +26,10 @@ export async function getSegmentGlosses(request: Request): Promise<Response> {
 		Object.fromEntries(new URL(request.url).searchParams),
 	);
 	if (!validation.success) {
-		return Response.json({ error: "Invalid parameters" }, { status: 400 });
+		return privateJsonResponse(
+			{ message: "Invalid parameters" },
+			{ status: 400 },
+		);
 	}
 
 	const currentUser = await getCurrentUserFromHeaders(request.headers);
@@ -71,13 +68,11 @@ export async function getSegmentGlosses(request: Request): Promise<Response> {
 			.orderBy("unit.position")
 			.execute();
 
-		return Response.json(parseSegmentGlossUnits(glossUnits), {
-			headers: PRIVATE_RESPONSE_HEADERS,
-		});
+		return privateJsonResponse(parseSegmentGlossUnits(glossUnits), {});
 	} catch (error) {
 		console.error("Error fetching segment glosses:", error);
-		return Response.json(
-			{ error: "Failed to fetch segment glosses" },
+		return privateJsonResponse(
+			{ message: "Failed to fetch segment glosses" },
 			{ status: 500 },
 		);
 	}
@@ -93,7 +88,10 @@ export async function patchSegmentGlossVote(
 			currentUser.id,
 		);
 		if (!glossUnit) {
-			return Response.json({ error: "Gloss unit not found" }, { status: 404 });
+			return Response.json(
+				{ message: "Gloss unit not found" },
+				{ status: 404 },
+			);
 		}
 
 		return Response.json({ success: true, data: { glossUnit } });

@@ -61,7 +61,7 @@ describe("fetchNotificationRowsWithRelations", () => {
 			.execute();
 
 		const notifications = await fetchNotificationRowsWithRelations(
-			recipient.handle,
+			recipient.id,
 		);
 
 		expect(notifications).toHaveLength(1);

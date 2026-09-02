@@ -135,7 +135,7 @@ function processInlineNotations(value: string): Array<Text | Html> {
 /**
  * HTML本文・属性値の両方で安全に扱えるようにエスケープ
  */
-export function escapeHtml(text: string): string {
+function escapeHtml(text: string): string {
 	return text
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")

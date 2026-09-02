@@ -1,9 +1,56 @@
 {
 	"StartButton": {
-		"start": "Empezar"
+		"start": "Empezar",
+		"accessibleLabel": "Iniciar sesión y empezar"
 	},
 	"UserMenu": {
 		"logOut": "Cerrar sesión"
+	},
+	"MagicLinkForm": {
+		"invalidEmail": "Introduce una dirección de correo válida",
+		"sendFailed": "No se pudo enviar el enlace mágico. Inténtalo de nuevo.",
+		"sent": "Correo enviado correctamente",
+		"checkInbox": "Revisa tu bandeja de entrada.",
+		"email": "Correo electrónico",
+		"send": "Enviar correo"
+	},
+	"GlossUnit": {
+		"ariaLabel": "Valorar la glosa «{gloss}» de {surface}",
+		"glossLabel": "Glosa",
+		"voteLabel": "Valorar esta glosa"
+	},
+	"Profile": {
+		"metadataDescription": "Perfil de Tipiṭaka de {name}. Consulta su actividad de traducción.",
+		"displayName": "Nombre visible",
+		"profile": "Perfil",
+		"twitterHandle": "Usuario de Twitter",
+		"twitterPlaceholder": "Empieza por @, p. ej. @tipitaka",
+		"save": "Guardar",
+		"handle": "Identificador",
+		"cancel": "Cancelar",
+		"edit": "Editar",
+		"handleWarning": "Al cambiar tu identificador:",
+		"handleEffectUpdateUrls": "Se actualizarán todas las URL de tu página",
+		"handleEffectBreakLinks": "Dejarán de funcionar los enlaces existentes a tu página",
+		"handleEffectReleaseHandle": "Otras personas podrán usar tu identificador actual",
+		"newHandle": "Nuevo identificador",
+		"editProfile": "Editar perfil",
+		"handlePlaceholder": "tu-identificador"
+	},
+	"Search": {
+		"inputPlaceholder": "Buscar...",
+		"submit": "Buscar",
+		"linkLabel": "Buscar páginas",
+		"loading": "Cargando...",
+		"noResults": "No se encontraron resultados.",
+		"pagination": "Páginas de resultados",
+		"previous": "Anterior",
+		"next": "Siguiente",
+		"category": {
+			"title": "Título",
+			"user": "Usuario",
+			"content": "Contenido"
+		}
 	},
 	"ModeToggle": {
 		"light": "Tema claro",
@@ -43,10 +90,10 @@
 		"otherTranslations": "Otras traducciones",
 		"loading": "Cargando traducciones...",
 		"loadFailed": "No se pudieron cargar las traducciones",
-		"addTranslationPlaceholder": "O escribe tu traducción...",
 		"submit": "Enviar",
 		"delete": "Eliminar",
-		"deleting": "Eliminando..."
+		"deleting": "Eliminando...",
+		"addPlaceholder": "O introduce tu traducción..."
 	},
 	"FloatingControls": {
 		"view": "Vista",

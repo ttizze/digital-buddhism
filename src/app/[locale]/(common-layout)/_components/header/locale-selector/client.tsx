@@ -1,4 +1,3 @@
-"use client";
 import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import { Check, ChevronDown } from "lucide-react";
 import { startTransition, useState } from "react";
@@ -25,7 +24,7 @@ import type { TranslationProofStatus } from "@/drizzle/types";
 import { cn } from "@/lib/utils";
 import { AddTranslateDialog } from "./add-translate-dialog/client";
 import { TranslationProofStatusIcon } from "./component/translation-proof-status-icon";
-import { TextStatusGuide } from "./component/translation-status-guide.client";
+import { TextStatusGuide } from "./component/translation-status-guide";
 import { buildLocaleOptions } from "./domain/build-locale-options";
 
 // Local types

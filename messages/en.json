@@ -1,9 +1,56 @@
 {
 	"StartButton": {
-		"start": "Start"
+		"start": "Start",
+		"accessibleLabel": "Log in and start"
 	},
 	"UserMenu": {
 		"logOut": "Log out"
+	},
+	"MagicLinkForm": {
+		"invalidEmail": "Please enter a valid email address",
+		"sendFailed": "Failed to send the magic link. Please try again.",
+		"sent": "Email sent successfully!",
+		"checkInbox": "Please check your inbox.",
+		"email": "Email",
+		"send": "Send Email"
+	},
+	"GlossUnit": {
+		"ariaLabel": "Rate the gloss “{gloss}” for {surface}",
+		"glossLabel": "Gloss",
+		"voteLabel": "Rate this gloss"
+	},
+	"Profile": {
+		"metadataDescription": "{name}'s Tipiṭaka profile. View their translation activity.",
+		"displayName": "Display Name",
+		"profile": "Profile",
+		"twitterHandle": "Twitter Handle",
+		"twitterPlaceholder": "Start with @, e.g. @tipitaka",
+		"save": "Save",
+		"handle": "Handle",
+		"cancel": "Cancel",
+		"edit": "Edit",
+		"handleWarning": "Changing your handle will:",
+		"handleEffectUpdateUrls": "Update all URLs of your page",
+		"handleEffectBreakLinks": "Break existing links to your page",
+		"handleEffectReleaseHandle": "Allow your current handle to be claimed by others",
+		"newHandle": "New handle",
+		"editProfile": "Edit Profile",
+		"handlePlaceholder": "your-handle"
+	},
+	"Search": {
+		"inputPlaceholder": "Search...",
+		"submit": "Search",
+		"linkLabel": "Search for pages",
+		"loading": "Loading...",
+		"noResults": "No results found.",
+		"pagination": "Search results pages",
+		"previous": "Previous",
+		"next": "Next",
+		"category": {
+			"title": "Title",
+			"user": "User",
+			"content": "Content"
+		}
 	},
 	"ModeToggle": {
 		"light": "Light Theme",
@@ -43,10 +90,10 @@
 		"otherTranslations": "Other translations",
 		"loading": "Loading translations...",
 		"loadFailed": "Failed to load translations",
-		"addTranslationPlaceholder": "Or enter your translation...",
 		"submit": "Submit",
 		"delete": "Delete",
-		"deleting": "Deleting..."
+		"deleting": "Deleting...",
+		"addPlaceholder": "Or enter your translation..."
 	},
 	"FloatingControls": {
 		"view": "View",

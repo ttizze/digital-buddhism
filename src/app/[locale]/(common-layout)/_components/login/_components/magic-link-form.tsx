@@ -1,18 +1,14 @@
-"use client";
-
 import { CheckCircle, Loader2 } from "lucide-react";
 import { useState, useTransition } from "react";
+import { useTranslations } from "use-intl";
 import * as v from "valibot";
 import { authClient } from "@/app/[locale]/_service/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const schema = v.object({
-	email: v.pipe(v.string(), v.email("Please enter a valid email address")),
-});
-
 export function MagicLinkForm({ redirectTo }: { redirectTo: string }) {
+	const t = useTranslations("MagicLinkForm");
 	const [email, setEmail] = useState("");
 	const [sent, setSent] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -21,16 +17,17 @@ export function MagicLinkForm({ redirectTo }: { redirectTo: string }) {
 	function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
 
-		// ── クライアント側バリデーション ──
+		const schema = v.object({
+			email: v.pipe(v.string(), v.email(t("invalidEmail"))),
+		});
 		const result = v.safeParse(schema, { email });
 		if (!result.success) {
 			setError(
-				v.flatten(result.issues).nested?.email?.[0] ?? "Invalid email address",
+				v.flatten(result.issues).nested?.email?.[0] ?? t("invalidEmail"),
 			);
 			return;
 		}
 
-		// ── 非同期処理を transition に載せる ──
 		startTransition(() =>
 			authClient.signIn
 				.magicLink({
@@ -39,7 +36,7 @@ export function MagicLinkForm({ redirectTo }: { redirectTo: string }) {
 				})
 				.then(() => setSent(true))
 				.catch((e) => {
-					setError("Failed to send magic link. Please try again.");
+					setError(t("sendFailed"));
 					throw e;
 				}),
 		);
@@ -50,11 +47,9 @@ export function MagicLinkForm({ redirectTo }: { redirectTo: string }) {
 			<div className="text-center space-y-3">
 				<div className="flex items-center justify-center gap-2">
 					<CheckCircle className="h-5 w-5 text-green-600" />
-					<p className="font-medium">Email sent successfully!</p>
+					<p className="font-medium">{t("sent")}</p>
 				</div>
-				<p className="text-sm text-muted-foreground">
-					Please check your inbox.
-				</p>
+				<p className="text-sm text-muted-foreground">{t("checkInbox")}</p>
 			</div>
 		);
 	}
@@ -62,7 +57,7 @@ export function MagicLinkForm({ redirectTo }: { redirectTo: string }) {
 	return (
 		<form className="space-y-4" onSubmit={handleSubmit}>
 			<div className="space-y-2">
-				<Label htmlFor="email">Email</Label>
+				<Label htmlFor="email">{t("email")}</Label>
 				<Input
 					autoComplete="email"
 					id="email"
@@ -80,11 +75,7 @@ export function MagicLinkForm({ redirectTo }: { redirectTo: string }) {
 				disabled={isPending}
 				type="submit"
 			>
-				{isPending ? (
-					<Loader2 className="w-4 h-4 animate-spin" />
-				) : (
-					"Send Email"
-				)}
+				{isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("send")}
 			</Button>
 		</form>
 	);

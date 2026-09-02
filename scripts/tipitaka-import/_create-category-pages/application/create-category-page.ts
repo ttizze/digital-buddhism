@@ -1,5 +1,4 @@
 import { markdownToMdastWithSegments } from "@/app/[locale]/_domain/markdown-to-mdast-with-segments";
-import { db } from "@/db";
 import { upsertPageAndSegments } from "../../application/upsert-page-and-segments";
 import { slugify } from "../../utils/slugify";
 
@@ -24,7 +23,7 @@ export async function createCategoryPage({
 	});
 
 	const slug = slugify(`tipitaka-${dirPath}`);
-	await upsertPageAndSegments({
+	const page = await upsertPageAndSegments({
 		catalogKey: slug,
 		pageSlug: slug,
 		mdastJson: mdast.mdastJson,
@@ -34,16 +33,6 @@ export async function createCategoryPage({
 		importFileId,
 		segments: mdast.segments,
 	});
-
-	const page = await db
-		.selectFrom("tipitakaPages")
-		.select("id")
-		.where("slug", "=", slug)
-		.executeTakeFirst();
-
-	if (!page) {
-		throw new Error(`Page with slug ${slug} not found`);
-	}
 
 	return page.id;
 }

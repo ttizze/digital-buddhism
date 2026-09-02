@@ -10,6 +10,12 @@ const { navigate } = vi.hoisted(() => ({
 vi.mock("@tanstack/react-router", () => ({
 	useNavigate: () => navigate,
 }));
+vi.mock("use-intl", async () => {
+	const { createEnTranslator } = await import("@/tests/en-translations");
+	return {
+		useTranslations: (namespace?: string) => createEnTranslator(namespace),
+	};
+});
 
 describe("SearchPageClient", () => {
 	beforeEach(() => {

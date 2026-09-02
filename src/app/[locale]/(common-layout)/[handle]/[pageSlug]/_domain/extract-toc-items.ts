@@ -42,8 +42,10 @@ export function extractTocItems({
 
 		const record = node;
 		if (record.type === "heading") {
-			// data-number-id 経由でセグメントを引き、目次のラベルを組み立てる。
-			const item = buildTocItem(record);
+			const number = parseDataNumberId(record);
+			const segment = number === null ? undefined : segmentsMap.get(number);
+			const anchorId = slugger.slug(segment?.text ?? extractText(record));
+			const item = buildTocItem(record, segment, anchorId);
 			if (item) items.push(item);
 		}
 
@@ -55,21 +57,21 @@ export function extractTocItems({
 		}
 	}
 
-	function buildTocItem(record: JsonObject): TocItem | null {
+	function buildTocItem(
+		record: JsonObject,
+		segment: SegmentForDetail | undefined,
+		anchorId: string,
+	): TocItem | null {
 		const depthValue = record.depth;
 		if (typeof depthValue !== "number" || depthValue > MAX_TOC_DEPTH) {
 			return null;
 		}
 		const level = depthValue;
 
-		const number = parseDataNumberId(record);
-		if (number === null) return null;
-
-		const segment = segmentsMap.get(number);
 		if (!segment?.text?.trim()) return null;
 
 		return {
-			anchorId: slugger.slug(segment.text),
+			anchorId,
 			level,
 			segment: {
 				id: segment.id,
@@ -82,11 +84,18 @@ export function extractTocItems({
 	}
 }
 
+function extractText(node: JsonValue): string {
+	if (!node || typeof node !== "object" || Array.isArray(node)) return "";
+	if (node.type === "text" && typeof node.value === "string") return node.value;
+	if (!Array.isArray(node.children)) return "";
+	return node.children.map((child) => extractText(child as JsonValue)).join("");
+}
+
 function parseDataNumberId(record: JsonObject): number | null {
 	const data = asObject(record.data);
 	const hProperties = asObject(data?.hProperties);
 	const number = Number(hProperties?.["data-number-id"]);
-	if (Number.isNaN(number)) return null;
+	if (!Number.isInteger(number)) return null;
 	return number;
 }
 

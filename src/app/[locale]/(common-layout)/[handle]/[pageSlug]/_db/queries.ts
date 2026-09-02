@@ -72,14 +72,6 @@ export async function queryPageNavigationData(
 	return { rootNode, breadcrumb };
 }
 
-export async function queryPageTreeData(
-	rootPageId: number,
-	locale: string,
-): Promise<PageTreeNode[]> {
-	const rows = await fetchDescendants(rootPageId, locale);
-	return buildPageTree(rows, rootPageId);
-}
-
 export async function queryChildPagesTree(
 	parentId: number,
 	locale: string,

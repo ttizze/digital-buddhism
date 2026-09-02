@@ -21,6 +21,12 @@ vi.mock("@/routes/$locale/-profile-edit-data", () => ({
 vi.mock("sonner", () => ({
 	toast: { success: vi.fn(), error: vi.fn() },
 }));
+vi.mock("use-intl", async () => {
+	const { createEnTranslator } = await import("@/tests/en-translations");
+	return {
+		useTranslations: (namespace?: string) => createEnTranslator(namespace),
+	};
+});
 
 describe("SettingsForm", () => {
 	beforeEach(() => {

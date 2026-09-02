@@ -106,4 +106,17 @@ describe("extractTocItems", () => {
 
 		expect(result).toEqual([]);
 	});
+
+	it("目次対象外の同名見出しも本文と同じslug採番を消費する", () => {
+		const mdast = root([headingNode(1, 5), headingNode(2, 2)]);
+		const segments = [
+			createSegment(1, "Repeated"),
+			createSegment(2, "Repeated"),
+		];
+
+		const result = extractTocItems({ mdast, segments });
+
+		expect(result).toHaveLength(1);
+		expect(result[0]?.anchorId).toBe("repeated-1");
+	});
 });

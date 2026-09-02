@@ -1,5 +1,3 @@
-"use client";
-
 import useSWR from "swr";
 import { parseSegmentGlossUnits } from "@/app/api/segment-glosses/_domain/segment-glosses";
 

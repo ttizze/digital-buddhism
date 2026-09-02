@@ -69,6 +69,15 @@ export async function consumeTranslationQueue(
 					continue;
 				}
 				if (claim.status === "busy") {
+					if (message.attempts >= MAX_QUEUE_DELIVERY_ATTEMPTS) {
+						await markJobFailed(
+							translationJobId,
+							null,
+							`Translation chunk ${chunkIndex} remained busy through the final queue delivery`,
+						);
+						message.retry();
+						continue;
+					}
 					message.retry({ delaySeconds: claim.retryAfterSeconds });
 					continue;
 				}
@@ -85,10 +94,17 @@ export async function consumeTranslationQueue(
 		} catch (error) {
 			const { translationJobId } = message.body.params;
 			if (claimedChunk) {
-				await releaseTranslationChunk({
-					...claimedChunk,
-					leaseToken: message.id,
-				});
+				try {
+					await releaseTranslationChunk({
+						...claimedChunk,
+						leaseToken: message.id,
+					});
+				} catch (releaseError) {
+					console.error("Failed to release translation chunk", {
+						...claimedChunk,
+						releaseError,
+					});
+				}
 			}
 			const rawErrorMessage =
 				error instanceof Error ? error.message : String(error);
@@ -100,11 +116,7 @@ export async function consumeTranslationQueue(
 				error,
 			});
 			if (message.attempts >= MAX_QUEUE_DELIVERY_ATTEMPTS) {
-				await markJobFailed(
-					translationJobId,
-					undefined,
-					formatErrorMessage(error),
-				);
+				await markJobFailed(translationJobId, null, formatErrorMessage(error));
 				// Do not acknowledge the final failure. Cloudflare moves it to the DLQ.
 				message.retry();
 				continue;

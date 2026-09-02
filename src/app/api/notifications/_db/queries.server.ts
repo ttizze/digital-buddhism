@@ -2,11 +2,10 @@ import type { NotificationRowsWithRelations } from "@/app/api/notifications/_typ
 import { db } from "@/db";
 
 export async function fetchNotificationRowsWithRelations(
-	currentUserHandle: string,
+	currentUserId: string,
 ): Promise<NotificationRowsWithRelations[]> {
 	return db
 		.selectFrom("notifications")
-		.innerJoin("users as userUsers", "notifications.userId", "userUsers.id")
 		.innerJoin("users as actorUsers", "notifications.actorId", "actorUsers.id")
 		.innerJoin(
 			"segmentTranslations",
@@ -32,7 +31,7 @@ export async function fetchNotificationRowsWithRelations(
 			"titleSegments.text as pageTitle",
 			"segmentTranslations.text as segmentTranslationText",
 		])
-		.where("userUsers.handle", "=", currentUserHandle)
+		.where("notifications.userId", "=", currentUserId)
 		.orderBy("notifications.createdAt", "desc")
 		.execute();
 }

@@ -63,7 +63,4 @@ export function extractTipitakaPageTree(
 	return buildChildren(rootPageId, new Set([rootPageId]));
 }
 
-export {
-	TIPITAKA_ROOT_SLUG,
-	TIPITAKA_SOURCE_LOCALE,
-} from "@/app/[locale]/_domain/tipitaka-page-visibility";
+export { TIPITAKA_ROOT_SLUG } from "@/app/[locale]/_domain/tipitaka-page-visibility";

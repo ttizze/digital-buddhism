@@ -1,4 +1,3 @@
-"use client";
 import { List } from "lucide-react";
 import { useTranslations } from "use-intl";
 import type { TocItem } from "../../_domain/extract-toc-items";

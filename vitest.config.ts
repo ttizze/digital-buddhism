@@ -11,7 +11,6 @@ export default defineConfig({
 			TURSO_DATABASE_URL: "",
 			TURSO_AUTH_TOKEN: "",
 			BETTER_AUTH_SECRET: "test-secret-at-least-thirty-two-characters",
-			VITE_AUTH_MAGIC_LINK_ENABLED: "true",
 			AUTH_RESEND_KEY: "test-resend-key",
 			// テスト環境のWorkerログレベルは logger.server.ts で "error" になる
 			// 特定のテストでログを見たい場合は、ここで明示的に設定可能
@@ -19,11 +18,6 @@ export default defineConfig({
 		},
 		environment: "jsdom",
 		setupFiles: "./vitest.setup.ts",
-		server: {
-			deps: {
-				inline: ["react-tweet"],
-			},
-		},
 	},
 	resolve: {
 		alias: {

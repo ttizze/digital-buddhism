@@ -1,8 +1,7 @@
-"use client";
-
 import { useNavigate } from "@tanstack/react-router";
 import { Edit3, FileText, SearchIcon, User } from "lucide-react";
 import { type FormEvent, useRef, useTransition } from "react";
+import { useTranslations } from "use-intl";
 import {
 	CATEGORIES,
 	type Category,
@@ -34,6 +33,7 @@ export function SearchPageClient({
 	query: string;
 }) {
 	const navigate = useNavigate();
+	const t = useTranslations("Search");
 	const [isPending, startTransition] = useTransition();
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -66,13 +66,13 @@ export function SearchPageClient({
 						className="w-full py-3 pl-4 pr-12 rounded-full border"
 						defaultValue={query}
 						name="query"
-						placeholder="Search..."
+						placeholder={t("inputPlaceholder")}
 						ref={inputRef}
 						required
 						type="search"
 					/>
 					<Button
-						aria-label="Search"
+						aria-label={t("submit")}
 						className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full"
 						size="icon"
 						type="submit"
@@ -96,7 +96,7 @@ export function SearchPageClient({
 							value={cat}
 						>
 							{renderIcon(cat)}
-							{cat.charAt(0).toUpperCase() + cat.slice(1)}
+							{t(`category.${cat}`)}
 						</TabsTrigger>
 					))}
 				</TabsList>
@@ -104,7 +104,7 @@ export function SearchPageClient({
 					<TabsContent key={cat} value={cat} />
 				))}
 			</Tabs>
-			{isPending && <p className="text-gray-400">Loading...</p>}
+			{isPending && <p className="text-gray-400">{t("loading")}</p>}
 		</div>
 	);
 }

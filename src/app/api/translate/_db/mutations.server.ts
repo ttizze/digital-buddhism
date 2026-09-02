@@ -20,15 +20,15 @@ export async function markJobCompleted(translationJobId: number) {
 
 export async function markJobFailed(
 	translationJobId: number,
-	progress?: number,
-	errorMessage?: string,
+	progress: number | null,
+	errorMessage: string,
 ) {
 	await db
 		.updateTable("translationJobs")
 		.set({
 			status: "FAILED" satisfies TranslationStatus,
-			...(progress === undefined ? {} : { progress }),
-			error: errorMessage ?? "",
+			...(progress === null ? {} : { progress }),
+			error: errorMessage,
 		})
 		.where("id", "=", translationJobId)
 		.execute();

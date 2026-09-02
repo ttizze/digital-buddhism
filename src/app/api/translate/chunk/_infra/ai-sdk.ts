@@ -5,6 +5,7 @@ import { generateObject, type FlexibleSchema, type LanguageModel } from "ai";
 import * as v from "valibot";
 import { createServerLogger } from "@/app/_service/logger.server";
 import { generateTranslationPrompt } from "./generate-translation-prompt";
+import type { TranslationModelRequest } from "./translation-model-request";
 
 const logger = createServerLogger("ai-sdk-translation");
 
@@ -21,16 +22,7 @@ const objectTranslationSchema = v.object({
 const arrayTranslationSchema = v.array(translationElementSchema);
 type TranslationElement = v.InferOutput<typeof translationElementSchema>;
 
-export interface AiSdkModelRequestParams {
-	apiKey: string;
-	model: string;
-	title: string;
-	sourceText: string;
-	targetLocale: string;
-	translationContext: string;
-}
-
-export function getOpenAIModelResponse(params: AiSdkModelRequestParams) {
+export function getOpenAIModelResponse(params: TranslationModelRequest) {
 	const openai = createOpenAI({ apiKey: params.apiKey });
 	return generateTranslationResponse({
 		params,
@@ -41,7 +33,7 @@ export function getOpenAIModelResponse(params: AiSdkModelRequestParams) {
 	});
 }
 
-export function getDeepSeekModelResponse(params: AiSdkModelRequestParams) {
+export function getDeepSeekModelResponse(params: TranslationModelRequest) {
 	const deepseek = createDeepSeek({ apiKey: params.apiKey });
 	return generateTranslationResponse({
 		params,
@@ -61,7 +53,7 @@ async function generateTranslationResponse<
 	schema,
 	unwrap,
 }: {
-	params: AiSdkModelRequestParams;
+	params: TranslationModelRequest;
 	model: LanguageModel;
 	provider: string;
 	schema: TSchema;

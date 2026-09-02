@@ -6,7 +6,7 @@ export const Route = createFileRoute("/$locale/maintenance")({
 	component: MaintenancePage,
 	head: () =>
 		buildStaticHead({
-			title: "Site Under Maintenance | MySite",
+			title: "Site Under Maintenance | Digital Buddhism",
 			description:
 				"We're performing scheduled maintenance. Please check back soon.",
 			robots: { index: false, follow: false },

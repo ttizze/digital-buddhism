@@ -3,7 +3,6 @@ import handler from "@tanstack/react-start/server-entry";
 import { projectPendingTipitakaReadModels } from "./app/[locale]/_infrastructure/tipitaka-read-model/jobs.server";
 import {
 	createKvReadModelStore,
-	type KvNamespaceBinding,
 	runWithTipitakaReadModelStore,
 } from "./app/[locale]/_infrastructure/tipitaka-read-model/store";
 import { runWithTranslationQueue } from "./app/[locale]/_infrastructure/translation-queue/context.server";
@@ -11,16 +10,8 @@ import {
 	consumeTranslationQueue,
 	type TranslationQueueBatch,
 } from "./app/api/translate/queue-consumer.server";
-import type { TranslationQueueBinding } from "./app/api/translate/types";
 import { runWithDatabaseRequestContext } from "./db/request-context";
 
-type WorkerEnv = {
-	SENTRY_DSN?: string;
-	TURSO_DATABASE_URL?: string;
-	TURSO_AUTH_TOKEN?: string;
-	TIPITAKA_READ_MODELS: KvNamespaceBinding;
-	TRANSLATION_QUEUE: TranslationQueueBinding;
-};
 type WorkerExecutionContext = {
 	waitUntil(promise: Promise<unknown>): void;
 };
@@ -29,7 +20,7 @@ type DefaultCacheStorage = CacheStorage & {
 	default?: Cache;
 };
 
-function runTipitakaProjector(env: WorkerEnv): Promise<number> {
+function runTipitakaProjector(env: CloudflareBindings): Promise<number> {
 	return runWithTipitakaReadModelStore(
 		createKvReadModelStore(env.TIPITAKA_READ_MODELS),
 		() =>
@@ -46,7 +37,7 @@ function runTipitakaProjector(env: WorkerEnv): Promise<number> {
 const workerEntry = {
 	async fetch(
 		request: Request,
-		env: WorkerEnv,
+		env: CloudflareBindings,
 		ctx: WorkerExecutionContext | undefined,
 	) {
 		const cache =
@@ -104,14 +95,14 @@ const workerEntry = {
 	},
 	async scheduled(
 		_controller: unknown,
-		env: WorkerEnv,
+		env: CloudflareBindings,
 		ctx: WorkerExecutionContext,
 	) {
 		ctx.waitUntil(runTipitakaProjector(env));
 	},
 	async queue(
 		batch: TranslationQueueBatch,
-		env: WorkerEnv,
+		env: CloudflareBindings,
 		ctx: WorkerExecutionContext,
 	) {
 		await runWithTranslationQueue(env.TRANSLATION_QUEUE, () =>
@@ -127,7 +118,7 @@ const workerEntry = {
 	},
 };
 
-export default Sentry.withSentry<WorkerEnv>(
+export default Sentry.withSentry<CloudflareBindings>(
 	(env) => ({
 		dsn: env.SENTRY_DSN,
 		tracesSampleRate: 0.2,

@@ -2,7 +2,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { markdownToMdastWithSegments } from "@/app/[locale]/_domain/markdown-to-mdast-with-segments";
-import { db } from "@/db";
 import { upsertPageAndSegments } from "../../application/upsert-page-and-segments";
 import { ROOT_SLUG, ROOT_TITLE } from "../../utils/constants";
 
@@ -16,7 +15,7 @@ export async function ensureRootPage(): Promise<number> {
 		markdown: markdownContent,
 	});
 
-	await upsertPageAndSegments({
+	const page = await upsertPageAndSegments({
 		catalogKey: ROOT_SLUG,
 		pageSlug: ROOT_SLUG,
 		mdastJson: parsed.mdastJson,
@@ -26,16 +25,6 @@ export async function ensureRootPage(): Promise<number> {
 		importFileId: null,
 		segments: parsed.segments,
 	});
-
-	const page = await db
-		.selectFrom("tipitakaPages")
-		.select("id")
-		.where("slug", "=", ROOT_SLUG)
-		.executeTakeFirst();
-
-	if (!page) {
-		throw new Error(`Page with slug ${ROOT_SLUG} not found`);
-	}
 
 	return page.id;
 }

@@ -5,10 +5,12 @@ if (!process.env.LOG_LEVEL) {
 	process.env.LOG_LEVEL = "debug";
 }
 
-import { publishTipitakaReadModelsWithWrangler } from "./tipitaka-import/application/publish-read-model";
-import { runTipitakaImport } from "./tipitaka-import/run";
-
 async function main(): Promise<void> {
+	const [{ publishTipitakaReadModelsWithWrangler }, { runTipitakaImport }] =
+		await Promise.all([
+			import("./tipitaka-import/application/publish-read-model"),
+			import("./tipitaka-import/run"),
+		]);
 	await runTipitakaImport();
 	await publishTipitakaReadModelsWithWrangler(
 		process.argv.includes("--remote-read-model"),

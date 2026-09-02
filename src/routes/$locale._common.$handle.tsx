@@ -1,6 +1,6 @@
 import { ClientOnly, createFileRoute, notFound } from "@tanstack/react-router";
 import * as v from "valibot";
-import { FloatingControls } from "@/app/[locale]/(common-layout)/_components/floating-controls/floating-controls.client";
+import { FloatingControls } from "@/app/[locale]/(common-layout)/_components/floating-controls/floating-controls";
 import { getProfileMetadata } from "@/app/[locale]/(common-layout)/[handle]/metadata";
 import { ProfilePagePresentation } from "@/app/[locale]/(common-layout)/[handle]/presentation";
 import { getHandleData } from "./$locale/-handle-data";

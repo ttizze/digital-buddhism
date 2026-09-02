@@ -1,17 +1,12 @@
-"use client";
-
-import { useRouter } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { Loader2, SaveIcon } from "lucide-react";
-import { type FormEvent, useState, useTransition } from "react";
+import { useState } from "react";
+import { useTranslations } from "use-intl";
 import { BASE_URL } from "@/app/_constants/base-url";
 import type { SanitizedUser } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { updateProfile } from "@/routes/$locale/-profile-edit-data";
-import type { ProfileEditState } from "../_service/profile-edit";
-import { notifyEditState } from "./notify-edit-state";
+import { useProfileEditForm } from "./use-profile-edit-form";
 
 interface SettingsFormProps {
 	currentUser: SanitizedUser;
@@ -19,54 +14,19 @@ interface SettingsFormProps {
 }
 
 export function SettingsForm({ currentUser, locale }: SettingsFormProps) {
-	const router = useRouter();
-	const updateProfileFn = useServerFn(updateProfile);
+	const t = useTranslations("Profile");
 	const [showHandleInput, setShowHandleInput] = useState(false);
-	const [isEditPending, startEditTransition] = useTransition();
-	const [editState, setEditState] = useState<ProfileEditState>({
-		success: true,
-		data: {
-			name: currentUser.name,
-		},
-	});
-
-	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		const formData = new FormData(event.currentTarget);
-		if (!formData.has("handle")) {
-			formData.set("handle", currentUser.handle);
-		}
-		formData.set("locale", locale);
-		startEditTransition(() => {
-			void (async () => {
-				const result = await updateProfileFn({ data: formData });
-				setEditState(result);
-				notifyEditState(result);
-				if (result.success) {
-					await router.invalidate({ sync: true });
-				}
-			})();
-		});
-	};
+	const { editState, handleSubmit, isEditPending } = useProfileEditForm(
+		currentUser,
+		locale,
+	);
 
 	return (
 		<form className="space-y-4" onSubmit={handleSubmit}>
-			<input name="name" type="hidden" value={currentUser.name} />
-			{currentUser.profile && (
-				<input name="profile" type="hidden" value={currentUser.profile} />
-			)}
-			{currentUser.twitterHandle && (
-				<input
-					name="twitterHandle"
-					type="hidden"
-					value={currentUser.twitterHandle}
-				/>
-			)}
-
 			<div className="space-y-4">
 				<div>
 					<Label className="text-base font-medium mb-2 block" htmlFor="handle">
-						Handle
+						{t("handle")}
 					</Label>
 					<div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-3">
 						<div className="flex items-center justify-between">
@@ -78,24 +38,24 @@ export function SettingsForm({ currentUser, locale }: SettingsFormProps) {
 								type="button"
 								variant="outline"
 							>
-								{showHandleInput ? "Cancel" : "Edit"}
+								{showHandleInput ? t("cancel") : t("edit")}
 							</Button>
 						</div>
 
 						{showHandleInput && (
 							<div className="space-y-3">
 								<div className="space-y-1 text-sm text-amber-500">
-									<p>⚠️ Important: Changing your handle will:</p>
+									<p>⚠️ {t("handleWarning")}</p>
 									<ul className="list-disc list-inside pl-4 space-y-1">
-										<li>Update all URLs of your page</li>
-										<li>Break existing links to your page</li>
-										<li>Allow your current handle to be claimed by others</li>
+										<li>{t("handleEffectUpdateUrls")}</li>
+										<li>{t("handleEffectBreakLinks")}</li>
+										<li>{t("handleEffectReleaseHandle")}</li>
 									</ul>
 								</div>
 
 								<div className="space-y-2">
 									<Label className="text-sm font-medium" htmlFor="handle-input">
-										New handle
+										{t("newHandle")}
 									</Label>
 									<div className="flex items-center gap-2">
 										<code className="text-sm text-gray-600 dark:text-gray-400">
@@ -108,7 +68,7 @@ export function SettingsForm({ currentUser, locale }: SettingsFormProps) {
 											maxLength={25}
 											minLength={3}
 											name="handle"
-											placeholder="your-handle"
+											placeholder={t("handlePlaceholder")}
 											required
 										/>
 									</div>
@@ -130,7 +90,7 @@ export function SettingsForm({ currentUser, locale }: SettingsFormProps) {
 				) : (
 					<span className="flex items-center gap-2">
 						<SaveIcon className="w-6 h-6" />
-						Save
+						{t("save")}
 					</span>
 				)}
 			</Button>
