@@ -17,13 +17,19 @@ vi.mock("@tanstack/react-router", () => ({
 	),
 }));
 
-vi.mock("./translation-help-popover.client", () => ({
+vi.mock("./translation-help-popover", () => ({
 	TranslationHelpPopover: () => <button type="button">Help</button>,
 }));
 
-vi.mock("./user-slot.client", () => ({
+vi.mock("./user-slot-controls", () => ({
 	HeaderUserControls: () => <button type="button">User menu</button>,
 }));
+vi.mock("use-intl", async () => {
+	const { createEnTranslator } = await import("@/tests/en-translations");
+	return {
+		useTranslations: (namespace?: string) => createEnTranslator(namespace),
+	};
+});
 
 describe("HeaderUserSlot", () => {
 	it("SSRでもヘッダー操作とセッション読込表示を出力する", () => {

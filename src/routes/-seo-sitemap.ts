@@ -15,6 +15,7 @@ import {
 const CHUNK = 1_000;
 
 const SITEMAP_REVALIDATE = 3600;
+const SITEMAP_STALE_WHILE_REVALIDATE = 86400;
 
 export async function getSitemapChunkCount() {
 	const total = await countPublicPages();
@@ -30,17 +31,17 @@ export async function generateSitemapEntries(id: number) {
 	const supportedLocales = MESSAGE_LOCALES;
 	const defaultLocale = DEFAULT_MESSAGE_LOCALE;
 
-	const staticPaths = ["/", "/search"];
+	const staticPaths = id === 0 ? ["/search"] : [];
 	const staticRoutes = staticPaths.map((route) => ({
-		url: `${BASE_URL}/${defaultLocale}${route === "/" ? "" : route}`,
+		url: `${BASE_URL}/${defaultLocale}${route}`,
 		lastModified: new Date(),
 		changeFrequency: "monthly" as const,
-		priority: route === "/" ? 1 : 0.8,
+		priority: 0.8,
 		alternates: {
 			languages: Object.fromEntries(
 				supportedLocales.map((locale) => [
 					locale,
-					`${BASE_URL}/${locale}${route === "/" ? "" : route}`,
+					`${BASE_URL}/${locale}${route}`,
 				]),
 			),
 		},
@@ -102,7 +103,8 @@ export async function generateSitemapResponse(id: number) {
 	return new Response(serializeSitemap(entries), {
 		headers: {
 			"Content-Type": "application/xml",
-			"Cache-Control": `public, max-age=0, s-maxage=${SITEMAP_REVALIDATE}, stale-while-revalidate=86400`,
+			"Cache-Control": `public, max-age=0, s-maxage=${SITEMAP_REVALIDATE}, stale-while-revalidate=${SITEMAP_STALE_WHILE_REVALIDATE}`,
+			"CDN-Cache-Control": `max-age=${SITEMAP_REVALIDATE}, stale-while-revalidate=${SITEMAP_STALE_WHILE_REVALIDATE}`,
 		},
 	});
 }

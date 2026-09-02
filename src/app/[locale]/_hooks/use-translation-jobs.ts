@@ -14,11 +14,9 @@ const fetcher = async (url: string): Promise<TranslationJobForToast[]> => {
 };
 const isTerminalJob = (job: TranslationJobForToast) =>
 	isTranslationJobTerminalStatus(job.status);
+const POLL_INTERVAL_MS = 3000;
 
-export function useTranslationJobs(
-	initial: TranslationJobForToast[],
-	interval = 3000,
-) {
+export function useTranslationJobs(initial: TranslationJobForToast[]) {
 	const ids = initial.map((j) => j.id);
 	const key = ids.length
 		? `/api/translation-jobs?${ids.map((id) => `id=${id}`).join("&")}`
@@ -27,8 +25,8 @@ export function useTranslationJobs(
 	const { data } = useSWR<TranslationJobForToast[]>(key, fetcher, {
 		refreshInterval: (latest) => {
 			// latestがundefinedの場合もポーリングを継続
-			if (!latest) return interval;
-			return latest.every(isTerminalJob) ? 0 : interval;
+			if (!latest) return POLL_INTERVAL_MS;
+			return latest.every(isTerminalJob) ? 0 : POLL_INTERVAL_MS;
 		},
 		fallbackData: initial,
 		// タブが非アクティブでも更新を継続
@@ -37,7 +35,7 @@ export function useTranslationJobs(
 		revalidateOnFocus: true,
 		// エラー時も再試行を継続
 		errorRetryCount: 10,
-		errorRetryInterval: interval,
+		errorRetryInterval: POLL_INTERVAL_MS,
 	});
 
 	const allDone = data?.every(isTerminalJob) ?? false;

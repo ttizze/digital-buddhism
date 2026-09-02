@@ -12,10 +12,6 @@ const MODEL_MAX_CHUNK_SIZES: Record<string, number> = {
 	"gemini-3.7-flash": 30000,
 	"gemini-3.1-pro-preview": 30000,
 	"gemini-3.1-flash-lite": 30000,
-	// Existing queued jobs can still contain these model IDs.
-	"gemini-2.5-flash": 30000,
-	"gemini-2.5-flash-lite": 30000,
-	"gemini-2.0-flash": 10000,
 };
 
 export function getMaxChunkSizeForModel(model: string): number {

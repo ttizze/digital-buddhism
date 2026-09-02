@@ -23,11 +23,17 @@ describe("TanStack StartのSEOルート生成", () => {
 
 	it("表示ページがなくてもサイトマップを1チャンクにする", async () => {
 		expect(await getSitemapChunkCount()).toBe(1);
-		expect(await (await generateRobotsResponse()).text()).toMatch(
+		const robotsResponse = await generateRobotsResponse();
+		expect(await robotsResponse.text()).toMatch(/\/sitemap\/sitemap\/0\.xml/);
+		expect(robotsResponse.headers.get("CDN-Cache-Control")).toBe(
+			"max-age=36000, stale-while-revalidate=86400",
+		);
+		const sitemapIndexResponse = await generateSitemapIndexResponse();
+		expect(await sitemapIndexResponse.text()).toMatch(
 			/\/sitemap\/sitemap\/0\.xml/,
 		);
-		expect(await (await generateSitemapIndexResponse()).text()).toMatch(
-			/\/sitemap\/sitemap\/0\.xml/,
+		expect(sitemapIndexResponse.headers.get("CDN-Cache-Control")).toBe(
+			"max-age=3600, stale-while-revalidate=86400",
 		);
 	});
 
@@ -41,6 +47,11 @@ describe("TanStack StartのSEOルート生成", () => {
 		expect(await countPublicPages()).toBe(2);
 		const entries = await generateSitemapEntries(0);
 		expect(entries.some((entry) => entry.url.includes("/stored"))).toBe(true);
+		expect(entries.some((entry) => entry.url.endsWith("/en"))).toBe(false);
+		expect(entries.some((entry) => entry.url.endsWith("/en/search"))).toBe(
+			true,
+		);
+		expect(await generateSitemapEntries(1)).toEqual([]);
 	});
 
 	it("Tipitaka固定URLとXMLレスポンスを生成する", async () => {
@@ -55,6 +66,9 @@ describe("TanStack StartのSEOルート生成", () => {
 		expect(response.headers.get("Content-Type")).toContain("application/xml");
 		expect(response.headers.get("Cache-Control")).toBe(
 			"public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+		);
+		expect(response.headers.get("CDN-Cache-Control")).toBe(
+			"max-age=3600, stale-while-revalidate=86400",
 		);
 		expect(await response.text()).toContain("/pi/tipitaka/my-page");
 	});

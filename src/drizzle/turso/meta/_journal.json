@@ -93,19 +93,26 @@
       "tag": "0012_workable_shooting_star",
       "breakpoints": true
     },
-		{
-			"idx": 13,
-			"version": "6",
-			"when": 1788253679695,
-			"tag": "0013_translation_chunk_runs",
-			"breakpoints": true
-		},
-		{
-			"idx": 14,
-			"version": "6",
-			"when": 1788254300411,
-			"tag": "0014_restore_segment_gloss_tables",
-			"breakpoints": true
-		}
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1788253679695,
+      "tag": "0013_translation_chunk_runs",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1788254300411,
+      "tag": "0014_restore_segment_gloss_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1788343359469,
+      "tag": "0015_abnormal_morph",
+      "breakpoints": true
+    }
   ]
 }

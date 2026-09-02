@@ -1,5 +1,5 @@
-"use client";
 import type { ReactNode } from "react";
+import { useTranslations } from "use-intl";
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
 import type { TocItem } from "../../_domain/extract-toc-items";
 import { TreeList, type TreeNode, TreeNodeItem } from "../tree-list";
@@ -33,10 +33,11 @@ const renderNode = (node: TocTreeItem): ReactNode => {
 };
 
 export default function Toc({ items }: { items: TocItem[] }) {
+	const t = useTranslations("PageNavigation");
 	const nodes = buildTocTree(items);
 
 	return (
-		<nav aria-label="Table of contents" data-testid="toc">
+		<nav aria-label={t("tocTitle")} data-testid="toc">
 			<TreeList>{nodes.map(renderNode)}</TreeList>
 		</nav>
 	);

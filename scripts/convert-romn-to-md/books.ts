@@ -26,7 +26,7 @@ const booksData = loadBooksJson();
 function loadBooksJson(): Record<string, BookData> {
 	if (!fs.existsSync(BOOKS_JSON_PATH)) {
 		throw new Error(
-			`books.json が存在しません。gen-books-data.mjs を実行してから再度お試しください: ${BOOKS_JSON_PATH}`,
+			`books.json が存在しません。gen-books-data.ts を実行してから再度お試しください: ${BOOKS_JSON_PATH}`,
 		);
 	}
 	const raw = fs.readFileSync(BOOKS_JSON_PATH, "utf8");

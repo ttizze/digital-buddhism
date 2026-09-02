@@ -1,5 +1,3 @@
-"use client";
-
 import { ListTree, LoaderCircle } from "lucide-react";
 import useSWR from "swr";
 import { useTranslations } from "use-intl";
@@ -30,7 +28,7 @@ function PageTreeContent({
 	);
 
 	return (
-		<nav aria-label="Page tree">
+		<nav aria-label={t("pageTreeTitle")}>
 			<div className="mb-2 text-sm font-medium">
 				<PageTreeLink locale={locale} node={rootNode} />
 			</div>

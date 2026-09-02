@@ -20,7 +20,7 @@ export function normalizeTagName(tagName: string): string {
 
 // 目的: 属性値を HTML/Markdown に安全に埋め込めるようエスケープする。
 // 処理: 特殊文字をエンティティに置換し、安全な文字列を返す。
-export function escapeHtmlAttributeValue(value: string): string {
+function escapeHtmlAttributeValue(value: string): string {
 	return value
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
@@ -31,7 +31,7 @@ export function escapeHtmlAttributeValue(value: string): string {
 
 // 目的: 属性配列を HTML 互換の文字列へまとめる。
 // 処理: 名前と値をエスケープして連結し、既定の前後スペースを付与する。
-export function stringifyAttributes(attrs: Attr[]): string {
+function stringifyAttributes(attrs: Attr[]): string {
 	return attrs
 		.map(({ name, value }) => ` ${name}="${escapeHtmlAttributeValue(value)}"`)
 		.join("");
@@ -98,22 +98,6 @@ export function renderInlineElementToString(element: Element): string {
 	}
 	const content = renderInlineChildren(element);
 	return `<${tag}${attrsString}>${content}</${tag}>`;
-}
-
-// 目的: ノード配下からテキストのみを抽出し、空白を圧縮して返す。
-// 処理: 再帰的に子ノードを走査し、テキストを連結してトリムする。
-export function extractTextContent(node: Node): string {
-	if (node.nodeType === TEXT_NODE) {
-		return node.nodeValue ?? "";
-	}
-	if (node.nodeType === ELEMENT_NODE) {
-		let text = "";
-		for (let child = node.firstChild; child; child = child.nextSibling) {
-			text += extractTextContent(child);
-		}
-		return text;
-	}
-	return "";
 }
 
 function renderInlineNodeToString(node: Node): string {

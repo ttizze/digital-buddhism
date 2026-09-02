@@ -3,6 +3,8 @@ import { getSitemapChunkCount } from "./-seo-sitemap";
 
 const SITEMAP_INDEX_CACHE_CONTROL =
 	"public, max-age=0, s-maxage=3600, stale-while-revalidate=86400";
+const SITEMAP_INDEX_CDN_CACHE_CONTROL =
+	"max-age=3600, stale-while-revalidate=86400";
 
 export async function generateSitemapIndexResponse() {
 	const chunks = await getSitemapChunkCount();
@@ -21,6 +23,7 @@ export async function generateSitemapIndexResponse() {
 		headers: {
 			"Content-Type": "application/xml",
 			"Cache-Control": SITEMAP_INDEX_CACHE_CONTROL,
+			"CDN-Cache-Control": SITEMAP_INDEX_CDN_CACHE_CONTROL,
 		},
 	});
 }

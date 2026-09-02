@@ -43,6 +43,7 @@ describe("TranslationListItem", () => {
 		const { container } = render(
 			<TranslationListItem
 				isVoting={false}
+				locale="en"
 				onVote={vi.fn()}
 				translation={translation}
 			/>,

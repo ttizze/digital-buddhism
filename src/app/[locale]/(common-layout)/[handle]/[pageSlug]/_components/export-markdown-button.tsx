@@ -1,5 +1,3 @@
-"use client";
-
 import { DownloadIcon } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";

@@ -7,7 +7,7 @@ export type AuthDeps = {
 	getCurrentUser: typeof getCurrentUser;
 	parseFormData: typeof parseFormData;
 };
-export const authDefaultDeps: AuthDeps = {
+const authDefaultDeps: AuthDeps = {
 	getCurrentUser,
 	parseFormData,
 };

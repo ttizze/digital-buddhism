@@ -1,11 +1,10 @@
 import type * as v from "valibot";
-import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
 import { parseFormData } from "@/app/[locale]/_utils/parse-form-data";
-import { isSameOriginRequest } from "./is-same-origin-request";
-
-type CurrentUser = NonNullable<
-	Awaited<ReturnType<typeof getCurrentUserFromHeaders>>
->;
+import {
+	type ApiCurrentUser,
+	privateJsonResponse,
+	withAuthedRequest,
+} from "./with-authed-request";
 
 /**
  * フォーム変更系APIの共通前処理:
@@ -17,35 +16,31 @@ export async function withAuthedFormData<Schema extends v.GenericSchema>(
 	schema: Schema,
 	handler: (
 		data: v.InferOutput<Schema>,
-		currentUser: CurrentUser,
+		currentUser: ApiCurrentUser,
 	) => Promise<Response>,
 ): Promise<Response> {
-	if (!isSameOriginRequest(request)) {
-		return Response.json({ error: "Forbidden" }, { status: 403 });
-	}
+	return withAuthedRequest(request, async (currentUser) => {
+		let formData: FormData;
+		try {
+			formData = await request.formData();
+		} catch {
+			return privateJsonResponse(
+				{ message: "Invalid form data" },
+				{ status: 400 },
+			);
+		}
 
-	const currentUser = await getCurrentUserFromHeaders(request.headers);
-	if (!currentUser) {
-		return Response.json({ error: "Unauthorized" }, { status: 401 });
-	}
+		const parsed = parseFormData(schema, formData);
+		if (!parsed.success) {
+			return privateJsonResponse(
+				{
+					message: "Invalid form data",
+					validationErrors: parsed.validationErrors,
+				},
+				{ status: 400 },
+			);
+		}
 
-	let formData: FormData;
-	try {
-		formData = await request.formData();
-	} catch {
-		return Response.json({ error: "Invalid form data" }, { status: 400 });
-	}
-
-	const parsed = parseFormData(schema, formData);
-	if (!parsed.success) {
-		return Response.json(
-			{
-				error: "Invalid form data",
-				validationErrors: parsed.validationErrors,
-			},
-			{ status: 400 },
-		);
-	}
-
-	return handler(parsed.data, currentUser);
+		return handler(parsed.data, currentUser);
+	});
 }

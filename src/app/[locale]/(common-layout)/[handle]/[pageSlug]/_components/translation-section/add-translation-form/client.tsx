@@ -1,4 +1,3 @@
-"use client";
 import { ArrowUpFromLine } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
@@ -48,13 +47,11 @@ export function AddTranslationForm({
 			});
 			if (!response) return;
 
-			const body = (await response.json()) as ActionResponse & {
-				error?: string;
-			};
+			const body = (await response.json()) as ActionResponse;
 			if (!response.ok) {
 				setAddTranslationState({
 					success: false,
-					message: body.message ?? body.error,
+					message: body.message,
 					validationErrors:
 						"validationErrors" in body ? body.validationErrors : undefined,
 				});
@@ -85,7 +82,7 @@ export function AddTranslationForm({
 						disabled={!currentUser}
 						minRows={3}
 						name="text"
-						placeholder="Or enter your translation..."
+						placeholder={t("addPlaceholder")}
 						required
 					/>
 					{!currentUser && (

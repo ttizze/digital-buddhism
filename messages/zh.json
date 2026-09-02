@@ -1,9 +1,56 @@
 {
 	"StartButton": {
-		"start": "开始"
+		"start": "开始",
+		"accessibleLabel": "登录并开始"
 	},
 	"UserMenu": {
 		"logOut": "退出登录"
+	},
+	"MagicLinkForm": {
+		"invalidEmail": "请输入有效的电子邮箱地址",
+		"sendFailed": "魔法链接发送失败，请重试。",
+		"sent": "邮件已发送",
+		"checkInbox": "请检查收件箱。",
+		"email": "电子邮箱",
+		"send": "发送邮件"
+	},
+	"GlossUnit": {
+		"ariaLabel": "评价{surface}的词义“{gloss}”",
+		"glossLabel": "词义",
+		"voteLabel": "评价此词义"
+	},
+	"Profile": {
+		"metadataDescription": "{name}的Tipiṭaka个人资料，可查看其翻译活动。",
+		"displayName": "显示名称",
+		"profile": "个人资料",
+		"twitterHandle": "Twitter用户名",
+		"twitterPlaceholder": "以@开头，例如@tipitaka",
+		"save": "保存",
+		"handle": "用户标识",
+		"cancel": "取消",
+		"edit": "编辑",
+		"handleWarning": "更改用户标识将会：",
+		"handleEffectUpdateUrls": "更新你页面的所有网址",
+		"handleEffectBreakLinks": "使现有页面链接失效",
+		"handleEffectReleaseHandle": "允许其他人使用你当前的用户标识",
+		"newHandle": "新用户标识",
+		"editProfile": "编辑个人资料",
+		"handlePlaceholder": "你的用户标识"
+	},
+	"Search": {
+		"inputPlaceholder": "搜索...",
+		"submit": "搜索",
+		"linkLabel": "搜索页面",
+		"loading": "加载中...",
+		"noResults": "未找到结果。",
+		"pagination": "搜索结果页面",
+		"previous": "上一页",
+		"next": "下一页",
+		"category": {
+			"title": "标题",
+			"user": "用户",
+			"content": "内容"
+		}
 	},
 	"ModeToggle": {
 		"light": "浅色主题",
@@ -43,10 +90,10 @@
 		"otherTranslations": "其他翻译",
 		"loading": "正在加载翻译...",
 		"loadFailed": "翻译加载失败",
-		"addTranslationPlaceholder": "或输入您的翻译...",
 		"submit": "提交",
 		"delete": "删除",
-		"deleting": "删除中..."
+		"deleting": "删除中...",
+		"addPlaceholder": "或输入你的翻译..."
 	},
 	"FloatingControls": {
 		"view": "视图",

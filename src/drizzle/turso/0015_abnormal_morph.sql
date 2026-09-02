@@ -1,0 +1,1 @@
+DROP TABLE `gemini_api_keys`;

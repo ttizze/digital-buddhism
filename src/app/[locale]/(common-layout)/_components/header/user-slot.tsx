@@ -1,20 +1,22 @@
 import { ClientOnly, Link } from "@tanstack/react-router";
 import { CircleHelp, Search } from "lucide-react";
 import { lazy, Suspense } from "react";
+import { useTranslations } from "use-intl";
 import { HeaderUserControlsLoading } from "./user-controls-loading";
 
 const TranslationHelpPopover = lazy(() =>
-	import("./translation-help-popover.client").then((module) => ({
+	import("./translation-help-popover").then((module) => ({
 		default: module.TranslationHelpPopover,
 	})),
 );
 const HeaderUserControls = lazy(() =>
-	import("./user-slot.client").then((module) => ({
+	import("./user-slot-controls").then((module) => ({
 		default: module.HeaderUserControls,
 	})),
 );
 
 export function HeaderUserSlot({ locale }: { locale: string }) {
+	const t = useTranslations("Search");
 	return (
 		<div className="flex items-center gap-4">
 			<ClientOnly
@@ -27,7 +29,7 @@ export function HeaderUserSlot({ locale }: { locale: string }) {
 				</Suspense>
 			</ClientOnly>
 			<Link
-				aria-label="Search for pages"
+				aria-label={t("linkLabel")}
 				params={{ locale }}
 				preload={false}
 				to="/$locale/search"

@@ -28,6 +28,13 @@ export async function getTranslatedText(
 
 	// モデル名からproviderを判定
 	const provider = getProviderFromModel(aiModel);
+	const request = {
+		model: aiModel,
+		title,
+		sourceText,
+		targetLocale: targetLocaleName,
+		translationContext,
+	};
 
 	if (provider === "openai") {
 		const openaiApiKey = env.OPENAI_API_KEY;
@@ -37,12 +44,8 @@ export async function getTranslatedText(
 			);
 		}
 		return await getOpenAIModelResponse({
+			...request,
 			apiKey: openaiApiKey,
-			model: aiModel,
-			title,
-			sourceText,
-			targetLocale: targetLocaleName,
-			translationContext,
 		});
 	}
 
@@ -55,12 +58,8 @@ export async function getTranslatedText(
 			);
 		}
 		return await getDeepSeekModelResponse({
+			...request,
 			apiKey: deepseekApiKey,
-			model: aiModel,
-			title,
-			sourceText,
-			targetLocale: targetLocaleName,
-			translationContext,
 		});
 	}
 
@@ -71,11 +70,7 @@ export async function getTranslatedText(
 		);
 	}
 	return await getGeminiModelResponse({
+		...request,
 		apiKey: geminiApiKey,
-		model: aiModel,
-		title,
-		sourceText,
-		targetLocale: targetLocaleName,
-		translationContext,
 	});
 }

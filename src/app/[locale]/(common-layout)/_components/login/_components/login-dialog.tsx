@@ -1,5 +1,3 @@
-"use client";
-
 import { Link, useLocation } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 import { useLocale, useTranslations } from "use-intl";

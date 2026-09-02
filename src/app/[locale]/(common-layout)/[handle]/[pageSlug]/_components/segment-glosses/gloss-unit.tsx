@@ -1,6 +1,5 @@
-"use client";
-
 import type { ReactNode } from "react";
+import { useLocale, useTranslations } from "use-intl";
 import type { SegmentGlossUnit } from "@/app/api/segment-glosses/_domain/segment-glosses";
 import {
 	Popover,
@@ -18,12 +17,17 @@ export function GlossUnit({
 	unit: SegmentGlossUnit;
 }) {
 	const { vote, votingGlossUnitId } = useSegmentGlossVote();
+	const locale = useLocale();
+	const t = useTranslations("GlossUnit");
 
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
 				<button
-					aria-label={`${unit.surface}の語義「${unit.gloss}」を評価`}
+					aria-label={t("ariaLabel", {
+						surface: unit.surface,
+						gloss: unit.gloss,
+					})}
 					className="inline cursor-pointer appearance-none rounded-sm border-0 bg-transparent p-0 [color:inherit] [font:inherit] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
 					data-gloss-unit-id={unit.id}
 					type="button"
@@ -33,7 +37,7 @@ export function GlossUnit({
 						<rp>（</rp>
 						<rt
 							className="select-none text-[0.55em] leading-none opacity-70"
-							lang="ja"
+							lang={locale}
 						>
 							{unit.gloss}
 						</rt>
@@ -46,13 +50,17 @@ export function GlossUnit({
 					<p className="m-0 text-base" lang="pi">
 						{unit.surface}
 					</p>
-					<p className="m-0 mt-1 text-xs text-muted-foreground">語義</p>
-					<p className="m-0" lang="ja">
+					<p className="m-0 mt-1 text-xs text-muted-foreground">
+						{t("glossLabel")}
+					</p>
+					<p className="m-0" lang={locale}>
 						{unit.gloss}
 					</p>
 				</div>
 				<div className="flex items-center justify-between border-t pt-2">
-					<span className="text-xs text-muted-foreground">この語義を評価</span>
+					<span className="text-xs text-muted-foreground">
+						{t("voteLabel")}
+					</span>
 					<VoteButtons
 						isVoting={votingGlossUnitId === unit.id}
 						onVote={vote}

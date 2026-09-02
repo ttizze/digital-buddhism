@@ -4,8 +4,10 @@ import { queryPageDetail } from "@/app/[locale]/_db/queries";
 
 const OG_CACHE_CONTROL =
 	"public, max-age=0, s-maxage=86400, stale-while-revalidate=604800";
+const OG_CDN_CACHE_CONTROL = "max-age=86400, stale-while-revalidate=604800";
 const OG_NOT_FOUND_CACHE_CONTROL =
 	"public, max-age=0, s-maxage=60, stale-while-revalidate=600";
+const OG_NOT_FOUND_CDN_CACHE_CONTROL = "max-age=60, stale-while-revalidate=600";
 
 async function readOgAsset(
 	request: Request,
@@ -46,6 +48,7 @@ export async function getOgImage(request: Request): Promise<Response> {
 			},
 		);
 		response.headers.set("Cache-Control", OG_NOT_FOUND_CACHE_CONTROL);
+		response.headers.set("CDN-Cache-Control", OG_NOT_FOUND_CDN_CACHE_CONTROL);
 		return response;
 	}
 
@@ -114,5 +117,6 @@ export async function getOgImage(request: Request): Promise<Response> {
 		},
 	);
 	response.headers.set("Cache-Control", OG_CACHE_CONTROL);
+	response.headers.set("CDN-Cache-Control", OG_CDN_CACHE_CONTROL);
 	return response;
 }

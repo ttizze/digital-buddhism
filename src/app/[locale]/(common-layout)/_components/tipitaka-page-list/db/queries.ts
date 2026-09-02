@@ -65,5 +65,3 @@ export async function fetchTipitakaPageTree(
 		rootPageId,
 	);
 }
-
-export { TIPITAKA_SOURCE_LOCALE } from "../domain/extract-tipitaka-page-tree";

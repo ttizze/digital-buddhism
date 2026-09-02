@@ -1,10 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import {
-	getRequestHeaders,
-	setResponseHeader,
-} from "@tanstack/react-start/server";
+import { setResponseHeader } from "@tanstack/react-start/server";
 import * as v from "valibot";
-import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
+import { getCurrentUser } from "@/app/_service/auth-server";
 import { fetchProfilePage } from "@/app/[locale]/(common-layout)/[handle]/_service/profile";
 import { supportedLocaleSchema } from "./-supported-locale-schema";
 
@@ -13,10 +10,6 @@ const handleDataInput = v.object({
 	locale: supportedLocaleSchema,
 	page: v.pipe(v.number(), v.integer(), v.minValue(1)),
 });
-
-async function getCurrentUser() {
-	return getCurrentUserFromHeaders(new Headers(getRequestHeaders()));
-}
 
 export const getHandleData = createServerFn({ method: "GET" })
 	.validator(handleDataInput)

@@ -24,6 +24,12 @@ vi.mock("sonner", () => ({
 vi.mock("@/app/[locale]/_service/auth-client", () => ({
 	authClient: { updateUser: vi.fn() },
 }));
+vi.mock("use-intl", async () => {
+	const { createEnTranslator } = await import("@/tests/en-translations");
+	return {
+		useTranslations: (namespace?: string) => createEnTranslator(namespace),
+	};
+});
 
 describe("ProfileForm", () => {
 	beforeEach(() => {

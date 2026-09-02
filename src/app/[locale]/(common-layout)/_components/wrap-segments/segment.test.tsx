@@ -4,6 +4,14 @@ import { SegmentGlossVoteProvider } from "@/app/[locale]/(common-layout)/[handle
 import type { SegmentForDetail, TitleSegment } from "@/app/[locale]/types";
 import { SegmentElement } from "./segment";
 
+vi.mock("use-intl", async () => {
+	const { createEnTranslator } = await import("@/tests/en-translations");
+	return {
+		useLocale: () => "ja",
+		useTranslations: (namespace?: string) => createEnTranslator(namespace),
+	};
+});
+
 function makeListSegment(overrides: Partial<TitleSegment> = {}): TitleSegment {
 	return {
 		id: 1,

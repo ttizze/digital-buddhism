@@ -173,5 +173,7 @@ describe("/api/segment-glosses", () => {
 		getCurrentUser.mockResolvedValue(null);
 		const response = await patchSegmentGlossVote(voteRequest(1, true));
 		expect(response.status).toBe(401);
+		expect(response.headers.get("Cache-Control")).toBe("private, no-store");
+		expect(await response.json()).toEqual({ message: "Unauthorized" });
 	});
 });

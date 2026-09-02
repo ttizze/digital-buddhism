@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useTranslations } from "use-intl";
 import { PageList } from "@/app/[locale]/(common-layout)/_components/page/page-list";
 import { PaginationBar } from "@/app/[locale]/(common-layout)/_components/pagination-bar";
 import type { PageForList } from "@/app/[locale]/types";
@@ -22,13 +23,14 @@ export function SearchResults({
 	currentPage,
 	locale,
 }: SearchResultsProps) {
+	const t = useTranslations("Search");
 	const noResults =
 		currentCategory === "user" ? !users?.length : !pageSummaries?.length;
 
 	return (
 		<div>
 			<div className="space-y-4">
-				{noResults && <p className="text-gray-500">No results found.</p>}
+				{noResults && <p className="text-gray-500">{t("noResults")}</p>}
 
 				{currentCategory === "user" &&
 					users !== undefined &&

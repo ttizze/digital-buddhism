@@ -175,6 +175,7 @@ type SegmentTranslationData = {
 export async function insertSegmentTranslations(
 	data: readonly SegmentTranslationData[],
 ) {
+	if (data.length === 0) return;
 	await db.insertInto("segmentTranslations").values(data).execute();
 }
 

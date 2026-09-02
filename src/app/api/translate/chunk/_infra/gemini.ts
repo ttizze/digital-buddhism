@@ -5,6 +5,7 @@ import {
 	ThinkingLevel,
 } from "@google/genai";
 import { generateTranslationPrompt } from "./generate-translation-prompt";
+import type { TranslationModelRequest } from "./translation-model-request";
 
 const MAX_OUTPUT_TOKENS = 65536;
 const HTTP_TIMEOUT_MS = 10 * 60 * 1000;
@@ -28,15 +29,6 @@ const safetySettings = [
 	},
 ];
 
-type GeminiTranslationParams = {
-	apiKey: string;
-	model: string;
-	title: string;
-	sourceText: string;
-	targetLocale: string;
-	translationContext: string;
-};
-
 export async function getGeminiModelResponse({
 	apiKey,
 	model,
@@ -44,7 +36,7 @@ export async function getGeminiModelResponse({
 	sourceText,
 	targetLocale,
 	translationContext,
-}: GeminiTranslationParams) {
+}: TranslationModelRequest) {
 	const gemini = new GoogleGenAI({ apiKey });
 	const response = await gemini.models.generateContent({
 		model,

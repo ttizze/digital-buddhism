@@ -1,11 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { getCurrentUser } from "@/app/_service/auth-server";
+import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
 import { createTranslationJob } from "@/app/[locale]/_db/mutations.server";
 import { toSessionUser } from "@/tests/auth-helpers";
 import { resetDatabase } from "@/tests/db-helpers";
 import { createPage, createUser } from "@/tests/factories";
 import { setupDbPerFile } from "@/tests/test-db-manager";
 import { getTranslationJobs } from "./handler";
+
+vi.mock("@/app/_service/current-user", () => ({
+	getCurrentUserFromHeaders: vi.fn(),
+}));
 
 await setupDbPerFile(import.meta.url);
 
@@ -16,7 +20,7 @@ describe("getTranslationJobs", () => {
 	});
 
 	it("未認証ではジョブを返さない", async () => {
-		vi.mocked(getCurrentUser).mockResolvedValue(null);
+		vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(null);
 
 		const response = await getTranslationJobs(
 			new Request("https://example.com/api/translation-jobs?id=1"),
@@ -46,7 +50,9 @@ describe("getTranslationJobs", () => {
 				userId: otherUser.id,
 			}),
 		]);
-		vi.mocked(getCurrentUser).mockResolvedValue(toSessionUser(currentUser));
+		vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(
+			toSessionUser(currentUser),
+		);
 
 		const response = await getTranslationJobs(
 			new Request(

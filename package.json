@@ -8,7 +8,7 @@
 		"build": "vp build --config vite.config.ts",
 		"preview": "vp preview",
 		"deploy": "vp build --config vite.config.ts && wrangler deploy",
-		"cf-typegen": "wrangler types",
+		"cf-typegen": "wrangler types --env-interface CloudflareBindings --include-runtime false --env-file /dev/null",
 		"doctor": "react-doctor --yes --no-score --no-supply-chain",
 		"lint": "vp lint .",
 		"format": "vp fmt .",
@@ -29,7 +29,6 @@
 		"tipitaka": "bun run db:with-local -- bun scripts/tipitaka-import.ts",
 		"tipitaka:read-model": "bun run db:with-local -- bun scripts/tipitaka-read-model.ts",
 		"tipitaka:read-model:remote": "bun scripts/tipitaka-read-model.ts --remote",
-		"translate": "bunx tsx scripts/translate.ts",
 		"convert:romn": "bun scripts/convert-romn-to-md.ts"
 	},
 	"dependencies": {
@@ -55,7 +54,6 @@
 		"@radix-ui/react-tabs": "1.1.21",
 		"@radix-ui/react-tooltip": "1.2.16",
 		"@sentry/cloudflare": "10.73.0",
-		"@sentry/react": "10.73.0",
 		"@sentry/tanstackstart-react": "10.73.0",
 		"@tailwindcss/typography": "0.5.20",
 		"@tanstack/react-router": "1.170.32",
@@ -83,7 +81,6 @@
 		"remark-parse": "11.0.0",
 		"resend": "6.25.0",
 		"schema-dts": "^2.0.0",
-		"shadcn": "^4.19.1",
 		"sonner": "2.0.8",
 		"swr": "2.5.1",
 		"tailwind-merge": "^3.6.0",
@@ -111,17 +108,14 @@
 		"drizzle-kit": "0.31.10",
 		"jsdom": "30.0.1",
 		"kysely-codegen": "0.20.0",
-		"postcss": "8.5.26",
 		"react-doctor": "0.9.12",
 		"tailwindcss": "4.3.3",
-		"tsx": "4.23.13",
 		"typescript": "7.0.2",
 		"vite": "npm:@voidzero-dev/vite-plus-core@0.3.0",
 		"vite-plus": "0.3.0",
 		"wrangler": "^4.128.0"
 	},
 	"overrides": {
-		"css-select": "4.3.0",
 		"vite": "npm:@voidzero-dev/vite-plus-core@0.3.0",
 		"vitest": "4.1.11"
 	},

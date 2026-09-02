@@ -1,22 +1,19 @@
 import * as v from "valibot";
 import { getCurrentUserFromHeaders } from "@/app/_service/current-user";
-import { addTranslationService } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-section/add-translation-form/service/add-translation.server";
+import {
+	positiveIntegerFromString,
+	voteValueFromString,
+} from "@/app/api/_utils/request-schemas";
+import { withAuthedFormData } from "@/app/api/_utils/with-authed-form-data";
+import { privateJsonResponse } from "@/app/api/_utils/with-authed-request";
+import { db } from "@/db";
+import { deleteOwnTranslation } from "./_db/mutations.server";
 import {
 	createNotificationPageSegmentTranslationVote,
 	handleVote,
-} from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-section/vote-buttons/db/mutation.server";
-import { PRIVATE_RESPONSE_HEADERS } from "@/app/api/_utils/private-response-headers";
-import { withAuthedFormData } from "@/app/api/_utils/with-authed-form-data";
-import { db } from "@/db";
-import { deleteOwnTranslation } from "./_db/mutations.server";
+} from "./_db/vote-mutations.server";
 import { parseSegmentTranslations } from "./_domain/segment-translations";
-
-const positiveIntegerFromString = v.pipe(
-	v.string(),
-	v.toNumber(),
-	v.integer(),
-	v.minValue(1),
-);
+import { addTranslationService } from "./_service/add-translation.server";
 
 const getSchema = v.object({
 	segmentId: positiveIntegerFromString,
@@ -36,10 +33,7 @@ const postSchema = v.object({
 
 const patchSchema = v.object({
 	segmentTranslationId: positiveIntegerFromString,
-	isUpvote: v.pipe(
-		v.picklist(["true", "false"]),
-		v.transform((value) => value === "true"),
-	),
+	isUpvote: voteValueFromString,
 });
 
 const deleteSchema = v.object({
@@ -49,7 +43,7 @@ const deleteSchema = v.object({
 async function listSegmentTranslations(
 	segmentId: number,
 	userLocale: string,
-	currentUserId?: string,
+	currentUserId: string | null,
 ) {
 	const translations = await db
 		.selectFrom("segmentTranslations as st")
@@ -103,7 +97,10 @@ export async function getSegmentTranslations(
 	);
 
 	if (!validation.success) {
-		return Response.json({ error: "Invalid parameters" }, { status: 400 });
+		return privateJsonResponse(
+			{ message: "Invalid parameters" },
+			{ status: 400 },
+		);
 	}
 
 	const { segmentId, userLocale } = validation.output;
@@ -113,13 +110,13 @@ export async function getSegmentTranslations(
 		const response = await listSegmentTranslations(
 			segmentId,
 			userLocale,
-			currentUser?.id,
+			currentUser?.id ?? null,
 		);
-		return Response.json(response, { headers: PRIVATE_RESPONSE_HEADERS });
+		return privateJsonResponse(response, {});
 	} catch (error) {
 		console.error("Error fetching translations:", error);
-		return Response.json(
-			{ error: "Failed to fetch translations" },
+		return privateJsonResponse(
+			{ message: "Failed to fetch translations" },
 			{ status: 500 },
 		);
 	}
@@ -137,7 +134,7 @@ export async function postSegmentTranslation(
 		);
 
 		if (!result.success) {
-			return Response.json({ error: result.message }, { status: 400 });
+			return Response.json({ message: result.message }, { status: 400 });
 		}
 
 		return Response.json({ success: true });
@@ -178,12 +175,12 @@ export async function deleteSegmentTranslation(
 		deleteSchema,
 		async (data, currentUser) => {
 			const deleted = await deleteOwnTranslation(
-				currentUser.handle,
+				currentUser.id,
 				data.translationId,
 			);
 			if (!deleted) {
 				return Response.json(
-					{ error: "Translation not found or unauthorized" },
+					{ message: "Translation not found or unauthorized" },
 					{ status: 404 },
 				);
 			}

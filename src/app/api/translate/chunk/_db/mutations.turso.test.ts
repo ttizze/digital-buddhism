@@ -25,6 +25,7 @@ let setTranslationProgress: (typeof import("./mutations.server"))["setTranslatio
 let claimTranslationChunk: (typeof import("./mutations.server"))["claimTranslationChunk"];
 let completeTranslationChunk: (typeof import("./mutations.server"))["completeTranslationChunk"];
 let releaseTranslationChunk: (typeof import("./mutations.server"))["releaseTranslationChunk"];
+let insertSegmentTranslations: (typeof import("./mutations.server"))["insertSegmentTranslations"];
 
 async function createTranslationJobsTable() {
 	await setupClient.execute(`
@@ -70,6 +71,7 @@ describe("translation mutations", () => {
 			claimTranslationChunk,
 			completeTranslationChunk,
 			getOrCreateAIUser,
+			insertSegmentTranslations,
 			releaseTranslationChunk,
 			setTranslationProgress,
 		} = await import("./mutations.server"));
@@ -108,6 +110,10 @@ describe("translation mutations", () => {
 			"SELECT status, progress FROM translation_jobs WHERE id = 1",
 		);
 		expect(row.rows).toEqual([{ status: "COMPLETED", progress: 100 }]);
+	});
+
+	it("翻訳対象が空ならINSERTを実行せず終了する", async () => {
+		await expect(insertSegmentTranslations([])).resolves.toBeUndefined();
 	});
 
 	it("更新に失敗したら既存進捗を維持する", async () => {

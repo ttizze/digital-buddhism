@@ -1,5 +1,6 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
+import { useTranslations } from "use-intl";
 import {
 	Pagination,
 	PaginationContent,
@@ -16,21 +17,26 @@ interface PaginationBarProps {
 }
 
 export function PaginationBar({ totalPages, currentPage }: PaginationBarProps) {
+	const t = useTranslations("Search");
 	if (totalPages <= 1) {
 		return null;
 	}
 
 	return (
-		<Pagination className="mt-4">
+		<Pagination aria-label={t("pagination")} className="mt-4">
 			<PaginationContent className="w-full justify-between">
 				<PaginationItem>
 					{currentPage === 1 ? (
 						<PaginationPrevious
+							aria-label={t("previous")}
 							aria-disabled="true"
 							className="pointer-events-none opacity-50"
-						/>
+						>
+							<ChevronLeftIcon className="h-4 w-4" />
+							<span>{t("previous")}</span>
+						</PaginationPrevious>
 					) : (
-						<PaginationPrevious asChild>
+						<PaginationPrevious aria-label={t("previous")} asChild>
 							<Link
 								search={(previous) => ({
 									...previous,
@@ -39,7 +45,7 @@ export function PaginationBar({ totalPages, currentPage }: PaginationBarProps) {
 								to="."
 							>
 								<ChevronLeftIcon className="h-4 w-4" />
-								<span>Previous</span>
+								<span>{t("previous")}</span>
 							</Link>
 						</PaginationPrevious>
 					)}
@@ -83,11 +89,15 @@ export function PaginationBar({ totalPages, currentPage }: PaginationBarProps) {
 				<PaginationItem>
 					{currentPage === totalPages ? (
 						<PaginationNext
+							aria-label={t("next")}
 							aria-disabled="true"
 							className="pointer-events-none opacity-50"
-						/>
+						>
+							<span>{t("next")}</span>
+							<ChevronRightIcon className="h-4 w-4" />
+						</PaginationNext>
 					) : (
-						<PaginationNext asChild>
+						<PaginationNext aria-label={t("next")} asChild>
 							<Link
 								search={(previous) => ({
 									...previous,
@@ -95,7 +105,7 @@ export function PaginationBar({ totalPages, currentPage }: PaginationBarProps) {
 								})}
 								to="."
 							>
-								<span>Next</span>
+								<span>{t("next")}</span>
 								<ChevronRightIcon className="h-4 w-4" />
 							</Link>
 						</PaginationNext>

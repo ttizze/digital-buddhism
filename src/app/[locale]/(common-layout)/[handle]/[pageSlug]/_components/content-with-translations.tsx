@@ -1,5 +1,3 @@
-"use client";
-
 import useSWR from "swr";
 
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
@@ -24,16 +22,6 @@ interface ContentWithTranslationsProps {
 type PageAnnotationsData = Awaited<ReturnType<typeof getPageAnnotationsData>>;
 type GlossUnitsData = ReturnType<typeof usePageSegmentGlosses>["data"];
 
-type DisplayEntry = {
-	annotations: PageAnnotationsData | undefined;
-	glossUnits: GlossUnitsData;
-	displayPageDetail: PageDetail;
-	content: ReturnType<typeof mdastToReact>;
-};
-
-// 入力（pageDetail + annotations + glossUnits）ごとに描画済み要素をキャッシュする
-const displayEntries = new WeakMap<PageDetail, DisplayEntry>();
-
 function buildDisplayPageDetail(
 	pageDetail: PageDetail,
 	annotations: PageAnnotationsData | undefined,
@@ -54,37 +42,6 @@ function buildDisplayPageDetail(
 			glossUnits: glossUnitsBySegment.get(segment.id) ?? [],
 		})),
 	};
-}
-
-function getDisplayEntry(
-	pageDetail: PageDetail,
-	annotations: PageAnnotationsData | undefined,
-	glossUnits: GlossUnitsData,
-): DisplayEntry {
-	const cached = displayEntries.get(pageDetail);
-	if (
-		cached &&
-		cached.annotations === annotations &&
-		cached.glossUnits === glossUnits
-	) {
-		return cached;
-	}
-	const displayPageDetail = buildDisplayPageDetail(
-		pageDetail,
-		annotations,
-		glossUnits,
-	);
-	const entry: DisplayEntry = {
-		annotations,
-		glossUnits,
-		displayPageDetail,
-		content: mdastToReact({
-			mdast: displayPageDetail.mdastJson,
-			segments: displayPageDetail.segments,
-		}),
-	};
-	displayEntries.set(pageDetail, entry);
-	return entry;
 }
 
 export function ContentWithTranslations({
@@ -109,11 +66,15 @@ export function ContentWithTranslations({
 		pageDetail.id,
 		locale,
 	);
-	const { displayPageDetail, content } = getDisplayEntry(
+	const displayPageDetail = buildDisplayPageDetail(
 		pageDetail,
 		annotations,
 		glossUnits,
 	);
+	const content = mdastToReact({
+		mdast: displayPageDetail.mdastJson,
+		segments: displayPageDetail.segments,
+	});
 	const tocItems = extractTocItems({
 		mdast: displayPageDetail.mdastJson,
 		segments: displayPageDetail.segments,

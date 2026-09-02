@@ -1,4 +1,3 @@
-"use client";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import type { FormEvent } from "react";
 import { VoteButton } from "./vote-button";

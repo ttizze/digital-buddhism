@@ -1,9 +1,5 @@
 import { parseDirSegment } from "../../domain/parse-dir-segment/parse-dir-segment";
 import type { TipitakaFileMeta } from "../../types";
-import { extractUniqueCategoryPaths } from "../utils/extract-unique-category-paths";
-import { getLastSegment } from "../utils/get-last-segment";
-import { getParentPath } from "../utils/get-parent-path";
-import { sortPathsByDepth } from "../utils/sort-paths-by-depth";
 import { createCategoryPage } from "./create-category-page";
 
 /**
@@ -29,19 +25,25 @@ export async function createCategoryPages(
 	rootPageId: number,
 	importFileId: number,
 ): Promise<Map<string, number>> {
-	// すべてのユニークなパスを抽出（子ノードがある場合のみ）
-	const pathSet = extractUniqueCategoryPaths(tipitakaFileMetas);
-
-	// パスを配列に変換し、長さでソート（親→子の順序）
-	const paths = sortPathsByDepth(pathSet);
+	const pathSet = new Set<string>();
+	for (const meta of tipitakaFileMetas) {
+		for (let index = 0; index < meta.dirSegments.length - 1; index++) {
+			pathSet.add(meta.dirSegments.slice(0, index + 1).join("/"));
+		}
+	}
+	const paths = [...pathSet].sort((left, right) => {
+		const depthDifference = left.split("/").length - right.split("/").length;
+		return depthDifference || left.localeCompare(right);
+	});
 
 	// ページIDのルックアップマップ
 	const categoryPageLookup = new Map<string, number>();
 
 	// 順番にカテゴリページを作成
 	for (const dirPath of paths) {
-		const lastSegment = getLastSegment(dirPath);
-		const parentPath = getParentPath(dirPath);
+		const dirSegments = dirPath.split("/");
+		const lastSegment = dirSegments.at(-1) ?? "";
+		const parentPath = dirSegments.slice(0, -1).join("/");
 
 		// 親ページIDを取得（親パスが空の場合はルートページ、それ以外はルックアップから取得）
 		const parentId = categoryPageLookup.get(parentPath) ?? rootPageId;

@@ -1,3 +1,4 @@
+import { sql } from "kysely";
 import { db } from "@/db";
 import type { PageForList } from "../types";
 import { buildPageListQuery, toPageForList } from "./page-list.server";
@@ -23,23 +24,44 @@ async function fetchPagesByIds(
 	});
 }
 
+function escapeLikePattern(value: string): string {
+	return value
+		.replaceAll("\\", "\\\\")
+		.replaceAll("%", "\\%")
+		.replaceAll("_", "\\_");
+}
+
 async function searchPageIds(
 	query: string,
+	skip: number,
+	take: number,
 	titleOnly: boolean,
-): Promise<number[]> {
+): Promise<{ pageIds: number[]; total: number }> {
+	const pattern = `%${escapeLikePattern(query)}%`;
 	let resultQuery = db
 		.selectFrom("segments")
 		.innerJoin("tipitakaPages", "tipitakaPages.id", "segments.tipitakaPageId")
 		.select("tipitakaPages.id as pageId")
 		.distinct()
-		.where("segments.text", "like", `%${query}%`);
+		.where(
+			sql<boolean>`${sql.ref("segments.text")} like ${pattern} escape '\\'`,
+		);
 
 	if (titleOnly) {
 		resultQuery = resultQuery.where("segments.number", "=", 0);
 	}
 
-	const rows = await resultQuery.orderBy("tipitakaPages.id").execute();
-	return rows.map((row) => row.pageId);
+	const [count, rows] = await Promise.all([
+		db
+			.selectFrom(resultQuery.as("searchResults"))
+			.select((eb) => eb.fn.countAll<number>().as("count"))
+			.executeTakeFirst(),
+		resultQuery.orderBy("tipitakaPages.id").limit(take).offset(skip).execute(),
+	]);
+	return {
+		pageIds: rows.map((row) => row.pageId),
+		total: Number(count?.count ?? 0),
+	};
 }
 
 async function searchPages(
@@ -49,11 +71,10 @@ async function searchPages(
 	locale: string,
 	titleOnly: boolean,
 ): Promise<SearchResult> {
-	const allPageIds = await searchPageIds(query, titleOnly);
-	const pageIds = allPageIds.slice(skip, skip + take);
+	const { pageIds, total } = await searchPageIds(query, skip, take, titleOnly);
 	return {
 		pageForLists: await fetchPagesByIds(pageIds, locale),
-		total: allPageIds.length,
+		total,
 	};
 }
 

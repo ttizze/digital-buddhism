@@ -1,4 +1,4 @@
-import { ChevronRightIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { ChevronRightIcon } from "@radix-ui/react-icons";
 import { Slot } from "@radix-ui/react-slot";
 import type * as React from "react";
 import { cn } from "@/lib/utils";
@@ -48,17 +48,6 @@ function BreadcrumbLink({
 	);
 }
 
-function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">) {
-	return (
-		<span
-			aria-current="page"
-			className={cn("text-foreground font-normal", className)}
-			data-slot="breadcrumb-page"
-			{...props}
-		/>
-	);
-}
-
 function BreadcrumbSeparator({
 	children,
 	className,
@@ -77,30 +66,10 @@ function BreadcrumbSeparator({
 	);
 }
 
-function BreadcrumbEllipsis({
-	className,
-	...props
-}: React.ComponentProps<"span">) {
-	return (
-		<span
-			aria-hidden="true"
-			className={cn("flex size-9 items-center justify-center", className)}
-			data-slot="breadcrumb-ellipsis"
-			role="presentation"
-			{...props}
-		>
-			<DotsHorizontalIcon className="size-4" />
-			<span className="sr-only">More</span>
-		</span>
-	);
-}
-
 export {
 	Breadcrumb,
-	BreadcrumbEllipsis,
 	BreadcrumbItem,
 	BreadcrumbLink,
 	BreadcrumbList,
-	BreadcrumbPage,
 	BreadcrumbSeparator,
 };

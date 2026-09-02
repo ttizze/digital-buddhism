@@ -1,9 +1,56 @@
 {
 	"StartButton": {
-		"start": "시작하기"
+		"start": "시작하기",
+		"accessibleLabel": "로그인하고 시작하기"
 	},
 	"UserMenu": {
 		"logOut": "로그아웃"
+	},
+	"MagicLinkForm": {
+		"invalidEmail": "올바른 이메일 주소를 입력해 주세요",
+		"sendFailed": "매직 링크를 보내지 못했습니다. 다시 시도해 주세요.",
+		"sent": "이메일을 보냈습니다",
+		"checkInbox": "받은편지함을 확인해 주세요.",
+		"email": "이메일",
+		"send": "이메일 보내기"
+	},
+	"GlossUnit": {
+		"ariaLabel": "{surface}의 뜻풀이 ‘{gloss}’ 평가",
+		"glossLabel": "뜻풀이",
+		"voteLabel": "이 뜻풀이 평가"
+	},
+	"Profile": {
+		"metadataDescription": "{name}님의 Tipiṭaka 프로필입니다. 번역 활동을 확인할 수 있습니다.",
+		"displayName": "표시 이름",
+		"profile": "프로필",
+		"twitterHandle": "Twitter 핸들",
+		"twitterPlaceholder": "@로 시작하세요. 예: @tipitaka",
+		"save": "저장",
+		"handle": "핸들",
+		"cancel": "취소",
+		"edit": "편집",
+		"handleWarning": "핸들을 변경하면:",
+		"handleEffectUpdateUrls": "페이지의 모든 URL이 변경됩니다",
+		"handleEffectBreakLinks": "기존 페이지 링크가 작동하지 않습니다",
+		"handleEffectReleaseHandle": "다른 사람이 현재 핸들을 사용할 수 있습니다",
+		"newHandle": "새 핸들",
+		"editProfile": "프로필 편집",
+		"handlePlaceholder": "내-핸들"
+	},
+	"Search": {
+		"inputPlaceholder": "검색...",
+		"submit": "검색",
+		"linkLabel": "페이지 검색",
+		"loading": "불러오는 중...",
+		"noResults": "검색 결과가 없습니다.",
+		"pagination": "검색 결과 페이지",
+		"previous": "이전",
+		"next": "다음",
+		"category": {
+			"title": "제목",
+			"user": "사용자",
+			"content": "내용"
+		}
 	},
 	"ModeToggle": {
 		"light": "라이트 테마",
@@ -43,10 +90,10 @@
 		"otherTranslations": "다른 번역",
 		"loading": "번역을 불러오는 중...",
 		"loadFailed": "번역을 불러오지 못했습니다",
-		"addTranslationPlaceholder": "또는 직접 번역을 입력하세요...",
 		"submit": "제출",
 		"delete": "삭제",
-		"deleting": "삭제 중..."
+		"deleting": "삭제 중...",
+		"addPlaceholder": "번역을 입력하세요..."
 	},
 	"FloatingControls": {
 		"view": "보기",

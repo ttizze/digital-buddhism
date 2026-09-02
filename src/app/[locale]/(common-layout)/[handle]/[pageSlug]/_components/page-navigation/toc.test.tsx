@@ -9,6 +9,13 @@ import {
 } from "vite-plus/test";
 import Toc from "./toc";
 
+vi.mock("use-intl", async () => {
+	const { createEnTranslator } = await import("@/tests/en-translations");
+	return {
+		useTranslations: (namespace?: string) => createEnTranslator(namespace),
+	};
+});
+
 describe("Toc", () => {
 	const items = [
 		{

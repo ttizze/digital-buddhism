@@ -95,6 +95,9 @@ describe("GET /api/og", () => {
 		expect(response.headers.get("cache-control")).toBe(
 			"public, max-age=0, s-maxage=60, stale-while-revalidate=600",
 		);
+		expect(response.headers.get("cdn-cache-control")).toBe(
+			"max-age=60, stale-while-revalidate=600",
+		);
 		expect(fetchAsset).not.toHaveBeenCalled();
 	});
 
@@ -117,6 +120,9 @@ describe("GET /api/og", () => {
 		await expectPng(response);
 		expect(response.headers.get("cache-control")).toBe(
 			"public, max-age=0, s-maxage=86400, stale-while-revalidate=604800",
+		);
+		expect(response.headers.get("cdn-cache-control")).toBe(
+			"max-age=86400, stale-while-revalidate=604800",
 		);
 		expect(fetchAsset).toHaveBeenCalledTimes(2);
 		expect(fetchAsset).toHaveBeenCalledWith(

@@ -35,7 +35,6 @@
           default = pkgs.mkShellNoCC {
             packages = with pkgs; [
               bun
-              just
               nodejs_22
               sqld
               typescript-language-server

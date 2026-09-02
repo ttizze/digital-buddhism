@@ -116,7 +116,7 @@ describe("consumeTranslationQueue", () => {
 
 		expect(markJobFailedMock).toHaveBeenCalledWith(
 			10,
-			undefined,
+			null,
 			expect.any(String),
 		);
 		expect(delivery.ack).not.toHaveBeenCalled();
@@ -171,5 +171,38 @@ describe("consumeTranslationQueue", () => {
 		expect(processChunkMock).not.toHaveBeenCalled();
 		expect(delivery.retry).toHaveBeenCalledWith({ delaySeconds: 600 });
 		expect(delivery.ack).not.toHaveBeenCalled();
+	});
+
+	it("処理中チャンクが最終配信でもbusyならジョブをFAILEDにする", async () => {
+		const delivery = createDelivery(4);
+		claimChunkMock.mockResolvedValueOnce({
+			status: "busy",
+			retryAfterSeconds: 600,
+		});
+
+		await consumeTranslationQueue({ messages: [delivery] });
+
+		expect(markJobFailedMock).toHaveBeenCalledWith(
+			10,
+			null,
+			expect.stringContaining("chunk 0 remained busy"),
+		);
+		expect(delivery.retry).toHaveBeenCalledWith();
+		expect(delivery.ack).not.toHaveBeenCalled();
+	});
+
+	it("チャンク解放に失敗してもQueue再試行を続行する", async () => {
+		const delivery = createDelivery(2);
+		processChunkMock.mockRejectedValueOnce(new Error("temporary"));
+		releaseChunkMock.mockRejectedValueOnce(new Error("release failed"));
+		const consoleError = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+
+		await consumeTranslationQueue({ messages: [delivery] });
+
+		expect(delivery.retry).toHaveBeenCalledWith({ delaySeconds: 60 });
+		expect(markJobFailedMock).not.toHaveBeenCalled();
+		consoleError.mockRestore();
 	});
 });
