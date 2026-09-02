@@ -1,5 +1,5 @@
 import GithubSlugger from "github-slugger";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { SegmentForDetail } from "@/app/[locale]/types";
 import type { JsonValue } from "@/drizzle/types";
 import { extractTocItems } from "./extract-toc-items";

@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
-import { vi } from "vitest";
+import { vi } from "vite-plus/test";
 import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
 import { AddAndVoteTranslations } from "./add-and-vote-translations.client";
 import { useSegmentTranslations } from "./hooks/use-segment-translations";

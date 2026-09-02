@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom";
-import { vi } from "vitest";
+import { vi } from "vite-plus/test";
 
 vi.mock("@/app/_service/auth-server", () => ({
 	getCurrentUser: vi.fn(),

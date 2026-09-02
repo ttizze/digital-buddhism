@@ -1,5 +1,5 @@
 import { parseSetCookieHeader } from "better-auth/cookies";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { auth } from "./auth";
 import {
 	getDatabaseClient,

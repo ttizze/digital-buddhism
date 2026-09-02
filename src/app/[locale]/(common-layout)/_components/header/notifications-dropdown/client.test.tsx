@@ -3,7 +3,14 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import useSWR from "swr";
-import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import {
+	beforeEach,
+	describe,
+	expect,
+	it,
+	type Mock,
+	vi,
+} from "vite-plus/test";
 import type { NotificationJson } from "@/app/api/notifications/_types/notification";
 import { NotificationsDropdownClient } from "./client";
 

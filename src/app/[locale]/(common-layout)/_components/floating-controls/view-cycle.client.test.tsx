@@ -1,11 +1,18 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useQueryState } from "nuqs";
-import { NuqsTestingAdapter } from "nuqs/adapters/testing";
-import { Suspense } from "react";
-import { describe, expect, it, vi } from "vitest";
-import { viewQueryState } from "@/app/[locale]/(common-layout)/_components/view-query";
+import { describe, expect, it, vi } from "vite-plus/test";
+import { pageDetailRoute } from "@/app/[locale]/(common-layout)/_components/page-detail-route-api";
+import { TanStackSearchTestProvider } from "@/tests/tanstack-search-test-harness";
 import { ViewCycle } from "./view-cycle.client";
+
+vi.mock(
+	"@/app/[locale]/(common-layout)/_components/page-detail-route-api",
+	async () => {
+		const { testPageDetailRoute } =
+			await import("@/tests/tanstack-search-test-harness");
+		return { pageDetailRoute: testPageDetailRoute };
+	},
+);
 
 vi.mock("use-intl", async () => {
 	const { createEnTranslator } = await import("@/tests/en-translations");
@@ -27,21 +34,19 @@ function Harness({
 	afterClick?: () => void;
 }) {
 	return (
-		<NuqsTestingAdapter searchParams={initialSearchParams}>
-			<Suspense fallback={null}>
-				<QueryStateReader />
-				<ViewCycle
-					afterClick={afterClick}
-					sourceLocale={sourceLocale}
-					userLocale={userLocale}
-				/>
-			</Suspense>
-		</NuqsTestingAdapter>
+		<TanStackSearchTestProvider initialSearchParams={initialSearchParams}>
+			<QueryStateReader />
+			<ViewCycle
+				afterClick={afterClick}
+				sourceLocale={sourceLocale}
+				userLocale={userLocale}
+			/>
+		</TanStackSearchTestProvider>
 	);
 }
 
 function QueryStateReader() {
-	const [view] = useQueryState("view", viewQueryState);
+	const view = pageDetailRoute.useSearch({ select: (search) => search.view });
 	return <span data-testid="view-query">{view}</span>;
 }
 

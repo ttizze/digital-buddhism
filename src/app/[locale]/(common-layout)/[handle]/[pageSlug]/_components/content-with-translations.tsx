@@ -1,6 +1,5 @@
 "use client";
 
-import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
 import useSWR from "swr";
 
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
@@ -8,6 +7,7 @@ import { mdastToMarkdown } from "@/app/[locale]/_domain/mdast-to-markdown";
 import type { PageDetail } from "@/app/[locale]/types";
 import { getPageAnnotationsData } from "@/routes/$locale/-page-annotations-data";
 
+import { pageDetailRoute } from "@/app/[locale]/(common-layout)/_components/page-detail-route-api";
 import type { NavigationData } from "../_db/queries";
 import { extractTocItems } from "../_domain/extract-toc-items";
 import { mdastToReact } from "./mdast-to-react";
@@ -92,10 +92,9 @@ export function ContentWithTranslations({
 	locale,
 	navigationData,
 }: ContentWithTranslationsProps) {
-	const [visibleAnnotations] = useQueryState(
-		"annotations",
-		parseAsArrayOf(parseAsString, "~").withDefault([]),
-	);
+	const visibleAnnotations = pageDetailRoute.useSearch({
+		select: (search) => search.annotations,
+	});
 	const { data: annotations } = useSWR(
 		visibleAnnotations.length > 0
 			? ["page-annotations", pageDetail.slug, locale]

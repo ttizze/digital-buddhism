@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import type { ComponentType, ReactNode } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 const { registeredRoute } = vi.hoisted(() => ({
 	registeredRoute: {
@@ -18,6 +18,7 @@ vi.mock("@tanstack/react-router", () => ({
 		};
 	},
 	Outlet: () => <div>Page</div>,
+	stripSearchParams: () => () => ({}),
 }));
 
 vi.mock("@/app/[locale]/(common-layout)/_components/footer", () => ({

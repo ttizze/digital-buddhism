@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
 import { db } from "@/db";
 import { resetDatabase } from "@/tests/db-helpers";

@@ -4,7 +4,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Node } from "@xmldom/xmldom";
 import { DOMParser } from "@xmldom/xmldom";
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test } from "vite-plus/test";
 import { getFileData } from "../books";
 import { convertXmlFileToMarkdown } from "../cli";
 import { writeBookMarkdown } from "../render";

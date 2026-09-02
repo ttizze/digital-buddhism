@@ -2,7 +2,6 @@ import { env } from "cloudflare:workers";
 import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { ThemeProvider } from "next-themes";
-import { NuqsAdapter } from "nuqs/adapters/tanstack-router";
 import { useEffect } from "react";
 import { IntlProvider } from "use-intl";
 import { resolveAuthProviderAvailability } from "@/app/_constants/auth-config.server";
@@ -73,19 +72,17 @@ function LocaleShell() {
 	return (
 		<AuthProviderAvailabilityContext.Provider value={authProviders}>
 			<IntlProvider locale={locale} messages={localeMessages} timeZone="UTC">
-				<NuqsAdapter>
-					<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-						<LocalePreference locale={locale} />
-						<script>{analyticsConsentBootstrapScript}</script>
-						<AnalyticsConsent
-							gaTrackingId={gaTrackingId}
-							locale={locale}
-							message={localeMessages.CookieConsent}
-						/>
-						<Outlet />
-						<Toaster closeButton richColors />
-					</ThemeProvider>
-				</NuqsAdapter>
+				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+					<LocalePreference locale={locale} />
+					<script>{analyticsConsentBootstrapScript}</script>
+					<AnalyticsConsent
+						gaTrackingId={gaTrackingId}
+						locale={locale}
+						message={localeMessages.CookieConsent}
+					/>
+					<Outlet />
+					<Toaster closeButton richColors />
+				</ThemeProvider>
 			</IntlProvider>
 		</AuthProviderAvailabilityContext.Provider>
 	);

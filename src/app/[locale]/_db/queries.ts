@@ -28,9 +28,10 @@ async function fetchVisiblePageBySlug(slug: string) {
 		.selectFrom("tipitakaPages as page")
 		.selectAll("page")
 		.where("page.slug", "=", slug)
-		.where(({ exists, selectFrom }) =>
-			exists(
-				selectFrom("ancestors")
+		.where((eb) =>
+			eb.exists(
+				eb
+					.selectFrom("ancestors")
 					.select("ancestors.id")
 					.where("ancestors.slug", "=", TIPITAKA_ROOT_SLUG)
 					.where("ancestors.parentId", "is", null),

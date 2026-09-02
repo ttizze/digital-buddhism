@@ -1,5 +1,5 @@
 import { getTableColumns } from "drizzle-orm";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import * as schema from "@/drizzle/schema";
 import {
 	booleanResultColumns,

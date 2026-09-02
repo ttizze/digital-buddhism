@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { afterAll } from "vitest";
+import { afterAll } from "vite-plus/test";
 import { db, disposeDb } from "@/db";
 import {
 	buildLocalDatabaseEnv,

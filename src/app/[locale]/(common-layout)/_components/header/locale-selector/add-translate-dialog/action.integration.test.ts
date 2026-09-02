@@ -1,4 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	vi,
+} from "vite-plus/test";
 import { getCurrentUser } from "@/app/_service/auth-server";
 import { enqueueTranslationMessage } from "@/app/[locale]/_infrastructure/translation-queue/context.server";
 import { db } from "@/db";

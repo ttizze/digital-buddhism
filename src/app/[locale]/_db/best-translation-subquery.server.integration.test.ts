@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vite-plus/test";
 import { queryBestTranslationTextsForPage } from "@/app/[locale]/_infrastructure/tipitaka-read-model/queries.server";
 import { db } from "@/db";
 import { resetDatabase } from "@/tests/db-helpers";

@@ -1,5 +1,5 @@
 {
-  description = "Bun project environment";
+  description = "Vite+ project environment";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
@@ -18,6 +18,18 @@
         system:
         let
           pkgs = import nixpkgs { inherit system; };
+          projectPackage = builtins.fromJSON (builtins.readFile ./package.json);
+          vitePlus = pkgs.writeShellApplication {
+            name = "vp";
+            runtimeInputs = [ pkgs.bun ];
+            text = ''
+              if [ -x "$PWD/node_modules/.bin/vp" ]; then
+                exec "$PWD/node_modules/.bin/vp" "$@"
+              fi
+
+              exec bunx --bun --package=vite-plus@${projectPackage.devDependencies."vite-plus"} vp "$@"
+            '';
+          };
         in
         {
           default = pkgs.mkShellNoCC {
@@ -27,6 +39,7 @@
               nodejs_22
               sqld
               typescript-language-server
+              vitePlus
             ];
           };
         }

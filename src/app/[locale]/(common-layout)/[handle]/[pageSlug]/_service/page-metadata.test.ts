@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { BASE_URL } from "@/app/_constants/base-url";
 import type { PageDetail } from "@/app/[locale]/types";
 import { buildPageMetadata } from "./page-metadata";

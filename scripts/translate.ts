@@ -81,7 +81,7 @@ async function fetchPageWithPageSegments(pageId: number) {
 }
 // ---------------- Main ----------------
 
-(async () => {
+void (async () => {
 	try {
 		const [
 			,

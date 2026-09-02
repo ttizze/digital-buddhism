@@ -58,6 +58,7 @@ yarn-error.log*
 
 # Cloudflare
 .wrangler/
+.vite-hooks/_/
 
 # typescript
 *.tsbuildinfo

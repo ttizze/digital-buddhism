@@ -1,7 +1,6 @@
 "use client";
 
 import { CopyIcon, Share } from "lucide-react";
-import { useQueryState } from "nuqs";
 import { useState } from "react";
 import {
 	FacebookIcon,
@@ -12,7 +11,6 @@ import {
 } from "react-share";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
-import { viewQueryState } from "@/app/[locale]/(common-layout)/_components/view-query";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -21,11 +19,12 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import { pageDetailRoute } from "../page-detail-route-api";
 
 export function ShareDialog() {
 	const t = useTranslations("FloatingControls");
 	const [isOpen, setIsOpen] = useState(false);
-	const [view] = useQueryState("view", viewQueryState);
+	const view = pageDetailRoute.useSearch({ select: (search) => search.view });
 
 	/* いま表示中のモードを取得 */
 	const shareTitle = typeof window !== "undefined" ? document.title : "";
@@ -61,7 +60,7 @@ export function ShareDialog() {
 						<Button
 							className="rounded-full"
 							onClick={() => {
-								navigator.clipboard.writeText(getShareUrl());
+								void navigator.clipboard.writeText(getShareUrl());
 								toast.success(t("copied"));
 							}}
 							size="icon"

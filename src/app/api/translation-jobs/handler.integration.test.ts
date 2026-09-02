@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { getCurrentUser } from "@/app/_service/auth-server";
 import { createTranslationJob } from "@/app/[locale]/_db/mutations.server";
 import { toSessionUser } from "@/tests/auth-helpers";

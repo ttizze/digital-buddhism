@@ -3,7 +3,7 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, lazyPlugins } from "vite-plus";
 
 // Worker vars are passed from the explicit allowlist below. Prevent Wrangler from
 // copying every value in .env.local into the production build's .dev.vars file.
@@ -50,7 +50,134 @@ export default defineConfig(({ command, mode }) => {
 			: undefined;
 
 	return {
-		resolve: { alias: { "@": path.resolve(import.meta.dirname, "src") } },
+		run: {
+			cache: { scripts: false, tasks: true },
+			tasks: {
+				"check:ci": { command: "vp check" },
+				"test:ci": { command: "vp test", cache: false },
+				"build:ci": {
+					command: "vp build --config vite.config.ts",
+					env: ["WORKERS_CI_BRANCH", "VITE_PUBLIC_DOMAIN", "VITE_SENTRY_DSN"],
+					input: [
+						"src/**",
+						"public/**",
+						"messages/**",
+						"vite.config.ts",
+						"tsconfig.json",
+						"package.json",
+						"bun.lock",
+						"wrangler.jsonc",
+						"!dist/**",
+						"!.wrangler/**",
+					],
+					output: ["dist/**"],
+				},
+			},
+		},
+		staged: {
+			"*": "vp check --fix",
+		},
+		fmt: {
+			useTabs: true,
+			tabWidth: 2,
+			printWidth: 80,
+			singleQuote: false,
+			jsxSingleQuote: false,
+			quoteProps: "as-needed",
+			trailingComma: "all",
+			semi: true,
+			arrowParens: "always",
+			bracketSameLine: false,
+			bracketSpacing: true,
+			ignorePatterns: [
+				"bun.lock",
+				"bun.lockb",
+				"build",
+				".vscode",
+				".next",
+				".output",
+				"node_modules",
+				"**/*.css",
+				"**/*.md",
+				"**/*.mdx",
+				"**/*.yml",
+				"**/*.yaml",
+				"tipitaka-md",
+				"tipitaka-md-nosplit",
+				"tipitaka-xml",
+				"playwright-report",
+				"cst",
+				"coverage",
+				".turbo",
+				".wrangler",
+				".cache",
+				".data",
+				"dist",
+				".codex",
+				".claude",
+				".worktree",
+				".worktrees",
+				"src/routeTree.gen.ts",
+				"src/drizzle/meta",
+				"src/drizzle/turso/meta",
+			],
+		},
+		lint: {
+			plugins: ["typescript", "unicorn", "oxc"],
+			categories: {
+				correctness: "error",
+			},
+			ignorePatterns: [
+				"bun.lock",
+				"bun.lockb",
+				"build",
+				".vscode",
+				".next",
+				".output",
+				"node_modules",
+				"**/*.css",
+				"**/*.md",
+				"**/*.mdx",
+				"**/*.yml",
+				"**/*.yaml",
+				"tipitaka-md",
+				"tipitaka-md-nosplit",
+				"tipitaka-xml",
+				"playwright-report",
+				"cst",
+				"coverage",
+				".turbo",
+				".wrangler",
+				".cache",
+				".data",
+				"dist",
+				".codex",
+				".claude",
+				".worktree",
+				".worktrees",
+				"src/routeTree.gen.ts",
+				"src/drizzle/meta",
+				"src/drizzle/turso/meta",
+			],
+			options: {
+				typeAware: true,
+				typeCheck: true,
+			},
+			jsPlugins: [
+				{
+					name: "vite-plus",
+					specifier: "vite-plus/oxlint-plugin",
+				},
+			],
+			rules: {
+				"vite-plus/prefer-vite-plus-imports": "error",
+			},
+		},
+		resolve: {
+			alias: {
+				"@": path.resolve(import.meta.dirname, "src"),
+			},
+		},
 		optimizeDeps: {
 			exclude: ["@cloudflare/pages-plugin-vercel-og/api"],
 		},
@@ -61,7 +188,7 @@ export default defineConfig(({ command, mode }) => {
 				},
 			},
 		},
-		plugins: [
+		plugins: lazyPlugins(() => [
 			tailwindcss(),
 			cloudflare({
 				viteEnvironment: { name: "ssr" },
@@ -69,6 +196,6 @@ export default defineConfig(({ command, mode }) => {
 			}),
 			tanstackStart(),
 			viteReact(),
-		],
+		]),
 	};
 });
