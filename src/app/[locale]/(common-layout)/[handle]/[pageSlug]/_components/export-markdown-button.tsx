@@ -1,6 +1,9 @@
 import { DownloadIcon } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
+import { getPageMarkdownData } from "@/routes/$locale/-page-detail-data";
 import {
 	Tooltip,
 	TooltipContent,
@@ -9,7 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 
 interface ExportMarkdownButtonProps {
-	markdown: string;
+	locale: string;
 	title: string;
 	slug: string;
 }
@@ -24,29 +27,32 @@ function toSafeFileName(value: string) {
 }
 
 export function ExportMarkdownButton({
-	markdown,
+	locale,
 	title,
 	slug,
 }: ExportMarkdownButtonProps) {
 	const t = useTranslations("PageNavigation");
-	const hasContent = markdown.trim().length > 0;
+	const [isExporting, setIsExporting] = useState(false);
 	const baseName = toSafeFileName(title || slug);
 	const fileName = `${baseName}.md`;
 	const label = t("exportMarkdown");
 
-	const handleClick = () => {
-		if (!hasContent) return;
-		const blob = new Blob([markdown], {
-			type: "text/markdown;charset=utf-8",
-		});
-		const url = URL.createObjectURL(blob);
-		const link = document.createElement("a");
-		link.href = url;
-		link.download = fileName;
-		document.body.appendChild(link);
-		link.click();
-		link.remove();
-		URL.revokeObjectURL(url);
+	const handleClick = async () => {
+		setIsExporting(true);
+		try {
+			const markdown = await getPageMarkdownData({
+				data: { locale, pageSlug: slug },
+			});
+			if (!markdown?.trim()) {
+				toast.error(t("exportMarkdownError"));
+				return;
+			}
+			downloadMarkdown(markdown, fileName);
+		} catch {
+			toast.error(t("exportMarkdownError"));
+		} finally {
+			setIsExporting(false);
+		}
 	};
 
 	return (
@@ -55,7 +61,8 @@ export function ExportMarkdownButton({
 				<TooltipTrigger asChild>
 					<Button
 						aria-label={label}
-						disabled={!hasContent}
+						aria-busy={isExporting}
+						disabled={isExporting}
 						onClick={handleClick}
 						variant="ghost"
 					>
@@ -66,4 +73,18 @@ export function ExportMarkdownButton({
 			</Tooltip>
 		</TooltipProvider>
 	);
+}
+
+function downloadMarkdown(markdown: string, fileName: string): void {
+	const blob = new Blob([markdown], {
+		type: "text/markdown;charset=utf-8",
+	});
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement("a");
+	link.href = url;
+	link.download = fileName;
+	document.body.appendChild(link);
+	link.click();
+	link.remove();
+	URL.revokeObjectURL(url);
 }

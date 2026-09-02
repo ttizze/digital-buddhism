@@ -110,7 +110,8 @@
 		"loading": "正在加载页面树…",
 		"unavailable": "无法获取页面树。",
 		"tocTitle": "目录",
-		"exportMarkdown": "导出 Markdown"
+		"exportMarkdown": "导出 Markdown",
+		"exportMarkdownError": "无法导出 Markdown。"
 	},
 	"Footer": {
 		"privacyPolicy": "隐私政策",

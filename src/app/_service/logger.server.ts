@@ -1,12 +1,10 @@
 /**
  * サーバー側専用ロガー
  * TanStack Startのサーバー関数、ルート、APIハンドラーで使用
- *
- * Sentryとの統合が可能
+ * 構造化JSONをCloudflare Workers Logsへ出力
  */
 
 import { env } from "cloudflare:workers";
-import * as Sentry from "@sentry/cloudflare";
 import {
 	createStructuredLogger,
 	isLogLevel,
@@ -28,34 +26,11 @@ const resolveWorkerLogLevel = (): LogLevel => {
 	return "debug";
 };
 
-/**
- * サーバー側用のロガーを作成
- * 必要に応じてSentryのコンテキストを設定
- */
+/** サーバー側用のロガーを作成 */
 export const createServerLogger = (
 	service: string,
 	context?: LoggerContext,
-): Logger => {
-	// 本番環境でSentryにコンテキストを設定（必要に応じて）
-	if (import.meta.env.PROD && context) {
-		try {
-			Sentry.setContext("request", {
-				service,
-				...context,
-			});
-			if (context.userId) {
-				Sentry.setUser({ id: context.userId });
-			}
-			if (context.requestId) {
-				Sentry.setTag("requestId", context.requestId);
-			}
-		} catch {
-			// Sentryが初期化されていない場合は無視
-		}
-	}
-
-	return createStructuredLogger(service, resolveWorkerLogLevel(), context);
-};
+): Logger => createStructuredLogger(service, resolveWorkerLogLevel(), context);
 
 /**
  * サーバー側のデフォルトロガー

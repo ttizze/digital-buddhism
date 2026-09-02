@@ -1,13 +1,17 @@
 import type { ReactNode } from "react";
 import { BASE_URL } from "@/app/_constants/base-url";
 import { TIPITAKA_ROOT_SLUG } from "@/app/[locale]/_domain/tipitaka-page-visibility";
-import type { PageDetail } from "@/app/[locale]/types";
 import { ArticleJsonLd, BreadcrumbJsonLd } from "@/components/seo/json-ld";
 import type { NavigationData, PageTitleTree } from "../_db/queries";
+import type {
+	PageContentBody,
+	PageDetailView,
+} from "../_domain/page-content-view";
 import { ChildPages } from "./child-pages";
 import { ContentWithTranslations } from "./content-with-translations";
 
 export function PageContent({
+	body,
 	pageDetail,
 	locale,
 	navigationData,
@@ -15,7 +19,8 @@ export function PageContent({
 	description,
 	floatingControls,
 }: {
-	pageDetail: PageDetail;
+	body: PageContentBody;
+	pageDetail: PageDetailView;
 	locale: string;
 	navigationData: NavigationData | null;
 	childPages: PageTitleTree[];
@@ -46,6 +51,7 @@ export function PageContent({
 				]}
 			/>
 			<ContentWithTranslations
+				body={body}
 				locale={locale}
 				navigationData={navigationData}
 				pageDetail={pageDetail}

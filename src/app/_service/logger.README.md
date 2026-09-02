@@ -7,7 +7,7 @@
 - **Worker互換**: Node.js専用のログ依存を持たず、Cloudflare Workersで直接動作
 - **構造化ログ**: すべての環境でJSON形式のログを出力
 - **ランタイム分離**: WorkerはCloudflare binding、Tipitaka CLIはBunの環境変数を参照
-- **Sentry統合**: Worker側ロガーはリクエストコンテキストをSentryへ設定
+- **Workers Logs統合**: Worker側ロガーはCloudflareへ構造化JSONを出力
 
 ## 基本的な使い方
 
@@ -33,7 +33,7 @@ logger.error({ err: error }, "Failed to load page");
 
 ### クライアント側
 
-通常、クライアント側ではログを出力しません。エラーはSentryが自動的にキャプチャします。
+通常、クライアント側ではログを出力しません。ブラウザ例外が発生した場合だけSentryを読み込み、エラーを送信します。
 
 ### Tipitaka取込CLI
 

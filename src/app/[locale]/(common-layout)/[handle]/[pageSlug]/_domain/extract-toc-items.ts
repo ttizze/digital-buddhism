@@ -1,8 +1,11 @@
 import GithubSlugger from "github-slugger";
-import type { Heading, Root } from "mdast";
-import { toString } from "mdast-util-to-string";
-import { visit } from "unist-util-visit";
-import type { SegmentForDetail, TitleSegment } from "@/app/[locale]/types";
+import type { TitleSegment } from "@/app/[locale]/types";
+import {
+	CONTENT_VIEW_TAG,
+	contentViewText,
+	type ContentViewNode,
+	materializeContentViewSegment,
+} from "./page-content-view";
 
 export interface TocItem {
 	anchorId: string;
@@ -13,44 +16,45 @@ export interface TocItem {
 const MAX_TOC_DEPTH = 4;
 
 export function extractTocItems({
-	mdast,
-	segments,
+	nodes,
+	pageId,
 }: {
-	mdast: Root;
-	segments: SegmentForDetail[];
+	nodes: ContentViewNode[];
+	pageId: number;
 }): TocItem[] {
-	// セグメント番号で引けるようにして、見出しとセグメントを対応付ける。
-	const segmentsMap = new Map<number, SegmentForDetail>(
-		segments.map((segment) => [segment.number, segment]),
-	);
 	const items: TocItem[] = [];
 	const slugger = new GithubSlugger();
-
-	visit(mdast, "heading", (heading: Heading) => {
-		const number = Number(heading.data?.hProperties?.["data-number-id"]);
-		const segment = Number.isInteger(number)
-			? segmentsMap.get(number)
-			: undefined;
-		const anchorId = slugger.slug(segment?.text ?? toString(heading));
-		if (heading.depth > MAX_TOC_DEPTH) return;
-		if (!segment?.text.trim()) return;
-
-		items.push({
-			anchorId,
-			level: heading.depth,
-			segment: toTitleSegment(segment),
-		});
-	});
-
+	collect(nodes);
 	return items;
-}
 
-function toTitleSegment(segment: SegmentForDetail): TitleSegment {
-	return {
-		id: segment.id,
-		pageId: segment.pageId,
-		number: segment.number,
-		text: segment.text,
-		translationText: segment.translationText,
-	};
+	function collect(children: ContentViewNode[]): void {
+		for (const node of children) {
+			if (!Array.isArray(node)) continue;
+			const tag = node[0];
+			if (
+				tag >= CONTENT_VIEW_TAG.heading1 &&
+				tag <= CONTENT_VIEW_TAG.heading6
+			) {
+				const fallbackText = contentViewText(node[1]);
+				const segment = node[2]
+					? materializeContentViewSegment(node[2], pageId, fallbackText)
+					: null;
+				const anchorId = slugger.slug(segment?.text ?? fallbackText);
+				if (tag <= MAX_TOC_DEPTH && segment?.text.trim()) {
+					items.push({
+						anchorId,
+						level: tag,
+						segment: {
+							id: segment.id,
+							pageId: segment.pageId,
+							number: segment.number,
+							text: segment.text,
+							translationText: segment.translationText,
+						},
+					});
+				}
+			}
+			collect(node[1]);
+		}
+	}
 }

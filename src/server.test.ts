@@ -10,7 +10,6 @@ const {
 	projectPendingReadModelsMock,
 	runWithDatabaseRequestContextMock,
 	runWithTranslationQueueMock,
-	withSentryMock,
 } = vi.hoisted(() => ({
 	handlerFetchMock: vi.fn<(request: Request) => Promise<Response>>(),
 	consumeTranslationQueueMock:
@@ -23,12 +22,6 @@ const {
 	runWithTranslationQueueMock: vi.fn(
 		<Result>(_queue: TranslationQueueBinding, callback: () => Result): Result =>
 			callback(),
-	),
-	withSentryMock: vi.fn(
-		<Options, WorkerEntry>(
-			_options: Options,
-			workerEntry: WorkerEntry,
-		): WorkerEntry => workerEntry,
 	),
 }));
 const cacheMatchMock =
@@ -43,10 +36,15 @@ const readModelBinding = {
 	put: kvPutMock,
 };
 const translationQueueBinding = { send: vi.fn() };
-
-vi.mock("@sentry/cloudflare", () => ({
-	withSentry: withSentryMock,
-}));
+// SAFETY: server.ts never reads ASSETS; it is required only by the generated binding type.
+const workerEnv = {
+	ASSETS: {} as CloudflareBindings["ASSETS"],
+	BETTER_AUTH_SECRET: "test-auth-secret",
+	TURSO_DATABASE_URL: "https://db.test",
+	TURSO_AUTH_TOKEN: "db-token",
+	TIPITAKA_READ_MODELS: readModelBinding,
+	TRANSLATION_QUEUE: translationQueueBinding,
+} satisfies CloudflareBindings;
 
 vi.mock("@tanstack/react-start/server-entry", () => ({
 	default: { fetch: handlerFetchMock },
@@ -106,13 +104,7 @@ describe("Cloudflare Workerのセキュリティヘッダー", () => {
 
 		const response = await worker.fetch(
 			new Request("https://digital-buddhism.test/"),
-			{
-				SENTRY_DSN: "https://sentry.test/1",
-				TURSO_DATABASE_URL: "https://db.test",
-				TURSO_AUTH_TOKEN: "db-token",
-				TIPITAKA_READ_MODELS: readModelBinding,
-				TRANSLATION_QUEUE: translationQueueBinding,
-			},
+			workerEnv,
 			{ waitUntil: waitUntilMock },
 		);
 
@@ -145,16 +137,9 @@ describe("Cloudflare Workerの公開レスポンスキャッシュ", () => {
 		);
 		const request = new Request("https://digital-buddhism.test/ja");
 
-		const response = await worker.fetch(
-			request,
-			{
-				TURSO_DATABASE_URL: "https://db.test",
-				TURSO_AUTH_TOKEN: "db-token",
-				TIPITAKA_READ_MODELS: readModelBinding,
-				TRANSLATION_QUEUE: translationQueueBinding,
-			},
-			{ waitUntil: waitUntilMock },
-		);
+		const response = await worker.fetch(request, workerEnv, {
+			waitUntil: waitUntilMock,
+		});
 
 		expect(await response.text()).toBe("fresh body");
 		expect(cachePutMock).toHaveBeenCalledOnce();
@@ -172,12 +157,7 @@ describe("Cloudflare Workerの公開レスポンスキャッシュ", () => {
 
 		const response = await worker.fetch(
 			new Request("https://digital-buddhism.test/ja"),
-			{
-				TURSO_DATABASE_URL: "https://db.test",
-				TURSO_AUTH_TOKEN: "db-token",
-				TIPITAKA_READ_MODELS: readModelBinding,
-				TRANSLATION_QUEUE: translationQueueBinding,
-			},
+			workerEnv,
 			{ waitUntil: waitUntilMock },
 		);
 
@@ -196,12 +176,7 @@ describe("Cloudflare WorkerのRead Model更新", () => {
 			new Request("https://digital-buddhism.test/api/segment-translations", {
 				method: "POST",
 			}),
-			{
-				TURSO_DATABASE_URL: "https://db.test",
-				TURSO_AUTH_TOKEN: "db-token",
-				TIPITAKA_READ_MODELS: readModelBinding,
-				TRANSLATION_QUEUE: translationQueueBinding,
-			},
+			workerEnv,
 			{ waitUntil: waitUntilMock },
 		);
 
@@ -214,16 +189,7 @@ describe("Cloudflare WorkerのRead Model更新", () => {
 describe("Cloudflare Workerの翻訳Queue", () => {
 	it("Queue batchをDB・Queueコンテキスト内で処理する", async () => {
 		const batch = { messages: [] };
-		await worker.queue(
-			batch,
-			{
-				TURSO_DATABASE_URL: "https://db.test",
-				TURSO_AUTH_TOKEN: "db-token",
-				TIPITAKA_READ_MODELS: readModelBinding,
-				TRANSLATION_QUEUE: translationQueueBinding,
-			},
-			{ waitUntil: waitUntilMock },
-		);
+		await worker.queue(batch, workerEnv, { waitUntil: waitUntilMock });
 
 		expect(runWithTranslationQueueMock).toHaveBeenCalledWith(
 			translationQueueBinding,

@@ -1,8 +1,10 @@
-import "./instrument.client";
+import { installBrowserErrorReporter } from "./instrument";
 
 import { StartClient } from "@tanstack/react-start/client";
 import { StrictMode, startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
+
+installBrowserErrorReporter();
 
 startTransition(() => {
 	hydrateRoot(

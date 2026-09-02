@@ -40,7 +40,6 @@ describe("PageNavigation", () => {
 					<PageNavigation
 						data={null}
 						locale="en"
-						markdown="Hello"
 						pageId={1}
 						slug="test-page"
 						title="Test Page"

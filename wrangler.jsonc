@@ -4,6 +4,7 @@
 	"compatibility_date": "2026-08-29",
 	"compatibility_flags": ["nodejs_compat"],
 	"main": "src/server.ts",
+	"upload_source_maps": true,
 	"assets": {
 		"binding": "ASSETS",
 	},
@@ -36,5 +37,14 @@
 	},
 	"observability": {
 		"enabled": true,
+		"redact_query_string": true,
+		"logs": {
+			"enabled": true,
+			"head_sampling_rate": 1,
+		},
+		"traces": {
+			"enabled": true,
+			"head_sampling_rate": 0.05,
+		},
 	},
 }

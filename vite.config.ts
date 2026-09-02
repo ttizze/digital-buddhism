@@ -1,5 +1,6 @@
 import * as path from "node:path";
 import { cloudflare } from "@cloudflare/vite-plugin";
+import { sentryTanstackStart } from "@sentry/tanstackstart-react/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
@@ -20,7 +21,6 @@ const LOCAL_WORKER_ENV_KEYS = [
 	"GOOGLE_ANALYTICS_ID",
 	"LOG_LEVEL",
 	"OPENAI_API_KEY",
-	"SENTRY_DSN",
 	"TURSO_AUTH_TOKEN",
 	"TURSO_DATABASE_URL",
 ] as const;
@@ -48,6 +48,13 @@ export default defineConfig(({ command, mode }) => {
 					),
 				)
 			: undefined;
+	const sentrySourceMapsEnabled = Boolean(
+		command === "build" &&
+		process.env.SENTRY_AUTH_TOKEN &&
+		process.env.SENTRY_ORG &&
+		process.env.SENTRY_PROJECT &&
+		publicEnv.VITE_SENTRY_DSN,
+	);
 
 	return {
 		run: {
@@ -57,7 +64,14 @@ export default defineConfig(({ command, mode }) => {
 				"test:ci": { command: "vp test", cache: false },
 				"build:ci": {
 					command: "vp build --config vite.config.ts",
-					env: ["WORKERS_CI_BRANCH", "VITE_PUBLIC_DOMAIN", "VITE_SENTRY_DSN"],
+					env: [
+						"SENTRY_AUTH_TOKEN",
+						"SENTRY_ORG",
+						"SENTRY_PROJECT",
+						"WORKERS_CI_BRANCH",
+						"VITE_PUBLIC_DOMAIN",
+						"VITE_SENTRY_DSN",
+					],
 					input: [
 						"src/**",
 						"public/**",
@@ -218,6 +232,15 @@ export default defineConfig(({ command, mode }) => {
 			}),
 			tanstackStart(),
 			viteReact(),
+			...(sentrySourceMapsEnabled
+				? sentryTanstackStart({
+						authToken: process.env.SENTRY_AUTH_TOKEN,
+						autoInstrumentMiddleware: false,
+						org: process.env.SENTRY_ORG,
+						project: process.env.SENTRY_PROJECT,
+						telemetry: false,
+					})
+				: []),
 		]),
 	};
 });

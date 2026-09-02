@@ -3,6 +3,7 @@ import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
 import { TIPITAKA_SOURCE_LOCALE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { FloatingControls } from "@/app/[locale]/(common-layout)/_components/floating-controls/floating-controls";
 import { PageContent } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/page-content";
+import { parsePageContentBody } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_domain/page-content-view";
 import { buildPageMetadata } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_service/page-metadata";
 import { getPageDetailData } from "./$locale/-page-detail-data";
 
@@ -60,9 +61,11 @@ export const Route = createFileRoute("/$locale/_common/tipitaka_/$pageSlug")({
 function PageDetailRoute() {
 	const { locale } = Route.useParams();
 	const data = Route.useLoaderData();
+	const body = parsePageContentBody(data.body);
 
 	return (
 		<PageContent
+			body={body}
 			childPages={data.childPages}
 			description={data.description}
 			floatingControls={

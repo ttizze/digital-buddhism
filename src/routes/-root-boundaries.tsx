@@ -1,16 +1,16 @@
-import * as Sentry from "@sentry/tanstackstart-react";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { AlertCircle } from "lucide-react";
 import { useEffect } from "react";
 import * as v from "valibot";
 import { Button } from "@/components/ui/button";
+import { captureBrowserException } from "@/instrument";
 
 const errorDigestSchema = v.object({ digest: v.string() });
 
 export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
 	useEffect(() => {
-		Sentry.captureException(error);
+		captureBrowserException(error);
 	}, [error]);
 
 	const parsedError = v.safeParse(errorDigestSchema, error);

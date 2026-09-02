@@ -110,7 +110,8 @@
 		"loading": "Cargando el árbol de páginas…",
 		"unavailable": "Árbol de páginas no disponible.",
 		"tocTitle": "Índice",
-		"exportMarkdown": "Exportar Markdown"
+		"exportMarkdown": "Exportar Markdown",
+		"exportMarkdownError": "No se pudo exportar el Markdown."
 	},
 	"Footer": {
 		"privacyPolicy": "Política de privacidad",

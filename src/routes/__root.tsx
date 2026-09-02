@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import * as v from "valibot";
-import "@/app/globals.css";
+import globalStyles from "@/app/globals.css?inline";
 import {
 	RootErrorComponent,
 	RootNotFoundComponent,
@@ -61,6 +61,12 @@ function RootDocument({ children }: { children: ReactNode }) {
 		<html dir={direction} lang={locale} suppressHydrationWarning>
 			<head>
 				<HeadContent />
+				<style
+					dangerouslySetInnerHTML={{
+						__html: import.meta.env.SSR ? globalStyles : "",
+					}}
+					suppressHydrationWarning
+				/>
 			</head>
 			<body className="transition-colors duration-300 antialiased">
 				{children}
