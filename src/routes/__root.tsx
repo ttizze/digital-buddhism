@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import * as v from "valibot";
-import globalStyles from "@/app/globals.css?inline";
+import globalsCss from "@/app/globals.css?url";
 import {
 	RootErrorComponent,
 	RootNotFoundComponent,
@@ -29,6 +29,7 @@ export const Route = createRootRoute({
 			{ title: "Digital Buddhism" },
 		],
 		links: [
+			{ rel: "stylesheet", href: globalsCss },
 			{
 				rel: "icon",
 				href: "/favicon.svg",
@@ -61,12 +62,6 @@ function RootDocument({ children }: { children: ReactNode }) {
 		<html dir={direction} lang={locale} suppressHydrationWarning>
 			<head>
 				<HeadContent />
-				<style
-					dangerouslySetInnerHTML={{
-						__html: import.meta.env.SSR ? globalStyles : "",
-					}}
-					suppressHydrationWarning
-				/>
 			</head>
 			<body className="transition-colors duration-300 antialiased">
 				{children}
