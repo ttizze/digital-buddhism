@@ -173,7 +173,12 @@ export default defineConfig(({ command, mode }) => {
 				"vite-plus/prefer-vite-plus-imports": "error",
 			},
 		},
-		resolve: { alias: { "@": path.resolve(import.meta.dirname, "src") } },
+		resolve: {
+			alias: {
+				"@": path.resolve(import.meta.dirname, "src"),
+				pino: path.resolve(import.meta.dirname, "node_modules/pino/browser.js"),
+			},
+		},
 		optimizeDeps: {
 			exclude: ["@cloudflare/pages-plugin-vercel-og/api"],
 		},
