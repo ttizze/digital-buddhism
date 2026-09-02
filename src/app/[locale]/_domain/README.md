@@ -19,7 +19,7 @@
 `remark-hash-and-segments.ts` が抽出処理の中核です。
 
 - タイトル（`header`）が渡された場合は「番号 0」のセグメントとして先頭に追加し、安定ハッシュを生成します。
-- 本文は MDAST のブロック（`paragraph`, `heading`, `listItem`, `blockquote`, `tableCell`）を対象に、ネストされたブロックを除外して 1 ブロック = 1 セグメントとして扱います。
+- 本文は MDAST のブロック（`paragraph`, `heading`, `listItem`, `blockquote`）を対象に、ネストされたブロックを除外して 1 ブロック = 1 セグメントとして扱います。
 - テキスト正規化と出現回数に基づく安定ハッシュを生成します（同一文面が複数回出る場合でも区別可能）。
 - 段落番号 `{para:n}` は locators に、ページブレーク（カスタムブロック由来の `<span class="pb" ...>`）は `metadata.items` に格納します。
 - 表示時にセグメントと対応できるよう、元ノードに `data-number-id` を付与します。

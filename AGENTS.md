@@ -25,6 +25,7 @@
 
 ```sh
 bun run typecheck
-bun x biome ci .
+bun run format:check
+bun run lint
 bun run test   # 関連するテストが通ること
 ```

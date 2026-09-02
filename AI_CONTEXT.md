@@ -25,7 +25,7 @@
 - **最小変更**・**シンプル優先**・**過剰分割禁止**
 - `useMemo` / `useCallback` は使用しない
 - `useEffect` は必要な場合のみ
-- 変更後は `bun run typecheck` と `bun x biome ci .` を実行
+- 変更後は `bun run typecheck`、`bun run format:check`、`bun run lint` を実行
 
 ## 置き場所の原則
 - ルート内で完結させる（コロケーション）
