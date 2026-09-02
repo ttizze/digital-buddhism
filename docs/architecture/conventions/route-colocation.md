@@ -96,4 +96,4 @@ src/app/[locale]/(common-layout)/[handle]/[pageSlug]/
 - `utils/`: 複雑な変換だけを対象にする
 - `db/`: SQLite/Tursoの実装を使う統合テストを、重要な制約とクエリに絞って書く
 - `service/`: ハッピーパスと主要な異常系を確認する
-- 変更後は `bun run typecheck` と `bun x biome ci .` を実行する
+- 変更後は `bun run typecheck`、`bun run format:check`、`bun run lint` を実行する

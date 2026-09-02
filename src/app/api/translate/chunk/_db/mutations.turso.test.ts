@@ -20,11 +20,11 @@ const databasePath = join(
 );
 
 let setupClient: Client;
-let getOrCreateAIUser: typeof import("./mutations.server")["getOrCreateAIUser"];
-let setTranslationProgress: typeof import("./mutations.server")["setTranslationProgress"];
-let claimTranslationChunk: typeof import("./mutations.server")["claimTranslationChunk"];
-let completeTranslationChunk: typeof import("./mutations.server")["completeTranslationChunk"];
-let releaseTranslationChunk: typeof import("./mutations.server")["releaseTranslationChunk"];
+let getOrCreateAIUser: (typeof import("./mutations.server"))["getOrCreateAIUser"];
+let setTranslationProgress: (typeof import("./mutations.server"))["setTranslationProgress"];
+let claimTranslationChunk: (typeof import("./mutations.server"))["claimTranslationChunk"];
+let completeTranslationChunk: (typeof import("./mutations.server"))["completeTranslationChunk"];
+let releaseTranslationChunk: (typeof import("./mutations.server"))["releaseTranslationChunk"];
 
 async function createTranslationJobsTable() {
 	await setupClient.execute(`

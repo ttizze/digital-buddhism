@@ -1,7 +1,7 @@
 import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createOpenAI } from "@ai-sdk/openai";
 import { valibotSchema } from "@ai-sdk/valibot";
-import { generateObject, type LanguageModel } from "ai";
+import { generateObject, type FlexibleSchema, type LanguageModel } from "ai";
 import * as v from "valibot";
 import { createServerLogger } from "@/app/_service/logger.server";
 import { generateTranslationPrompt } from "./generate-translation-prompt";
@@ -71,10 +71,11 @@ async function generateTranslationResponse<
 	const inputLineCount = params.sourceText.split("\n").length;
 
 	try {
+		const generatedSchema = valibotSchema(schema);
 		const { object } = await generateObject({
 			model,
 			maxRetries: 0,
-			schema: valibotSchema(schema),
+			schema: generatedSchema as FlexibleSchema<unknown>,
 			schemaName: "TranslationResponse",
 			schemaDescription:
 				"Array of translated text segments with their original numbers",
@@ -86,7 +87,7 @@ async function generateTranslationResponse<
 			),
 		});
 
-		const translations = object ? unwrap(object) : [];
+		const translations = object ? unwrap(object as v.InferOutput<TSchema>) : [];
 		if (translations.length === 0) {
 			throw new Error(`Empty response from ${provider}`);
 		}

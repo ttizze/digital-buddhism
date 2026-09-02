@@ -5,20 +5,20 @@
 	"compatibility_flags": ["nodejs_compat"],
 	"main": "src/server.ts",
 	"assets": {
-		"binding": "ASSETS"
+		"binding": "ASSETS",
 	},
 	"kv_namespaces": [
 		{
 			"binding": "TIPITAKA_READ_MODELS",
-			"id": "b4d21330448b4df894181807f4481543"
-		}
+			"id": "b4d21330448b4df894181807f4481543",
+		},
 	],
 	"queues": {
 		"producers": [
 			{
 				"binding": "TRANSLATION_QUEUE",
-				"queue": "digital-buddhism-translations"
-			}
+				"queue": "digital-buddhism-translations",
+			},
 		],
 		"consumers": [
 			{
@@ -27,14 +27,14 @@
 				"max_batch_timeout": 1,
 				"max_retries": 3,
 				"max_concurrency": 4,
-				"dead_letter_queue": "digital-buddhism-translations-dlq"
-			}
-		]
+				"dead_letter_queue": "digital-buddhism-translations-dlq",
+			},
+		],
 	},
 	"triggers": {
-		"crons": ["* * * * *"]
+		"crons": ["* * * * *"],
 	},
 	"observability": {
-		"enabled": true
-	}
+		"enabled": true,
+	},
 }

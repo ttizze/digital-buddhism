@@ -23,9 +23,13 @@ jobs:
         run: |
           bun install --frozen-lockfile
 
-      - name: Run Biome
+      - name: Check formatting with oxfmt
         run: |
-          bun x biome ci .
+          bun run format:check
+
+      - name: Lint with oxlint
+        run: |
+          bun run lint
 
       - name: Run typecheck
         run: |
@@ -62,4 +66,3 @@ jobs:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
         run: bun run db:prod:migrate
-

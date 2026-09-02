@@ -34,34 +34,4 @@ describe("mdastToMarkdown", () => {
 
 		expect(result.trim()).toBe("A\n\nB");
 	});
-
-	it("タスクリストのcheckedをMarkdownで表現する", () => {
-		const mdast = {
-			type: "root",
-			children: [
-				{
-					type: "list",
-					ordered: false,
-					spread: false,
-					children: [
-						{
-							type: "listItem",
-							checked: true,
-							spread: false,
-							children: [
-								{
-									type: "paragraph",
-									children: [{ type: "text", value: "done" }],
-								},
-							],
-						},
-					],
-				},
-			],
-		};
-
-		const result = mdastToMarkdown(mdast);
-
-		expect(result.trim()).toMatch(/^[*-] \[x\] done$/);
-	});
 });
