@@ -1,12 +1,13 @@
 "use client";
 
 import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
-import { use } from "react";
 import useSWR from "swr";
-import { mdastToMarkdown } from "@/app/[locale]/_domain/mdast-to-markdown";
+
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
+import { mdastToMarkdown } from "@/app/[locale]/_domain/mdast-to-markdown";
 import type { PageDetail } from "@/app/[locale]/types";
 import { getPageAnnotationsData } from "@/routes/$locale/-page-annotations-data";
+
 import type { NavigationData } from "../_db/queries";
 import { extractTocItems } from "../_domain/extract-toc-items";
 import { mdastToReact } from "./mdast-to-react";
@@ -27,11 +28,10 @@ type DisplayEntry = {
 	annotations: PageAnnotationsData | undefined;
 	glossUnits: GlossUnitsData;
 	displayPageDetail: PageDetail;
-	contentPromise: ReturnType<typeof mdastToReact>;
+	content: ReturnType<typeof mdastToReact>;
 };
 
-// use() へ渡す Promise は再レンダーで同一である必要があるため、
-// 入力（pageDetail + annotations + glossUnits）ごとにモジュールレベルでキャッシュする
+// 入力（pageDetail + annotations + glossUnits）ごとに描画済み要素をキャッシュする
 const displayEntries = new WeakMap<PageDetail, DisplayEntry>();
 
 function buildDisplayPageDetail(
@@ -78,7 +78,7 @@ function getDisplayEntry(
 		annotations,
 		glossUnits,
 		displayPageDetail,
-		contentPromise: mdastToReact({
+		content: mdastToReact({
 			mdast: displayPageDetail.mdastJson,
 			segments: displayPageDetail.segments,
 		}),
@@ -110,7 +110,7 @@ export function ContentWithTranslations({
 		pageDetail.id,
 		locale,
 	);
-	const { displayPageDetail, contentPromise } = getDisplayEntry(
+	const { displayPageDetail, content } = getDisplayEntry(
 		pageDetail,
 		annotations,
 		glossUnits,
@@ -124,7 +124,6 @@ export function ContentWithTranslations({
 		(segment) => segment.number === 0,
 	);
 
-	const content = use(contentPromise);
 	const markdown = mdastToMarkdown(displayPageDetail.mdastJson);
 	if (!titleSegment) return null;
 	return (
@@ -138,7 +137,7 @@ export function ContentWithTranslations({
 				title={displayPageDetail.title}
 				tocItems={tocItems}
 			/>
-			<h1 className="mb-0! ">
+			<h1 className="mb-0!">
 				<SegmentElement segment={titleSegment} />
 			</h1>
 			<div className="js-content">{content}</div>
