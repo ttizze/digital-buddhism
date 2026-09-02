@@ -1,9 +1,15 @@
+import { createClient } from "@libsql/client";
 import { describe, expect, it, vi } from "vite-plus/test";
 import {
 	getDatabaseConnectionConfig,
 	getDatabaseRequestContext,
 	runWithDatabaseRequestContext,
 } from "./request-context";
+
+function createTrackedClient() {
+	const client = createClient({ url: "file::memory:" });
+	return { client, close: vi.spyOn(client, "close") };
+}
 
 describe("データベースのrequestコンテキスト", () => {
 	it("requestごとにTurso接続情報を分離する", async () => {
@@ -35,7 +41,7 @@ describe("データベースのrequestコンテキスト", () => {
 
 	it("request終了時にKyselyをdestroyしてTurso clientを閉じる", async () => {
 		const destroy = vi.fn<() => Promise<void>>().mockResolvedValue(undefined);
-		const close = vi.fn();
+		const { client, close } = createTrackedClient();
 
 		await runWithDatabaseRequestContext(
 			{ url: "file:test.db", authToken: undefined },
@@ -44,7 +50,7 @@ describe("データベースのrequestコンテキスト", () => {
 				if (!context) throw new Error("request contextがありません");
 
 				context.kysely = { destroy };
-				context.client = { close };
+				context.client = client;
 			},
 		);
 
@@ -53,7 +59,7 @@ describe("データベースのrequestコンテキスト", () => {
 	});
 
 	it("Kyselyを使わなかったrequestではTurso clientを直接閉じる", async () => {
-		const close = vi.fn();
+		const { client, close } = createTrackedClient();
 
 		await runWithDatabaseRequestContext(
 			{ url: "file:test.db", authToken: undefined },
@@ -61,7 +67,7 @@ describe("データベースのrequestコンテキスト", () => {
 				const context = getDatabaseRequestContext();
 				if (!context) throw new Error("request contextがありません");
 
-				context.client = { close };
+				context.client = client;
 			},
 		);
 
@@ -69,7 +75,7 @@ describe("データベースのrequestコンテキスト", () => {
 	});
 
 	it("streaming responseの本文が完了するまでTurso clientを閉じない", async () => {
-		const close = vi.fn();
+		const { client, close } = createTrackedClient();
 		let finishBody: (() => void) | undefined;
 
 		const response = await runWithDatabaseRequestContext(
@@ -78,7 +84,7 @@ describe("データベースのrequestコンテキスト", () => {
 				const context = getDatabaseRequestContext();
 				if (!context) throw new Error("request contextがありません");
 
-				context.client = { close };
+				context.client = client;
 				return new Response(
 					new ReadableStream({
 						start(controller) {
@@ -97,7 +103,7 @@ describe("データベースのrequestコンテキスト", () => {
 	});
 
 	it("streaming responseがcancelされたらTurso clientを閉じる", async () => {
-		const close = vi.fn();
+		const { client, close } = createTrackedClient();
 
 		const response = await runWithDatabaseRequestContext(
 			{ url: "file:test.db", authToken: undefined },
@@ -105,7 +111,7 @@ describe("データベースのrequestコンテキスト", () => {
 				const context = getDatabaseRequestContext();
 				if (!context) throw new Error("request contextがありません");
 
-				context.client = { close };
+				context.client = client;
 				return new Response(new ReadableStream({ pull() {} }));
 			},
 		);
@@ -116,7 +122,7 @@ describe("データベースのrequestコンテキスト", () => {
 	});
 
 	it("streaming responseの本文生成が失敗してもTurso clientを閉じる", async () => {
-		const close = vi.fn();
+		const { client, close } = createTrackedClient();
 
 		const response = await runWithDatabaseRequestContext(
 			{ url: "file:test.db", authToken: undefined },
@@ -124,7 +130,7 @@ describe("データベースのrequestコンテキスト", () => {
 				const context = getDatabaseRequestContext();
 				if (!context) throw new Error("request contextがありません");
 
-				context.client = { close };
+				context.client = client;
 				return new Response(
 					new ReadableStream({
 						start(controller) {

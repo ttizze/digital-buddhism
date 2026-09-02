@@ -1,47 +1,45 @@
 import type { TipitakaTextLevel } from "@/drizzle/types";
+import * as v from "valibot";
 import { withImportFile } from "../application/import-tracking";
 import type { TipitakaFileMeta } from "../types";
 import { BOOKS_JSON_PATH } from "./constants";
 
-interface BooksJsonPayload {
-	generatedAt: string;
-	count: number;
-	data: Record<string, BookMeta>;
-}
-
-interface BookMeta {
-	level: string;
-	dirSegments: string[];
-	annotationTargetFileNames: string[];
-	chapterListTypes?: string[];
-}
-
-const TEXT_LEVELS = new Set<TipitakaTextLevel>([
-	"MULA",
-	"ATTHAKATHA",
-	"TIKA",
-	"OTHER",
-]);
+const textLevelSchema = v.picklist(["MULA", "ATTHAKATHA", "TIKA", "OTHER"]);
+const booksJsonSchema = v.object({
+	generatedAt: v.string(),
+	count: v.number(),
+	data: v.record(
+		v.string(),
+		v.object({
+			level: v.string(),
+			dirSegments: v.array(v.string()),
+			annotationTargetFileNames: v.array(v.string()),
+			chapterListTypes: v.optional(v.array(v.string())),
+		}),
+	),
+});
 
 function parseTextLevel(level: string, fileKey: string): TipitakaTextLevel {
-	const normalized = level.toUpperCase() as TipitakaTextLevel;
-	if (!TEXT_LEVELS.has(normalized)) {
+	const result = v.safeParse(textLevelSchema, level.toUpperCase());
+	if (!result.success) {
 		throw new Error(`Unknown text level for ${fileKey}: ${level}`);
 	}
-	return normalized;
+	return result.output;
 }
 
 export function parseBooksJson(raw: string): TipitakaFileMeta[] {
-	const payload = JSON.parse(raw) as BooksJsonPayload;
+	const payload = v.parse(booksJsonSchema, JSON.parse(raw));
 	const knownFileKeys = new Set(Object.keys(payload.data));
+	const parsedEntries = Object.entries(payload.data).map(([fileKey, meta]) => ({
+		fileKey,
+		meta,
+		textLevel: parseTextLevel(meta.level, fileKey),
+	}));
 	const textLevelByFileKey = new Map(
-		Object.entries(payload.data).map(([fileKey, meta]) => [
-			fileKey,
-			parseTextLevel(meta.level, fileKey),
-		]),
+		parsedEntries.map(({ fileKey, textLevel }) => [fileKey, textLevel]),
 	);
-	const tipitakaFileMetas = Object.entries(payload.data).map(
-		([fileKey, meta]): TipitakaFileMeta => {
+	const tipitakaFileMetas = parsedEntries.map(
+		({ fileKey, meta, textLevel }): TipitakaFileMeta => {
 			for (const targetFileKey of meta.annotationTargetFileNames) {
 				if (!knownFileKeys.has(targetFileKey)) {
 					throw new Error(
@@ -51,9 +49,9 @@ export function parseBooksJson(raw: string): TipitakaFileMeta[] {
 			}
 			return {
 				fileKey,
-				textLevel: textLevelByFileKey.get(fileKey) as TipitakaTextLevel,
-				dirSegments: [...meta.dirSegments],
-				annotationTargetFileKeys: [...meta.annotationTargetFileNames],
+				textLevel,
+				dirSegments: meta.dirSegments,
+				annotationTargetFileKeys: meta.annotationTargetFileNames,
 			};
 		},
 	);

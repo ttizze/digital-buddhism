@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import type { Root } from "mdast";
 import {
 	check,
 	foreignKey,
@@ -611,7 +612,7 @@ export const tipitakaPages = sqliteTable(
 			enum: tipitakaTextLevel.enumValues,
 		}),
 		position: integer().default(0).notNull(),
-		mdastJson: text("mdast_json", { mode: "json" }).notNull(),
+		mdastJson: text("mdast_json", { mode: "json" }).$type<Root>().notNull(),
 		createdAt: integer("created_at", { mode: "timestamp_ms" })
 			.defaultNow()
 			.notNull(),

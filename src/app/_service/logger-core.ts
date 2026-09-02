@@ -1,20 +1,26 @@
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
-export type LogContext = Record<string, unknown>;
+export type LogValue =
+	| boolean
+	| number
+	| string
+	| null
+	| undefined
+	| Error
+	| Blob
+	| readonly LogValue[]
+	| LogContext;
 
-export type LogMethod = (
-	contextOrMessage: LogContext | string,
-	message?: string,
-) => void;
+export type LogContext = { [key: string]: LogValue };
 
-export type Logger = Record<LogLevel, LogMethod>;
+export type LogMethod = (message: string, context?: LogContext) => void;
 
-const LOG_LEVEL_WEIGHT: Record<LogLevel, number> = {
-	debug: 10,
-	info: 20,
-	warn: 30,
-	error: 40,
-};
+export interface Logger {
+	debug: LogMethod;
+	info: LogMethod;
+	warn: LogMethod;
+	error: LogMethod;
+}
 
 export function isLogLevel(value: string | undefined): value is LogLevel {
 	return (
@@ -25,29 +31,48 @@ export function isLogLevel(value: string | undefined): value is LogLevel {
 	);
 }
 
-function errorReplacer(_key: string, value: unknown): unknown {
+function getLogLevelWeight(level: LogLevel): number {
+	switch (level) {
+		case "debug":
+			return 10;
+		case "info":
+			return 20;
+		case "warn":
+			return 30;
+		case "error":
+			return 40;
+	}
+}
+
+function errorReplacer(_key: string, value: LogValue): LogValue {
 	if (!(value instanceof Error)) return value;
 
 	return {
 		name: value.name,
 		message: value.message,
-		...(value.stack ? { stack: value.stack } : {}),
-		...(value.cause !== undefined ? { cause: value.cause } : {}),
+		stack: value.stack,
+		cause:
+			value.cause instanceof Error ? value.cause : JSON.stringify(value.cause),
 	};
 }
 
-function serializeLogEntry(entry: LogContext): string {
+interface LogEntry extends LogContext {
+	level: LogLevel;
+	time: string;
+	service: string;
+	msg: string;
+}
+
+function serializeLogEntry(entry: LogEntry): string {
 	try {
 		return JSON.stringify(entry, errorReplacer) ?? "";
 	} catch {
-		return (
-			JSON.stringify({
-				level: entry.level,
-				time: entry.time,
-				service: entry.service,
-				...(typeof entry.msg === "string" ? { msg: entry.msg } : {}),
-			}) ?? ""
-		);
+		return JSON.stringify({
+			level: entry.level,
+			time: entry.time,
+			service: entry.service,
+			msg: entry.msg,
+		});
 	}
 }
 
@@ -56,21 +81,18 @@ function writeLog(
 	threshold: LogLevel,
 	service: string,
 	baseContext: LogContext | undefined,
-	contextOrMessage: LogContext | string,
-	message: string | undefined,
+	message: string,
+	callContext: LogContext | undefined,
 ): void {
-	if (LOG_LEVEL_WEIGHT[level] < LOG_LEVEL_WEIGHT[threshold]) return;
+	if (getLogLevelWeight(level) < getLogLevelWeight(threshold)) return;
 
-	const callContext =
-		typeof contextOrMessage === "string" ? undefined : contextOrMessage;
-	const msg = typeof contextOrMessage === "string" ? contextOrMessage : message;
-	const entry: LogContext = {
+	const entry: LogEntry = {
 		...baseContext,
 		...callContext,
 		level,
 		time: new Date().toISOString(),
 		service,
-		...(msg !== undefined ? { msg } : {}),
+		msg: message,
 	};
 
 	console[level](serializeLogEntry(entry));
@@ -83,8 +105,8 @@ export function createStructuredLogger(
 ): Logger {
 	const createLogMethod =
 		(level: LogLevel): LogMethod =>
-		(contextOrMessage, message) =>
-			writeLog(level, threshold, service, context, contextOrMessage, message);
+		(message, callContext) =>
+			writeLog(level, threshold, service, context, message, callContext);
 
 	return {
 		debug: createLogMethod("debug"),

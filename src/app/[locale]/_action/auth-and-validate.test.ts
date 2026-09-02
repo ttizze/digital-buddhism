@@ -14,8 +14,8 @@ describe("requireAuth", () => {
 			getCurrentUser: vi.fn().mockResolvedValue(null),
 		};
 
-		const redirectResponse = await requireAuth(deps).catch((error: unknown) =>
-			error instanceof Response ? error : Promise.reject(error),
+		const redirectResponse = await requireAuth(deps).catch((cause: unknown) =>
+			cause instanceof Response ? cause : Promise.reject(cause),
 		);
 		expect(redirectResponse).toBeInstanceOf(Response);
 		if (!(redirectResponse instanceof Response)) {

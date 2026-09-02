@@ -1,4 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import type { TranslationQueueBinding } from "./app/api/translate/types";
+import type { TranslationQueueBatch } from "./app/api/translate/queue-consumer.server";
+
+type DatabaseConnection = { url?: string; authToken?: string };
 
 const {
 	handlerFetchMock,
@@ -8,22 +12,30 @@ const {
 	runWithTranslationQueueMock,
 	withSentryMock,
 } = vi.hoisted(() => ({
-	handlerFetchMock: vi.fn(),
-	consumeTranslationQueueMock: vi.fn(),
-	projectPendingReadModelsMock: vi.fn(),
+	handlerFetchMock: vi.fn<(request: Request) => Promise<Response>>(),
+	consumeTranslationQueueMock:
+		vi.fn<(batch: TranslationQueueBatch) => Promise<void>>(),
+	projectPendingReadModelsMock: vi.fn<() => Promise<number>>(),
 	runWithDatabaseRequestContextMock: vi.fn(
-		(_connection: unknown, callback: () => unknown) => callback(),
+		<Result>(_connection: DatabaseConnection, callback: () => Result): Result =>
+			callback(),
 	),
 	runWithTranslationQueueMock: vi.fn(
-		(_queue: unknown, callback: () => unknown) => callback(),
+		<Result>(_queue: TranslationQueueBinding, callback: () => Result): Result =>
+			callback(),
 	),
 	withSentryMock: vi.fn(
-		(_options: unknown, workerEntry: unknown) => workerEntry,
+		<Options, WorkerEntry>(
+			_options: Options,
+			workerEntry: WorkerEntry,
+		): WorkerEntry => workerEntry,
 	),
 }));
-const cacheMatchMock = vi.fn();
-const cachePutMock = vi.fn();
-const waitUntilMock = vi.fn();
+const cacheMatchMock =
+	vi.fn<(request: Request) => Promise<Response | undefined>>();
+const cachePutMock =
+	vi.fn<(request: Request, response: Response) => Promise<void>>();
+const waitUntilMock = vi.fn<(promise: Promise<void | number>) => void>();
 const kvGetMock = vi.fn();
 const kvPutMock = vi.fn();
 const readModelBinding = {
@@ -147,7 +159,8 @@ describe("Cloudflare Workerの公開レスポンスキャッシュ", () => {
 		expect(await response.text()).toBe("fresh body");
 		expect(cachePutMock).toHaveBeenCalledOnce();
 		expect(cachePutMock.mock.calls[0]?.[0]).toBe(request);
-		const cachedResponse = cachePutMock.mock.calls[0]?.[1] as Response;
+		const cachedResponse = cachePutMock.mock.calls[0]?.[1];
+		if (!cachedResponse) throw new Error("response was not written to cache");
 		expect(cachedResponse.headers.get("x-frame-options")).toBe("DENY");
 		expect(waitUntilMock).toHaveBeenCalledWith(
 			cachePutMock.mock.results[0]?.value,

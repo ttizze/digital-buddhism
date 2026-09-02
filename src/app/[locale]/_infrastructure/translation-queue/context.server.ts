@@ -21,7 +21,7 @@ function getTranslationQueue(): TranslationQueueBinding {
 
 export function enqueueTranslationMessage(
 	message: TranslationQueueMessage,
-): Promise<unknown> {
+): Promise<void> {
 	return getTranslationQueue().send(message);
 }
 

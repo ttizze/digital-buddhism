@@ -3,14 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import useSWR from "swr";
-import {
-	beforeEach,
-	describe,
-	expect,
-	it,
-	type Mock,
-	vi,
-} from "vite-plus/test";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { NotificationJson } from "@/app/api/notifications/_types/notification";
 import { NotificationsDropdownClient } from "./client";
 
@@ -27,9 +20,13 @@ vi.mock("@tanstack/react-router", () => ({
 	Link: ({
 		to,
 		children,
-		...props
-	}: { to: string; children?: ReactNode } & Record<string, unknown>) => (
-		<a href={to} {...props}>
+		className,
+	}: {
+		to: string;
+		children?: ReactNode;
+		className?: string;
+	}) => (
+		<a className={className} href={to}>
 			{children}
 		</a>
 	),
@@ -62,9 +59,11 @@ describe("NotificationsDropdownClient", () => {
 	});
 
 	it("ベルアイコンと未読数バッジが表示される", () => {
-		(useSWR as unknown as Mock).mockReturnValue({
+		vi.mocked(useSWR).mockReturnValue({
 			data: { notifications: sampleNotifications },
+			error: undefined,
 			isLoading: false,
+			isValidating: false,
 			mutate: vi.fn(),
 		});
 
@@ -75,9 +74,11 @@ describe("NotificationsDropdownClient", () => {
 	});
 
 	it("通知が存在しない場合は『No notifications』と表示される", async () => {
-		(useSWR as unknown as Mock).mockReturnValue({
+		vi.mocked(useSWR).mockReturnValue({
 			data: { notifications: [] },
+			error: undefined,
 			isLoading: false,
+			isValidating: false,
 			mutate: vi.fn(),
 		});
 
@@ -88,9 +89,11 @@ describe("NotificationsDropdownClient", () => {
 	});
 
 	it("翻訳投票通知の内容を表示する", async () => {
-		(useSWR as unknown as Mock).mockReturnValue({
+		vi.mocked(useSWR).mockReturnValue({
 			data: { notifications: sampleNotifications },
+			error: undefined,
 			isLoading: false,
+			isValidating: false,
 			mutate: vi.fn(),
 		});
 
@@ -111,9 +114,11 @@ describe("NotificationsDropdownClient", () => {
 
 	it("既読更新APIが失敗した場合はclient cacheを既読にしない", async () => {
 		const mutate = vi.fn();
-		(useSWR as unknown as Mock).mockReturnValue({
+		vi.mocked(useSWR).mockReturnValue({
 			data: { notifications: sampleNotifications },
+			error: undefined,
 			isLoading: false,
+			isValidating: false,
 			mutate,
 		});
 		vi.stubGlobal(

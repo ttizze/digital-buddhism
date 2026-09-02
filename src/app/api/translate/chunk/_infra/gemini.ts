@@ -62,9 +62,10 @@ export async function getGeminiModelResponse({
 			},
 			maxOutputTokens: MAX_OUTPUT_TOKENS,
 			safetySettings,
-			...(model === "gemini-3.1-pro-preview" || model === "gemini-3.7-flash"
-				? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } }
-				: {}),
+			thinkingConfig:
+				model === "gemini-3.1-pro-preview" || model === "gemini-3.7-flash"
+					? { thinkingLevel: ThinkingLevel.LOW }
+					: undefined,
 		},
 	});
 	const jsonText = response.text?.trim() ?? "";

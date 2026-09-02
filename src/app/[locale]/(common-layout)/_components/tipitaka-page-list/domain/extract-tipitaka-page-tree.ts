@@ -49,7 +49,7 @@ export function extractTipitakaPageTree(
 			children.push({
 				id: row.id,
 				slug: row.slug,
-				parentId: row.parentId as number,
+				parentId,
 				position: row.position,
 				titleSegmentId: row.titleSegmentId,
 				titleText: row.titleText,

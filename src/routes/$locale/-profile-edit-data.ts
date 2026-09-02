@@ -11,18 +11,16 @@ const profileEditDataInput = v.object({
 	handle: v.pipe(v.string(), v.minLength(1)),
 });
 
-const profileEditFormInput = (value: unknown) => {
-	if (!(value instanceof FormData)) {
-		throw new Error("Expected FormData");
-	}
-
-	const locale = value.get("locale");
-	if (!v.safeParse(supportedLocaleSchema, locale).success) {
-		throw new Error("Invalid locale");
-	}
-
-	return value;
-};
+const profileEditFormInput = v.parser(
+	v.pipe(
+		v.instance(FormData, "Expected FormData"),
+		v.check(
+			(formData) =>
+				v.safeParse(supportedLocaleSchema, formData.get("locale")).success,
+			"Invalid locale",
+		),
+	),
+);
 
 export const getProfileEditData = createServerFn({ method: "GET" })
 	.validator(profileEditDataInput)
@@ -41,11 +39,8 @@ export const getProfileEditData = createServerFn({ method: "GET" })
 export const updateProfile = createServerFn({ method: "POST" })
 	.validator(profileEditFormInput)
 	.handler(async ({ data }) => {
-		const locale = data.get("locale");
-		const handle = data.get("handle");
-		if (typeof locale !== "string" || typeof handle !== "string") {
-			throw new Error("Invalid profile edit form data");
-		}
+		const locale = v.parse(supportedLocaleSchema, data.get("locale"));
+		const handle = v.parse(v.string(), data.get("handle"));
 
 		const currentUser = await getCurrentUser();
 		if (!currentUser) {

@@ -79,10 +79,13 @@ export function LocaleSelector({
 	const navigate = useNavigate();
 	const location = useLocation();
 	const targetLocale = useLocale();
-	const { locale: routeLocale, pageSlug } = useParams({ strict: false }) as {
-		locale?: string;
-		pageSlug?: string;
-	};
+	const { locale: routeLocale, pageSlug } = v.parse(
+		v.object({
+			locale: v.optional(v.string()),
+			pageSlug: v.optional(v.string()),
+		}),
+		useParams({ strict: false }),
+	);
 	const currentLocale = routeLocale ?? targetLocale;
 	const handleLocaleChange = (value: string) => {
 		setOpen(false);
@@ -112,12 +115,9 @@ export function LocaleSelector({
 	const { sourceLocale, translatedLocales, translationProofs } = data ?? {};
 
 	// Build a map of locale => proof status using Kysely enum values directly
-	const proofStatusMap = Object.fromEntries(
-		(translationProofs ?? []).map<[string, TranslationProofStatus]>((p) => [
-			p.locale,
-			p.translationProofStatus,
-		]),
-	) as Record<string, TranslationProofStatus>;
+	const proofStatusMap = new Map(
+		(translationProofs ?? []).map((p) => [p.locale, p.translationProofStatus]),
+	);
 
 	const localeOptionWithStatus = buildLocaleOptions({
 		sourceLocale,

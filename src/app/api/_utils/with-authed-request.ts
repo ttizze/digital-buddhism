@@ -6,8 +6,8 @@ export type ApiCurrentUser = NonNullable<
 	Awaited<ReturnType<typeof getCurrentUserFromHeaders>>
 >;
 
-export function privateJsonResponse(
-	data: unknown,
+export function privateJsonResponse<Data>(
+	data: Data,
 	init: ResponseInit,
 ): Response {
 	const headers = new Headers(init.headers);

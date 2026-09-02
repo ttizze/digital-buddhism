@@ -1,17 +1,17 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import * as v from "valibot";
 
-interface BookData {
-	level: "Mula" | "Atthakatha" | "Tika" | "Other";
-	dirSegments: string[];
-	chapterListTypes?: string[];
-}
-
-interface BooksJsonPayload {
-	generatedAt: string;
-	count: number;
-	data: Record<string, BookData>;
-}
+const bookDataSchema = v.object({
+	level: v.picklist(["Mula", "Atthakatha", "Tika", "Other"]),
+	dirSegments: v.array(v.string()),
+	chapterListTypes: v.optional(v.array(v.string())),
+});
+const booksJsonPayloadSchema = v.object({
+	generatedAt: v.string(),
+	count: v.number(),
+	data: v.record(v.string(), bookDataSchema),
+});
 
 const BOOKS_JSON_PATH = path.resolve(
 	process.cwd(),
@@ -30,27 +30,18 @@ function loadBooksJson(): Record<string, BookData> {
 		);
 	}
 	const raw = fs.readFileSync(BOOKS_JSON_PATH, "utf8");
-	const payload = JSON.parse(raw) as BooksJsonPayload;
-	if (!payload?.data) {
-		throw new Error("books.json の形式が不正です。");
-	}
+	const payload = v.parse(booksJsonPayloadSchema, JSON.parse(raw));
 	return payload.data;
 }
 
-export function getFileData(fileName: string): {
-	level: BookData["level"];
-	dirSegments: string[];
-	chapterListTypes?: string[];
-} {
+type BookData = v.InferOutput<typeof bookDataSchema>;
+
+export function getFileData(fileName: string) {
 	const book = booksData[fileName.toLowerCase()];
 	if (!book) {
 		throw new Error(
 			`books.json に分類情報がありません: ${fileName.toLowerCase()}`,
 		);
 	}
-	return {
-		level: book.level,
-		dirSegments: Array.isArray(book.dirSegments) ? [...book.dirSegments] : [],
-		chapterListTypes: book.chapterListTypes,
-	};
+	return book;
 }

@@ -2,12 +2,21 @@ import { ArrowUpFromLine } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useLocale, useTranslations } from "use-intl";
+import * as v from "valibot";
 import { useHydrated } from "@/app/_hooks/use-hydrated";
 import { authClient } from "@/app/[locale]/_service/auth-client";
 import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form";
 import { StartButton } from "@/app/[locale]/(common-layout)/_components/start-button";
-import type { ActionResponse } from "@/app/types";
 import { Button } from "@/components/ui/button";
+
+const addTranslationStateSchema = v.object({
+	success: v.optional(v.boolean(), false),
+	message: v.optional(v.string()),
+	validationErrors: v.optional(
+		v.object({ text: v.optional(v.array(v.string())) }),
+	),
+});
+type AddTranslationState = v.InferOutput<typeof addTranslationStateSchema>;
 
 interface AddTranslationFormProps {
 	segmentId: number;
@@ -26,7 +35,7 @@ export function AddTranslationForm({
 	const formRef = useRef<HTMLFormElement>(null);
 	const isAddingTranslationRef = useRef(false);
 	const [addTranslationState, setAddTranslationState] =
-		useState<ActionResponse>({
+		useState<AddTranslationState>({
 			success: false,
 		});
 	const [isAddingTranslation, setIsAddingTranslation] = useState(false);
@@ -47,7 +56,7 @@ export function AddTranslationForm({
 			});
 			if (!response) return;
 
-			const body = (await response.json()) as ActionResponse;
+			const body = v.parse(addTranslationStateSchema, await response.json());
 			if (!response.ok) {
 				setAddTranslationState({
 					success: false,

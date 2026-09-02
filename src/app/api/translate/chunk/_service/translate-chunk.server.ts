@@ -56,10 +56,9 @@ export async function translateChunk(
 		(segment) => !translatedNumbers.has(segment.number),
 	).length;
 	if (remainingCount > 0) {
-		logger.error(
-			{ pending_count: remainingCount },
-			"一部要素は翻訳できませんでした",
-		);
+		logger.error("一部要素は翻訳できませんでした", {
+			pending_count: remainingCount,
+		});
 		throw new Error(
 			"部分的な翻訳のみ完了し、残存要素はQueue再試行の対象です。",
 		);

@@ -2,21 +2,25 @@ import { Fragment, type ReactNode } from "react";
 import enMessages from "../../messages/en.json";
 
 type Tree = { [key: string]: string | Tree };
-type RichValues = Record<string, unknown>;
+type RichHandler = (children: ReactNode) => ReactNode;
+type MessageValue = string | number | boolean | null | undefined | RichHandler;
+type RichValues = Record<string, MessageValue>;
+
+const messages = enMessages satisfies Tree;
 
 function lookup(path: string): string {
-	let node: string | Tree | undefined = enMessages as Tree;
+	let node: string | Tree | undefined = messages;
 	for (const part of path.split(".")) {
-		if (typeof node !== "object" || node === undefined) return path;
+		if (node === undefined || !(node instanceof Object)) return path;
 		node = node[part];
 	}
-	return typeof node === "string" ? node : path;
+	return node === undefined || node instanceof Object ? path : node;
 }
 
 function interpolate(message: string, values?: RichValues): string {
 	let result = message;
 	for (const [name, value] of Object.entries(values ?? {})) {
-		if (typeof value === "function") continue;
+		if (value instanceof Function) continue;
 		result = result.replaceAll(`{${name}}`, String(value));
 	}
 	return result;
@@ -32,11 +36,7 @@ function renderRich(message: string, values?: RichValues): ReactNode {
 			parts.push(message.slice(lastIndex, match.index));
 		}
 		const handler = values?.[match[1]];
-		parts.push(
-			typeof handler === "function"
-				? (handler as (children: ReactNode) => ReactNode)(match[2])
-				: match[2],
-		);
+		parts.push(handler instanceof Function ? handler(match[2]) : match[2]);
 		lastIndex = match.index + match[0].length;
 		match = tagRegex.exec(message);
 	}

@@ -57,11 +57,8 @@ export async function importAllContentPages(
 	}
 
 	const relations = await syncAnnotationRelations(fileMetas, pageIdByFileKey);
-	logger.info(
-		{
-			contentPageCount: pageIdByFileKey.size,
-			...relations,
-		},
-		"Imported Tipitaka content pages and annotation relations",
-	);
+	logger.info("Imported Tipitaka content pages and annotation relations", {
+		contentPageCount: pageIdByFileKey.size,
+		...relations,
+	});
 }

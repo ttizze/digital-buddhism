@@ -35,8 +35,6 @@ export type TranslationJobForToast = v.InferOutput<
 	typeof translationJobForToastSchema
 >;
 
-export function parseTranslationJobsForToast(
-	input: unknown,
-): TranslationJobForToast[] {
-	return v.parse(translationJobsForToastSchema, input);
-}
+export const parseTranslationJobsForToast = v.parser(
+	translationJobsForToastSchema,
+);

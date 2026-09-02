@@ -3,14 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { LocaleSelector } from "./client";
 
-if (typeof global.ResizeObserver === "undefined") {
+if (!global.ResizeObserver) {
 	global.ResizeObserver = class {
 		observe() {}
 		unobserve() {}
 		disconnect() {}
 	};
 }
-if (typeof window.HTMLElement.prototype.scrollIntoView !== "function") {
+if (!window.HTMLElement.prototype.scrollIntoView) {
 	window.HTMLElement.prototype.scrollIntoView = () => {};
 }
 // use-intl and TanStack Router hooks are mocked for the isolated component test.

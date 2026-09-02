@@ -22,20 +22,17 @@ import {
 	readPageAnnotations,
 	readPageContentData,
 } from "./reader.server";
-import {
-	runWithTipitakaReadModelStore,
-	type TipitakaReadModelStore,
-} from "./store";
+import { createKvReadModelStore, runWithTipitakaReadModelStore } from "./store";
 
 await setupDbPerFile(import.meta.url);
 
 const values = new Map<string, string>();
-const store: TipitakaReadModelStore = {
+const store = createKvReadModelStore({
 	get: async (key) => values.get(key) ?? null,
 	put: async (key, value) => {
 		values.set(key, value);
 	},
-};
+});
 
 describe("Tipitaka read model", () => {
 	beforeEach(async () => {
@@ -115,10 +112,8 @@ describe("Tipitaka read model", () => {
 			.execute();
 		await publishPageTranslationOverlay(page.id, "ja", store);
 		const pointerKey = pageTranslationPointerKey(page.id, "ja");
-		const pointer = JSON.parse(values.get(pointerKey) ?? "{}") as {
-			revision: string;
-			previousRevision?: string;
-		};
+		const pointer = await store.get(pointerKey);
+		if (!pointer) throw new Error("Translation pointer not found");
 		expect(pointer.previousRevision).toBeTypeOf("string");
 		values.delete(pageTranslationKey(page.id, "ja", pointer.revision));
 
@@ -228,7 +223,7 @@ describe("Tipitaka read model", () => {
 		});
 		let activePuts = 0;
 		let maxActivePuts = 0;
-		const delayedStore: TipitakaReadModelStore = {
+		const delayedStore = createKvReadModelStore({
 			get: async (key) => values.get(key) ?? null,
 			put: async (key, value) => {
 				activePuts += 1;
@@ -240,7 +235,7 @@ describe("Tipitaka read model", () => {
 					activePuts -= 1;
 				}
 			},
-		};
+		});
 
 		await publishAllTipitakaReadModels(delayedStore);
 

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { createContext, useContext, useState } from "react";
+import * as v from "valibot";
 import { DEFAULT_VIEW, VIEW_VALUES, type View } from "@/app/_constants/view";
 
 export interface TestSearchState {
@@ -7,9 +8,7 @@ export interface TestSearchState {
 	annotations: string[];
 }
 
-type SearchUpdate =
-	| Partial<TestSearchState>
-	| ((previous: TestSearchState) => TestSearchState);
+type SearchUpdate = (previous: TestSearchState) => TestSearchState;
 
 interface TestSearchContextValue {
 	search: TestSearchState;
@@ -20,7 +19,7 @@ const TestSearchContext = createContext<TestSearchContextValue | null>(null);
 
 function parseSearchParams(initialSearchParams: string): TestSearchState {
 	const params = new URLSearchParams(initialSearchParams);
-	const rawView = params.get("view");
+	const viewResult = v.safeParse(v.picklist(VIEW_VALUES), params.get("view"));
 	const annotations = params
 		.getAll("annotations")
 		.flatMap((value) =>
@@ -30,20 +29,15 @@ function parseSearchParams(initialSearchParams: string): TestSearchState {
 		);
 
 	return {
-		view: VIEW_VALUES.includes(rawView as View)
-			? (rawView as View)
-			: DEFAULT_VIEW,
+		view: viewResult.success ? viewResult.output : DEFAULT_VIEW,
 		annotations,
 	};
 }
 
 function parseJsonAnnotations(value: string): string[] {
 	try {
-		const parsed: unknown = JSON.parse(value);
-		return Array.isArray(parsed) &&
-			parsed.every((item) => typeof item === "string")
-			? parsed
-			: [];
+		const result = v.safeParse(v.array(v.string()), JSON.parse(value));
+		return result.success ? result.output : [];
 	} catch {
 		return [];
 	}
@@ -60,11 +54,7 @@ export function TanStackSearchTestProvider({
 		parseSearchParams(initialSearchParams),
 	);
 	const navigate = ({ search: update }: { search: SearchUpdate }) => {
-		setSearch((previous) =>
-			typeof update === "function"
-				? update(previous)
-				: { ...previous, ...update },
-		);
+		setSearch(update);
 	};
 
 	return (
@@ -83,9 +73,9 @@ function useTestSearchContext() {
 }
 
 export const testPageDetailRoute = {
-	useSearch<T>(options?: { select?: (search: TestSearchState) => T }) {
+	useSearch<T>({ select }: { select: (search: TestSearchState) => T }) {
 		const { search } = useTestSearchContext();
-		return options?.select ? options.select(search) : (search as T);
+		return select(search);
 	},
 	useNavigate() {
 		return useTestSearchContext().navigate;

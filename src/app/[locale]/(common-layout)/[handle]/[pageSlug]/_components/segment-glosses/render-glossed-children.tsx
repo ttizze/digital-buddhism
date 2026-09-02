@@ -1,17 +1,18 @@
+/* oxlint-disable anti-slop/no-runtime-typeof -- ReactNode is a framework-defined union; text primitives must be distinguished from elements without runtime schema parsing. */
 import { Children, cloneElement, isValidElement, type ReactNode } from "react";
 import type { SegmentGlossUnit } from "@/app/api/segment-glosses/_domain/segment-glosses";
 import { GlossUnit } from "./gloss-unit";
 
 function textContent(node: ReactNode): string {
-	if (typeof node === "string" || typeof node === "number") return String(node);
-	if (!isValidElement<{ children?: ReactNode }>(node)) {
-		let text = "";
-		Children.forEach(node, (child) => {
-			text += textContent(child);
-		});
-		return text;
-	}
-	return textContent(node.props.children);
+	let text = "";
+	Children.forEach(node, (child) => {
+		if (isValidElement<{ children?: ReactNode }>(child)) {
+			text += textContent(child.props.children);
+		} else if (typeof child === "string" || typeof child === "number") {
+			text += String(child);
+		}
+	});
+	return text;
 }
 
 function validGlossUnits(
@@ -47,17 +48,24 @@ export function renderGlossedChildren(
 	if (!ordered || textContent(children) !== sourceText) return children;
 
 	let cursor = 0;
-	const transform = (node: ReactNode, canWrap: boolean): ReactNode => {
-		if (typeof node === "number") {
+	const transform = (nodes: ReactNode, canWrap: boolean): ReactNode =>
+		Children.map(nodes, (node) => {
+			if (isValidElement<{ children?: ReactNode }>(node)) {
+				const isInteractiveElement =
+					node.type === "a" || node.type === "button";
+				return cloneElement(
+					node,
+					undefined,
+					transform(node.props.children, canWrap && !isInteractiveElement),
+				);
+			}
+
+			if (typeof node !== "string" && typeof node !== "number") return node;
 			const text = String(node);
-			cursor += text.length;
-			return node;
-		}
-		if (typeof node === "string") {
 			const nodeStart = cursor;
-			const nodeEnd = nodeStart + node.length;
+			const nodeEnd = nodeStart + text.length;
 			cursor = nodeEnd;
-			if (!canWrap) return node;
+			if (!canWrap || text.length === 0) return node;
 
 			const contained = ordered.filter(
 				(unit) => unit.startOffset >= nodeStart && unit.endOffset <= nodeEnd,
@@ -70,31 +78,18 @@ export function renderGlossedChildren(
 				const localStart = unit.startOffset - nodeStart;
 				const localEnd = unit.endOffset - nodeStart;
 				if (localStart > localCursor) {
-					parts.push(node.slice(localCursor, localStart));
+					parts.push(text.slice(localCursor, localStart));
 				}
 				parts.push(
 					<GlossUnit key={unit.id} unit={unit}>
-						{node.slice(localStart, localEnd)}
+						{text.slice(localStart, localEnd)}
 					</GlossUnit>,
 				);
 				localCursor = localEnd;
 			}
-			if (localCursor < node.length) parts.push(node.slice(localCursor));
+			if (localCursor < text.length) parts.push(text.slice(localCursor));
 			return parts;
-		}
-		if (!isValidElement<{ children?: ReactNode }>(node)) {
-			return Children.map(node, (child) => transform(child, canWrap));
-		}
+		});
 
-		const isInteractiveElement = node.type === "a" || node.type === "button";
-		return cloneElement(
-			node,
-			undefined,
-			Children.map(node.props.children, (child) =>
-				transform(child, canWrap && !isInteractiveElement),
-			),
-		);
-	};
-
-	return Children.map(children, (child) => transform(child, true));
+	return transform(children, true);
 }

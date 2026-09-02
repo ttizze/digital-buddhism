@@ -5,9 +5,9 @@
 	"camelCase": true,
 	"excludePattern": "__drizzle_migrations",
 	"customImports": {
-		"JsonValue": "../drizzle/types#JsonValue",
 		"ImportFileStatus": "../drizzle/types#ImportFileStatus",
 		"ImportRunStatus": "../drizzle/types#ImportRunStatus",
+		"Root": "mdast#Root",
 		"TipitakaTextLevel": "../drizzle/types#TipitakaTextLevel",
 		"TranslationProofStatus": "../drizzle/types#TranslationProofStatus",
 		"TranslationStatus": "../drizzle/types#TranslationStatus"
@@ -40,7 +40,7 @@
 			"sessions.updated_at": "Generated<Date>",
 			"tipitaka_page_annotation_targets.position": "Generated<number>",
 			"tipitaka_pages.created_at": "Generated<Date>",
-			"tipitaka_pages.mdast_json": "JsonValue",
+			"tipitaka_pages.mdast_json": "Root",
 			"tipitaka_pages.position": "Generated<number>",
 			"tipitaka_pages.text_level": "TipitakaTextLevel | null",
 			"tipitaka_pages.updated_at": "Generated<Date>",

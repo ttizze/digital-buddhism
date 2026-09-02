@@ -54,11 +54,11 @@ export async function authAndValidate<const TSchema extends v.GenericSchema>(
 	const logger = createServerLogger("auth-and-validate", { userId: user.id });
 	if (!parsed.success) {
 		const failedFields = Object.keys(parsed.validationErrors);
-		logger.warn({ failedFields }, "Valibot validation errors");
+		logger.warn("Valibot validation errors", { failedFields });
 		// 開発環境では入力値もデバッグ出力
 		if (import.meta.env.DEV) {
 			const rawData = Object.fromEntries(formData.entries());
-			logger.debug({ rawData }, "Valibot validation raw data");
+			logger.debug("Valibot validation raw data", { rawData });
 		}
 		return {
 			success: false,

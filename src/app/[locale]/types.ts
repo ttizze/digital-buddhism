@@ -1,5 +1,6 @@
 import type { SegmentGlossUnit } from "@/app/api/segment-glosses/_domain/segment-glosses";
-import type { JsonValue, TipitakaTextLevel } from "@/drizzle/types";
+import type { Root } from "mdast";
+import type { TipitakaTextLevel } from "@/drizzle/types";
 
 export type SegmentForPage = {
 	id: number;
@@ -33,7 +34,7 @@ export type PageDetail = {
 	textLevel: TipitakaTextLevel | null;
 	parentId: number | null;
 	position: number;
-	mdastJson: JsonValue;
+	mdastJson: Root;
 	segments: SegmentForDetail[];
 	createdAt: Date;
 	updatedAt: Date;

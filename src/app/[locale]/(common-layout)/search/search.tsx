@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Edit3, FileText, SearchIcon, User } from "lucide-react";
 import { type FormEvent, useRef, useTransition } from "react";
 import { useTranslations } from "use-intl";
+import * as v from "valibot";
 import {
 	CATEGORIES,
 	type Category,
@@ -9,6 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const categorySchema = v.picklist(CATEGORIES);
 
 function renderIcon(category: Category) {
 	switch (category) {
@@ -84,7 +87,7 @@ export function SearchPageClient({
 
 			<Tabs
 				onValueChange={(val) => {
-					navigateToSearch(val as Category);
+					navigateToSearch(v.parse(categorySchema, val));
 				}}
 				value={category}
 			>

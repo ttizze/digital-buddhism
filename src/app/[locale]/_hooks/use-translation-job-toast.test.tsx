@@ -1,13 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { toast } from "sonner";
-import {
-	beforeEach,
-	describe,
-	expect,
-	it,
-	type Mock,
-	vi,
-} from "vite-plus/test";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { TranslationJobForToast } from "@/app/types/translation-job";
 import { useTranslationJobToast } from "./use-translation-job-toast";
@@ -77,7 +70,7 @@ describe("useTranslationToast", () => {
 			},
 		);
 
-		const toastMock = toast as unknown as Mock;
+		const toastMock = vi.mocked(toast);
 		const firstId = toastMock.mock.results[0].value;
 		expect(firstId).toBeDefined();
 
@@ -92,11 +85,12 @@ describe("useTranslationToast", () => {
 
 	it("closes after all jobs done (duration 3000)", () => {
 		renderHook(() => useTranslationJobToast(completedJobs));
-		const toastMock = toast as unknown as Mock;
+		const toastMock = vi.mocked(toast);
 		const call = toastMock.mock.calls.at(-1); // 最後の呼び出し
 		expect(call).toBeDefined();
 		if (!call) throw new Error("toast was not called");
 		const opts = call[1];
+		if (!opts) throw new Error("toast options were not provided");
 		expect(opts.duration).toBe(3000);
 	});
 	it("keeps toast open for long-running jobs", () => {
@@ -111,11 +105,12 @@ describe("useTranslationToast", () => {
 		);
 		rerender({ jobs: inProgressJobs });
 
-		const toastMock = toast as unknown as Mock;
+		const toastMock = vi.mocked(toast);
 		const call = toastMock.mock.calls.at(-1);
 		expect(call).toBeDefined();
 		if (!call) throw new Error("toast was not called");
 		const opts = call[1];
+		if (!opts) throw new Error("toast options were not provided");
 		expect(opts.duration).toBe(Number.POSITIVE_INFINITY);
 	});
 });

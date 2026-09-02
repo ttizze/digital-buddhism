@@ -3,17 +3,18 @@ import type { ErrorComponentProps } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { AlertCircle } from "lucide-react";
 import { useEffect } from "react";
+import * as v from "valibot";
 import { Button } from "@/components/ui/button";
+
+const errorDigestSchema = v.object({ digest: v.string() });
 
 export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
 	useEffect(() => {
 		Sentry.captureException(error);
 	}, [error]);
 
-	const digest =
-		"digest" in error && typeof error.digest === "string"
-			? error.digest
-			: undefined;
+	const parsedError = v.safeParse(errorDigestSchema, error);
+	const digest = parsedError.success ? parsedError.output.digest : undefined;
 
 	return (
 		<div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">

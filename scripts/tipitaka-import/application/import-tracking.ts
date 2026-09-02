@@ -7,8 +7,8 @@ import { createCliLogger } from "../logger";
 const MAX_MESSAGE_LENGTH = 2_000;
 const logger = createCliLogger("tipitaka-import-tracking");
 
-function errorMessage(error: unknown): string {
-	const message = error instanceof Error ? error.message : String(error);
+function errorMessage(cause: unknown): string {
+	const message = cause instanceof Error ? cause.message : String(cause);
 	return message.slice(0, MAX_MESSAGE_LENGTH);
 }
 
@@ -19,14 +19,14 @@ function relativeImportPath(filePath: string): string {
 
 async function markRunFailed(
 	importRunId: number,
-	error: unknown,
+	cause: unknown,
 ): Promise<void> {
 	try {
 		await db
 			.updateTable("importRuns")
 			.set({
 				status: "FAILED",
-				message: errorMessage(error),
+				message: errorMessage(cause),
 				finishedAt: new Date(),
 			})
 			.where("id", "=", importRunId)
@@ -34,23 +34,23 @@ async function markRunFailed(
 			.returning("id")
 			.executeTakeFirstOrThrow();
 	} catch (trackingError) {
-		logger.error(
-			{ err: trackingError, importRunId },
-			"Failed to record failed import run",
-		);
+		logger.error("Failed to record failed import run", {
+			err: errorMessage(trackingError),
+			importRunId,
+		});
 	}
 }
 
 async function markFileFailed(
 	importFileId: number,
-	error: unknown,
+	cause: unknown,
 ): Promise<void> {
 	try {
 		await db
 			.updateTable("importFiles")
 			.set({
 				status: "FAILED",
-				message: errorMessage(error),
+				message: errorMessage(cause),
 				finishedAt: new Date(),
 			})
 			.where("id", "=", importFileId)
@@ -58,10 +58,10 @@ async function markFileFailed(
 			.returning("id")
 			.executeTakeFirstOrThrow();
 	} catch (trackingError) {
-		logger.error(
-			{ err: trackingError, importFileId },
-			"Failed to record failed import file",
-		);
+		logger.error("Failed to record failed import file", {
+			err: errorMessage(trackingError),
+			importFileId,
+		});
 	}
 }
 
@@ -117,10 +117,11 @@ export async function withImportFile<T>({
 				})
 				.executeTakeFirstOrThrow();
 		} catch (trackingError) {
-			logger.error(
-				{ err: trackingError, importRunId, path: importPath },
-				"Failed to record unreadable import file",
-			);
+			logger.error("Failed to record unreadable import file", {
+				err: errorMessage(trackingError),
+				importRunId,
+				path: importPath,
+			});
 		}
 		throw error;
 	}

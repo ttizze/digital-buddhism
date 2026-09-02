@@ -38,21 +38,31 @@ interface TargetAnchor {
 	segmentId: number;
 }
 
-function paragraphGroupKey(segment: LocatedSegment): string | null {
-	if (
-		segment.sourceParagraphNumber === null ||
-		segment.sourceParagraphOccurrence === null
-	) {
-		return null;
-	}
-	return `${segment.sourceBookCode ?? ""}\u0000${segment.sourceParagraphNumber}\u0000${segment.sourceParagraphOccurrence}`;
+interface TargetAnchors {
+	anchors: TargetAnchor[];
+	prefaceSegmentId: number | null;
+	prefaceSegmentIdByBook: Map<string, number>;
+}
+
+function paragraphGroupKey(
+	bookCode: string | null,
+	paragraphNumber: string,
+	occurrence: number,
+): string {
+	return `${bookCode ?? ""}\u0000${paragraphNumber}\u0000${occurrence}`;
 }
 
 function groupSourceParagraphs(segments: LocatedSegment[]): ParagraphGroup[] {
 	const groups = new Map<string, ParagraphGroup>();
 	for (const segment of segments) {
-		const key = paragraphGroupKey(segment);
-		if (!key) continue;
+		const paragraphNumber = segment.sourceParagraphNumber;
+		const occurrence = segment.sourceParagraphOccurrence;
+		if (paragraphNumber === null || occurrence === null) continue;
+		const key = paragraphGroupKey(
+			segment.sourceBookCode,
+			paragraphNumber,
+			occurrence,
+		);
 		const group = groups.get(key);
 		if (group) {
 			group.segmentIds.push(segment.id);
@@ -61,19 +71,17 @@ function groupSourceParagraphs(segments: LocatedSegment[]): ParagraphGroup[] {
 		groups.set(key, {
 			bookCode: segment.sourceBookCode,
 			chapterNumber: segment.sourceChapterNumber,
-			paragraphNumber: segment.sourceParagraphNumber as string,
-			occurrence: segment.sourceParagraphOccurrence as number,
+			paragraphNumber,
+			occurrence,
 			segmentIds: [segment.id],
 		});
 	}
 	return [...groups.values()];
 }
 
-function buildTargetAnchors(targetPages: AnnotationTargetPage[]): {
-	anchors: TargetAnchor[];
-	prefaceSegmentId: number | null;
-	prefaceSegmentIdByBook: Map<string, number>;
-} {
+function buildTargetAnchors(
+	targetPages: AnnotationTargetPage[],
+): TargetAnchors {
 	const anchors: TargetAnchor[] = [];
 	const prefaceSegmentIdByBook = new Map<string, number>();
 	const booksWithParagraphs = new Set<string>();
@@ -99,8 +107,14 @@ function buildTargetAnchors(targetPages: AnnotationTargetPage[]): {
 					prefaceSegmentIdByBook.set(segment.sourceBookCode, segment.id);
 				}
 			}
-			const key = paragraphGroupKey(segment);
-			if (!key) continue;
+			const paragraphNumber = segment.sourceParagraphNumber;
+			const occurrence = segment.sourceParagraphOccurrence;
+			if (paragraphNumber === null || occurrence === null) continue;
+			const key = paragraphGroupKey(
+				segment.sourceBookCode,
+				paragraphNumber,
+				occurrence,
+			);
 			const candidates = groups.get(key) ?? [];
 			candidates.push(segment);
 			groups.set(key, candidates);

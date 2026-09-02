@@ -1,3 +1,4 @@
+/* oxlint-disable anti-slop/no-known-value-widening, anti-slop/no-runtime-typeof, anti-slop/no-unknown-parameters, anti-slop/no-unknown-returns -- Kysely exposes database driver values as unknown at this codec boundary. */
 import type {
 	BinaryOperationNode,
 	ColumnUpdateNode,

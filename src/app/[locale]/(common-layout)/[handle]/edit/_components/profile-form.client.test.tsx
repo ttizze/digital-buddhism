@@ -13,7 +13,7 @@ vi.mock("@tanstack/react-router", () => ({
 	useRouter: () => ({ invalidate: invalidateMock }),
 }));
 vi.mock("@tanstack/react-start", () => ({
-	useServerFn: (serverFn: unknown) => serverFn,
+	useServerFn: <ServerFunction,>(serverFn: ServerFunction) => serverFn,
 }));
 vi.mock("@/routes/$locale/-profile-edit-data", () => ({
 	updateProfile: updateProfileMock,
@@ -44,9 +44,9 @@ describe("ProfileForm", () => {
 		render(<ProfileForm currentUser={mockUsers[0]} locale="en" />);
 
 		const saveButton = screen.getByRole("button", { name: "Save" });
-		const form = saveButton.closest("form");
-		expect(form).not.toBeNull();
-		fireEvent.submit(form as HTMLFormElement);
+		const form = saveButton.closest<HTMLFormElement>("form");
+		if (!form) throw new Error("profile form was not rendered");
+		fireEvent.submit(form);
 
 		await waitFor(() => {
 			expect(toast.error).toHaveBeenCalledWith("名前が短すぎます");

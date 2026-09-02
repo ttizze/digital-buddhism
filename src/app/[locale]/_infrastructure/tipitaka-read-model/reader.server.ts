@@ -13,64 +13,43 @@ import {
 	pageStateKey,
 	pageTranslationKey,
 	pageTranslationPointerKey,
-	TIPITAKA_READ_MODEL_SCHEMA_VERSION,
+	type ReadModelKey,
 	type TranslationOverlay,
 	type TranslationPointer,
 } from "./model";
 import { getTipitakaReadModelStore } from "./store";
 
-function parseSnapshot<T extends { schemaVersion: number }>(
-	value: string,
-	key: string,
-): T {
-	const parsed = JSON.parse(value) as T;
-	if (parsed.schemaVersion !== TIPITAKA_READ_MODEL_SCHEMA_VERSION) {
-		throw new Error(`Unsupported Tipitaka read model schema at ${key}`);
-	}
-	return parsed;
+interface TranslatableTreeNode {
+	titleSegmentId: number;
+	titleTranslationText: string | null;
+	children: TranslatableTreeNode[];
 }
 
 function applyTreeTranslations(
-	nodes: Array<{
-		titleSegmentId: number;
-		titleTranslationText: string | null;
-		children: unknown[];
-	}>,
+	nodes: TranslatableTreeNode[],
 	translations: Readonly<Record<string, string>>,
 ): void {
 	for (const node of nodes) {
 		node.titleTranslationText =
 			translations[String(node.titleSegmentId)] ?? null;
-		applyTreeTranslations(
-			node.children as Array<{
-				titleSegmentId: number;
-				titleTranslationText: string | null;
-				children: unknown[];
-			}>,
-			translations,
-		);
+		applyTreeTranslations(node.children, translations);
 	}
 }
 
 async function readPointedTranslationOverlay(
-	pointerKey: string,
-	keyForRevision: (revision: string) => string,
+	pointerKey: ReadModelKey<TranslationPointer>,
+	keyForRevision: (revision: string) => ReadModelKey<TranslationOverlay>,
 ): Promise<TranslationOverlay | null> {
 	const store = getTipitakaReadModelStore();
 	const pointerValue = await store.get(pointerKey);
 	if (!pointerValue) return null;
-	const pointer = parseSnapshot<TranslationPointer>(pointerValue, pointerKey);
-	const currentKey = keyForRevision(pointer.revision);
+	const currentKey = keyForRevision(pointerValue.revision);
 	const currentValue = await store.get(currentKey);
-	if (currentValue) {
-		return parseSnapshot<TranslationOverlay>(currentValue, currentKey);
-	}
-	if (pointer.previousRevision) {
-		const previousKey = keyForRevision(pointer.previousRevision);
+	if (currentValue) return currentValue;
+	if (pointerValue.previousRevision) {
+		const previousKey = keyForRevision(pointerValue.previousRevision);
 		const previousValue = await store.get(previousKey);
-		if (previousValue) {
-			return parseSnapshot<TranslationOverlay>(previousValue, previousKey);
-		}
+		if (previousValue) return previousValue;
 	}
 	throw new Error(`Tipitaka translation revision not found: ${currentKey}`);
 }
@@ -127,7 +106,7 @@ export async function readHomeData(
 	const store = getTipitakaReadModelStore();
 	const baseValue = await store.get(homeBaseKey());
 	if (!baseValue) return null;
-	const base = parseSnapshot<HomeBaseSnapshot>(baseValue, homeBaseKey());
+	const base: HomeBaseSnapshot = baseValue;
 	const overlay = await readHomeTranslationOverlay(locale);
 	applyTreeTranslations(base.tipitakaPages, overlay?.translations ?? {});
 	return base;
@@ -141,7 +120,7 @@ export async function readPageContentData(
 	const baseKey = pageBaseKey(slug);
 	const baseValue = await store.get(baseKey);
 	if (!baseValue) return null;
-	const base = parseSnapshot<PageBaseSnapshot>(baseValue, baseKey);
+	const base: PageBaseSnapshot = baseValue;
 	const [stateValue, translations] = await Promise.all([
 		store.get(pageStateKey(base.data.pageDetail.id)),
 		collectPageTranslations(base.translationPageIds, locale),
@@ -170,12 +149,7 @@ export async function readPageContentData(
 	}
 	applyTreeTranslations(base.data.childPages, translations);
 
-	const state = stateValue
-		? parseSnapshot<PageStateSnapshot>(
-				stateValue,
-				pageStateKey(base.data.pageDetail.id),
-			)
-		: null;
+	const state: PageStateSnapshot | null = stateValue;
 	return {
 		...base.data,
 		completedTranslationLocales:
@@ -197,7 +171,7 @@ export async function readPageAnnotations(
 	const key = pageAnnotationsKey(slug);
 	const value = await store.get(key);
 	if (!value) return null;
-	const snapshot = parseSnapshot<PageAnnotationsSnapshot>(value, key);
+	const snapshot: PageAnnotationsSnapshot = value;
 	const translations = await collectPageTranslations(
 		snapshot.translationPageIds,
 		locale,
@@ -217,14 +191,14 @@ export async function readPageTree(
 	const home = await readHomeData(locale);
 	if (!home) return null;
 	if (home.rootPageId === rootPageId) {
-		return home.tipitakaPages as PageTreeNode[];
+		return home.tipitakaPages;
 	}
 
 	const pending = [...home.tipitakaPages];
 	while (pending.length > 0) {
 		const node = pending.pop();
 		if (!node) break;
-		if (node.id === rootPageId) return node.children as PageTreeNode[];
+		if (node.id === rootPageId) return node.children;
 		pending.push(...node.children);
 	}
 	return [];

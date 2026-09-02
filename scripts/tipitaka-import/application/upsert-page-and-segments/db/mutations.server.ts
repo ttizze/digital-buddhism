@@ -1,12 +1,13 @@
 import type { TransactionClient } from "@/app/[locale]/_service/sync-segments";
-import type { JsonValue, TipitakaTextLevel } from "@/drizzle/types";
+import type { Root } from "mdast";
+import type { TipitakaTextLevel } from "@/drizzle/types";
 
 export async function upsertPage(
 	tx: TransactionClient,
 	p: {
 		catalogKey: string;
 		pageSlug: string;
-		mdastJson: JsonValue;
+		mdastJson: Root;
 		textLevel: TipitakaTextLevel | null;
 		parentId: number | null;
 		position: number;

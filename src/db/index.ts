@@ -1,3 +1,4 @@
+/* oxlint-disable anti-slop/no-chained-type-assertions, anti-slop/no-runtime-typeof, anti-slop/require-safety-comment-for-type-assertion -- The Kysely/libSQL adapter version boundary and lazy method-binding proxy expose incompatible library types. */
 import { LibsqlDialect } from "@libsql/kysely-libsql";
 import { CamelCasePlugin, Kysely } from "kysely";
 import {

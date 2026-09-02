@@ -2,6 +2,10 @@ import { spawn } from "node:child_process";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type {
+	ReadModelKey,
+	TipitakaReadModelSnapshot,
+} from "@/app/[locale]/_infrastructure/tipitaka-read-model/model";
 import { publishAllTipitakaReadModels } from "@/app/[locale]/_infrastructure/tipitaka-read-model/publisher.server";
 import type { TipitakaReadModelStore } from "@/app/[locale]/_infrastructure/tipitaka-read-model/store";
 
@@ -22,19 +26,25 @@ class WranglerBulkStore implements TipitakaReadModelStore {
 		private readonly remote: boolean,
 	) {}
 
-	async get(): Promise<null> {
+	async get<Snapshot extends TipitakaReadModelSnapshot>(
+		_key: ReadModelKey<Snapshot>,
+	): Promise<Snapshot | null> {
 		return null;
 	}
 
-	async put(key: string, value: string): Promise<void> {
-		const bytes = Buffer.byteLength(key) + Buffer.byteLength(value);
+	async put<Snapshot extends TipitakaReadModelSnapshot>(
+		key: ReadModelKey<Snapshot>,
+		value: Snapshot,
+	): Promise<void> {
+		const serialized = JSON.stringify(value);
+		const bytes = Buffer.byteLength(key) + Buffer.byteLength(serialized);
 		if (bytes > 25 * 1024 * 1024) {
 			throw new Error(`Tipitaka read model exceeds KV value limit: ${key}`);
 		}
 		if (this.bytes + bytes > BULK_TARGET_BYTES && this.entries.length > 0) {
 			await this.flush();
 		}
-		this.entries.push({ key, value });
+		this.entries.push({ key, value: serialized });
 		this.bytes += bytes;
 	}
 

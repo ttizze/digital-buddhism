@@ -2,8 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronUp, Languages } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "use-intl";
-import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
-import type { ActionResponse } from "@/app/types";
+import { parseSegmentTranslationVoteResponse } from "@/app/api/segment-translations/_domain/segment-translations";
 import { Button } from "@/components/ui/button";
 import { useVoteRequest } from "../use-vote-request";
 import { AddTranslationForm } from "./add-translation-form/client";
@@ -12,8 +11,6 @@ import { TranslationListItem } from "./translation-list-item/client";
 import { VoteButtons } from "./vote-buttons/client";
 
 const INITIAL_DISPLAY_COUNT = 3;
-
-type VoteResponse = ActionResponse<{ translations: SegmentTranslation[] }>;
 
 interface AddAndVoteTranslationsProps {
 	readonly segmentId: number;
@@ -52,15 +49,13 @@ export function AddAndVoteTranslations({
 		alternativeTranslations.length > INITIAL_DISPLAY_COUNT;
 
 	const toggleShowAll = () => setShowAll((prev) => !prev);
-	const { vote, votingTargetId } = useVoteRequest<VoteResponse>({
+	const { vote, votingTargetId } = useVoteRequest({
 		url: "/api/segment-translations",
 		targetField: "segmentTranslationId",
 		locale: userLocale,
-		parseResponse: (value) => value as VoteResponse,
+		parseResponse: parseSegmentTranslationVoteResponse,
 		onSuccess: async (body) => {
-			if (body.success) {
-				await mutate(body.data.translations, { revalidate: false });
-			}
+			await mutate(body.data.translations, { revalidate: false });
 		},
 	});
 	const isVoting = votingTargetId !== null;

@@ -31,7 +31,7 @@ function makeDetailSegment(
 		textLevel: "MULA",
 		annotations: [],
 		...overrides,
-	} as SegmentForDetail;
+	} satisfies SegmentForDetail;
 }
 
 describe("SegmentElement", () => {

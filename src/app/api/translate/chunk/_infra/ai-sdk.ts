@@ -1,7 +1,7 @@
 import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createOpenAI } from "@ai-sdk/openai";
 import { valibotSchema } from "@ai-sdk/valibot";
-import { generateObject, type FlexibleSchema, type LanguageModel } from "ai";
+import { generateObject, type LanguageModel } from "ai";
 import * as v from "valibot";
 import { createServerLogger } from "@/app/_service/logger.server";
 import { generateTranslationPrompt } from "./generate-translation-prompt";
@@ -67,7 +67,7 @@ async function generateTranslationResponse<
 		const { object } = await generateObject({
 			model,
 			maxRetries: 0,
-			schema: generatedSchema as FlexibleSchema<unknown>,
+			schema: generatedSchema,
 			schemaName: "TranslationResponse",
 			schemaDescription:
 				"Array of translated text segments with their original numbers",
@@ -79,24 +79,23 @@ async function generateTranslationResponse<
 			),
 		});
 
-		const translations = object ? unwrap(object as v.InferOutput<TSchema>) : [];
+		const translations = unwrap(object);
 		if (translations.length === 0) {
 			throw new Error(`Empty response from ${provider}`);
 		}
 
 		return JSON.stringify(translations);
-	} catch (error: unknown) {
-		const typedError = error as Error;
-		logger.error(
-			{
-				provider,
-				input_count: inputLineCount,
-				error_name: typedError.name,
-				error_message: typedError.message,
-				error_stack: typedError.stack,
-			},
-			`${provider} translation failed`,
-		);
-		throw typedError;
+	} catch (error) {
+		const errorName = error instanceof Error ? error.name : "UnknownError";
+		const errorMessage = error instanceof Error ? error.message : String(error);
+		const errorStack = error instanceof Error ? error.stack : undefined;
+		logger.error(`${provider} translation failed`, {
+			provider,
+			input_count: inputLineCount,
+			error_name: errorName,
+			error_message: errorMessage,
+			error_stack: errorStack,
+		});
+		throw error;
 	}
 }

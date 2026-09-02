@@ -1,8 +1,8 @@
-import type { Html, Paragraph, Root, Text } from "mdast";
+import type { Html, Paragraph, PhrasingContent, Root, Text } from "mdast";
 import { toString as mdastToString } from "mdast-util-to-string";
 import type { Plugin } from "unified";
 import { visit } from "unist-util-visit";
-import { BLOCK_TYPE_TO_CLASS, isValidBlockType } from "./custom-block-types";
+import { isValidBlockType } from "./custom-block-types";
 
 /**
  * カスタムブロック記法とインライン特殊記法を解釈するremarkプラグイン
@@ -26,7 +26,7 @@ import { BLOCK_TYPE_TO_CLASS, isValidBlockType } from "./custom-block-types";
 export const remarkCustomBlocks: Plugin<[], Root> = () => (tree: Root) => {
 	// ブロック記法の処理
 	visit(tree, "paragraph", (paragraph: Paragraph, index, parent) => {
-		if (!parent || typeof index !== "number") return;
+		if (!parent || index === undefined) return;
 
 		// 段落全体を一括判定するためにテキストを抽出する
 		const rawText = mdastToString(paragraph, { includeImageAlt: false });
@@ -38,12 +38,12 @@ export const remarkCustomBlocks: Plugin<[], Root> = () => (tree: Root) => {
 		const transformed = transformCustomBlockFromChildren(blockType, paragraph);
 		if (!transformed) return;
 
-		(parent.children as Paragraph[]).splice(index, 1, transformed);
+		parent.children.splice(index, 1, transformed);
 	});
 
 	// インライン特殊記法の処理 ({note:...} と {pb:...})
 	visit(tree, "text", (textNode: Text, index, parent) => {
-		if (!parent || typeof index !== "number") return;
+		if (!parent || index === undefined) return;
 
 		const value = textNode.value;
 		// 1つのテキストノード内の記法をまとめて分解するために配列化する
@@ -51,7 +51,7 @@ export const remarkCustomBlocks: Plugin<[], Root> = () => (tree: Root) => {
 
 		// マッチが見つかった場合のみ置き換え
 		if (newParts.length > 0) {
-			(parent.children as Array<Text | Html>).splice(index, 1, ...newParts);
+			parent.children.splice(index, 1, ...newParts);
 		}
 	});
 };
@@ -155,22 +155,12 @@ function transformCustomBlockFromChildren(
 	const children = [...paragraph.children];
 	const prefixPattern = new RegExp(`^::${blockType}\\n`);
 	const suffixPattern = /\n::$/;
-	// ブロック記法の前後だけ削るために最初と最後のテキストを探す
-	const firstTextIndex = children.findIndex((child) => child.type === "text");
-	if (firstTextIndex === -1) return null;
-	const lastTextIndex =
-		children.length -
-		1 -
-		[...children].reverse().findIndex((child) => child.type === "text");
-	if (lastTextIndex < 0) return null;
+	const firstText = children.find(isText);
+	const lastText = children.findLast(isText);
+	if (!firstText || !lastText) return null;
 
-	// 余計な記法を取り除いて中身だけ残すために前後を置換する
-	(children[firstTextIndex] as Text).value = (
-		children[firstTextIndex] as Text
-	).value.replace(prefixPattern, "");
-	(children[lastTextIndex] as Text).value = (
-		children[lastTextIndex] as Text
-	).value.replace(suffixPattern, "");
+	firstText.value = firstText.value.replace(prefixPattern, "");
+	lastText.value = lastText.value.replace(suffixPattern, "");
 
 	// 空のテキストノードを残さないためにフィルタする
 	const cleanedChildren = children.filter(
@@ -182,8 +172,12 @@ function transformCustomBlockFromChildren(
 		children: cleanedChildren,
 		data: {
 			hProperties: {
-				class: BLOCK_TYPE_TO_CLASS[blockType],
+				class: blockType,
 			},
 		},
 	};
+}
+
+function isText(node: PhrasingContent): node is Text {
+	return node.type === "text";
 }

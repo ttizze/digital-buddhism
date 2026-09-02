@@ -68,8 +68,8 @@ describe("translateAction", () => {
 
 		// Act: TanStack RouterのredirectはResponseをthrowする
 		const redirectResponse = await executeTranslateAction(formData).catch(
-			(error: unknown) =>
-				error instanceof Response ? error : Promise.reject(error),
+			(cause: unknown) =>
+				cause instanceof Response ? cause : Promise.reject(cause),
 		);
 
 		// Assert: ログイン画面へ307リダイレクトされる

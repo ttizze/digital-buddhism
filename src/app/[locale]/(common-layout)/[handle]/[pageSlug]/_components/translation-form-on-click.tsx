@@ -1,5 +1,12 @@
 import { useLocation } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import {
+	lazy,
+	Suspense,
+	useEffect,
+	useRef,
+	useState,
+	type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 
 const AddAndVoteTranslations = lazy(() =>
@@ -13,6 +20,11 @@ type ActiveState = {
 	rootEl: HTMLElement;
 	translationEl: HTMLElement;
 };
+
+type TranslationFormRenderer = (
+	segmentId: number,
+	translationElement: HTMLElement,
+) => ReactNode;
 
 /** Portal用rootを.seg-trの直後に確保（既存があれば再利用） */
 function ensureFormRoot(afterEl: Element): HTMLElement {
@@ -28,21 +40,14 @@ function ensureFormRoot(afterEl: Element): HTMLElement {
 
 const isClickOnText = (e: MouseEvent) => {
 	// Chrome: caretRangeFromPoint / Safari: caretPositionFromPoint
-	const d = document as Document & {
-		caretRangeFromPoint?: (x: number, y: number) => Range | null;
-		caretPositionFromPoint?: (
-			x: number,
-			y: number,
-		) => { offsetNode: Node | null } | null;
-	};
-
 	// jsdom や一部環境では API が無いので、その場合はチェックをスキップする。
-	if (!d.caretRangeFromPoint && !d.caretPositionFromPoint) return true;
+	if (!document.caretRangeFromPoint && !document.caretPositionFromPoint)
+		return true;
 
-	const range = d.caretRangeFromPoint?.(e.clientX, e.clientY);
+	const range = document.caretRangeFromPoint?.(e.clientX, e.clientY);
 	if (range) return range.startContainer.nodeType === Node.TEXT_NODE;
 
-	const pos = d.caretPositionFromPoint?.(e.clientX, e.clientY);
+	const pos = document.caretPositionFromPoint?.(e.clientX, e.clientY);
 	return pos?.offsetNode?.nodeType === Node.TEXT_NODE;
 };
 
@@ -54,23 +59,45 @@ function hasSelection(): boolean {
 /** data-segment-id を持つ要素を取得（リンク内は除外） */
 function getSegmentEl(target: EventTarget | null): HTMLElement | null {
 	if (!(target instanceof Element)) return null;
-	const el = target.closest("[data-segment-id]") as HTMLElement | null;
-	if (!el || el.closest("a")) return null;
+	const el = target.closest("[data-segment-id]");
+	if (!(el instanceof HTMLElement) || el.closest("a")) return null;
 	return el;
 }
 
-/**
- * クリックした訳文の段だけ「投票/追加フォーム」を出すためのクライアント側ブリッジ。
- *
- * 仕組み:
- * - document.body に1本だけ click リスナーを付ける（イベント委譲）
- * - クリックされた .seg-tr の直後に Portal 用 root を作り AddAndVoteTranslations を差し込む
- * - useRef で最新状態を保持し、リスナー再登録を防ぐ
- */
+function renderTranslationForm(
+	segmentId: number,
+	translationElement: HTMLElement,
+): ReactNode {
+	return (
+		<Suspense fallback={null}>
+			<AddAndVoteTranslations
+				segmentId={segmentId}
+				translationElement={translationElement}
+			/>
+		</Suspense>
+	);
+}
+
 export function TranslationFormOnClick() {
+	const pathname = useLocation({ select: (location) => location.pathname });
+	return (
+		<TranslationFormEventBridge
+			pathname={pathname}
+			renderForm={renderTranslationForm}
+		/>
+	);
+}
+
+/** document.body のイベントを、クリックされた訳文直後のフォームへ接続する。 */
+export function TranslationFormEventBridge({
+	pathname,
+	renderForm,
+}: {
+	pathname: string;
+	renderForm: TranslationFormRenderer;
+}) {
 	const [activeState, setActiveState] = useState<ActiveState | null>(null);
 	const stateRef = useRef<ActiveState | null>(null);
-	const pathname = useLocation({ select: (location) => location.pathname });
 
 	useEffect(() => {
 		let hadSelectionOnPointerDown = false;
@@ -130,7 +157,6 @@ export function TranslationFormOnClick() {
 	}, []);
 
 	useEffect(() => {
-		void pathname;
 		stateRef.current = null;
 		setActiveState(null);
 	}, [pathname]);
@@ -138,12 +164,7 @@ export function TranslationFormOnClick() {
 	if (!activeState) return null;
 
 	return createPortal(
-		<Suspense fallback={null}>
-			<AddAndVoteTranslations
-				segmentId={activeState.segmentId}
-				translationElement={activeState.translationEl}
-			/>
-		</Suspense>,
+		renderForm(activeState.segmentId, activeState.translationEl),
 		activeState.rootEl,
 	);
 }

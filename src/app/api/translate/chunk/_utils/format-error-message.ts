@@ -2,13 +2,14 @@
  * Format error message for user-friendly display
  * Sanitizes error messages to avoid exposing sensitive information
  */
-export function formatErrorMessage(error: unknown): string {
-	if (!(error instanceof Error)) {
+export function formatErrorMessage(cause: unknown): string {
+	if (!(cause instanceof Error)) {
 		return "Translation failed. Please try again later.";
 	}
 
-	const message = error.message;
-	const status = (error as { status?: number }).status;
+	const message = cause.message;
+	const statusResult = v.safeParse(errorStatusSchema, cause);
+	const status = statusResult.success ? statusResult.output.status : undefined;
 
 	// 429 error (rate limit)
 	if (status === 429 || message.includes("429") || message.includes("quota")) {
@@ -51,3 +52,6 @@ export function formatErrorMessage(error: unknown): string {
 	// Never expose raw error messages to users
 	return "Translation failed. Please try again later.";
 }
+import * as v from "valibot";
+
+const errorStatusSchema = v.object({ status: v.optional(v.number()) });

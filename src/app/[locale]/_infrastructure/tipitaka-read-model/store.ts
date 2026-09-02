@@ -1,8 +1,19 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import * as v from "valibot";
+import {
+	type ReadModelKey,
+	TIPITAKA_READ_MODEL_SCHEMA_VERSION,
+	type TipitakaReadModelSnapshot,
+} from "./model";
 
 export type TipitakaReadModelStore = {
-	get(key: string): Promise<string | null>;
-	put(key: string, value: string): Promise<void>;
+	get<Snapshot extends TipitakaReadModelSnapshot>(
+		key: ReadModelKey<Snapshot>,
+	): Promise<Snapshot | null>;
+	put<Snapshot extends TipitakaReadModelSnapshot>(
+		key: ReadModelKey<Snapshot>,
+		value: Snapshot,
+	): Promise<void>;
 };
 
 export type KvNamespaceBinding = {
@@ -14,13 +25,34 @@ export type KvNamespaceBinding = {
 };
 
 const storage = new AsyncLocalStorage<TipitakaReadModelStore>();
+const snapshotEnvelopeSchema = v.object({ schemaVersion: v.number() });
+
+function parseStoredSnapshot<Snapshot extends TipitakaReadModelSnapshot>(
+	value: string,
+	key: ReadModelKey<Snapshot>,
+): Snapshot {
+	const parsed: unknown = JSON.parse(value);
+	const envelope = v.parse(snapshotEnvelopeSchema, parsed);
+	if (envelope.schemaVersion !== TIPITAKA_READ_MODEL_SCHEMA_VERSION) {
+		throw new Error(`Unsupported Tipitaka read model schema at ${key}`);
+	}
+	// SAFETY: Typed keys can only be written through `put`, which requires the matching snapshot type; the persisted envelope version was validated above.
+	return parsed as Snapshot;
+}
 
 export function createKvReadModelStore(
 	binding: KvNamespaceBinding,
 ): TipitakaReadModelStore {
+	const get: TipitakaReadModelStore["get"] = async (key) => {
+		const value = await binding.get(key, { cacheTtl: 60, type: "text" });
+		return value === null ? null : parseStoredSnapshot(value, key);
+	};
+	const put: TipitakaReadModelStore["put"] = (key, value) =>
+		binding.put(key, JSON.stringify(value));
+
 	return {
-		get: (key) => binding.get(key, { cacheTtl: 60, type: "text" }),
-		put: (key, value) => binding.put(key, value),
+		get,
+		put,
 	};
 }
 

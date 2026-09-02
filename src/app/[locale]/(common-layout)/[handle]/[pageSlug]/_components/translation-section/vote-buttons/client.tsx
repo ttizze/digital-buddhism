@@ -1,5 +1,4 @@
 import { ThumbsDown, ThumbsUp } from "lucide-react";
-import type { FormEvent } from "react";
 import { VoteButton } from "./vote-button";
 
 export type VoteTarget = {
@@ -19,33 +18,25 @@ export function VoteButtons({
 	isVoting,
 	onVote,
 }: VoteButtonsProps) {
-	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		const submitter = (event.nativeEvent as SubmitEvent).submitter;
-		if (submitter?.getAttribute("name") !== "isUpvote") return;
-
-		onVote(voteTarget.id, submitter.getAttribute("value") === "true");
-	};
-
 	return (
 		<span className="flex h-full justify-end items-center">
-			<form onSubmit={handleSubmit}>
-				<span className="flex h-8">
-					<VoteButton
-						icon={ThumbsUp}
-						isActive={voteTarget.currentUserVoteIsUpvote === true}
-						isVoting={isVoting}
-						type="upvote"
-						voteCount={voteTarget.point}
-					/>
-					<VoteButton
-						icon={ThumbsDown}
-						isActive={voteTarget.currentUserVoteIsUpvote === false}
-						isVoting={isVoting}
-						type="downvote"
-					/>
-				</span>
-			</form>
+			<span className="flex h-8">
+				<VoteButton
+					icon={ThumbsUp}
+					isActive={voteTarget.currentUserVoteIsUpvote === true}
+					isVoting={isVoting}
+					onClick={() => onVote(voteTarget.id, true)}
+					type="upvote"
+					voteCount={voteTarget.point}
+				/>
+				<VoteButton
+					icon={ThumbsDown}
+					isActive={voteTarget.currentUserVoteIsUpvote === false}
+					isVoting={isVoting}
+					onClick={() => onVote(voteTarget.id, false)}
+					type="downvote"
+				/>
+			</span>
 		</span>
 	);
 }

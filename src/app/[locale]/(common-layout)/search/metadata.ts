@@ -1,32 +1,45 @@
 import { buildAlternates } from "@/app/_lib/seo-helpers";
 
-const metadataByLocale: Record<string, { title: string; description: string }> =
-	{
-		ja: {
+const englishMetadata = {
+	title: "Search | Tipiṭaka",
+	description: "Search Tipiṭaka pages and text.",
+};
+
+const metadataByLocale = new Map([
+	[
+		"ja",
+		{
 			title: "検索 | Tipiṭaka",
 			description: "Tipiṭakaのページと本文を検索できます。",
 		},
-		en: {
-			title: "Search | Tipiṭaka",
-			description: "Search Tipiṭaka pages and text.",
-		},
-		zh: {
+	],
+	["en", englishMetadata],
+	[
+		"zh",
+		{
 			title: "搜索 | Tipiṭaka",
 			description: "搜索三藏页面和正文。",
 		},
-		ko: {
+	],
+	[
+		"ko",
+		{
 			title: "검색 | Tipiṭaka",
 			description: "Tipiṭaka 페이지와 본문을 검색합니다.",
 		},
-		es: {
+	],
+	[
+		"es",
+		{
 			title: "Buscar | Tipiṭaka",
 			description: "Busca páginas y texto del Tipiṭaka.",
 		},
-	};
+	],
+]);
 
 export function getSearchMetadata(locale: string) {
 	const { title, description } =
-		metadataByLocale[locale] ?? metadataByLocale.en;
+		metadataByLocale.get(locale) ?? englishMetadata;
 	return {
 		title,
 		description,
