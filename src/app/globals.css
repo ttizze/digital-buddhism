@@ -94,15 +94,14 @@
 }
 
 @layer utilities {
-	/* Segments: keep offscreen content out of layout/paint as much as possible */
-	.seg-cv {
+	/* Long article blocks only: title and navigation segments must stay eager. */
+	.js-content > .seg-cv {
 		content-visibility: auto;
-		contain-intrinsic-size: 1px 800px;
+		contain-intrinsic-size: auto 3rem;
 		contain: layout paint style;
 	}
-
-
-	.tipitaka-tree .seg-cv {
+	/* A translated segment emits two siblings; keep the first viewport eager. */
+	.js-content > .seg-cv:nth-child(-n + 24) {
 		content-visibility: visible;
 		contain-intrinsic-size: none;
 		contain: none;

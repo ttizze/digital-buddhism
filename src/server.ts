@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/cloudflare";
 import handler from "@tanstack/react-start/server-entry";
 import { projectPendingTipitakaReadModels } from "./app/[locale]/_infrastructure/tipitaka-read-model/jobs.server";
 import {
@@ -124,11 +123,4 @@ const workerEntry = {
 	},
 };
 
-export default Sentry.withSentry<CloudflareBindings>(
-	(env) => ({
-		dsn: env.SENTRY_DSN,
-		tracesSampleRate: 0.2,
-		enableLogs: true,
-	}),
-	workerEntry,
-);
+export default workerEntry;

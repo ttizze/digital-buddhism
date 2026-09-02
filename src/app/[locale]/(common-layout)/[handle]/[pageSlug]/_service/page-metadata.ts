@@ -9,7 +9,7 @@ export function buildPageMetadata({
 	completedTranslationLocales,
 	locale,
 }: {
-	pageDetail: PageDetail;
+	pageDetail: Pick<PageDetail, "slug" | "title">;
 	description: string;
 	completedTranslationLocales: string[];
 	locale: string;

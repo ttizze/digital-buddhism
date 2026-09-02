@@ -110,7 +110,8 @@
 		"loading": "ページツリーを読み込み中…",
 		"unavailable": "ページツリーを取得できません。",
 		"tocTitle": "目次",
-		"exportMarkdown": "Markdownをエクスポート"
+		"exportMarkdown": "Markdownをエクスポート",
+		"exportMarkdownError": "Markdownをエクスポートできませんでした。"
 	},
 	"Footer": {
 		"privacyPolicy": "プライバシーポリシー",

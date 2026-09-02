@@ -3,6 +3,10 @@ import type { Heading, Root, RootContent } from "mdast";
 import { describe, expect, it } from "vite-plus/test";
 import type { SegmentForDetail } from "@/app/[locale]/types";
 import { extractTocItems } from "./extract-toc-items";
+import {
+	buildPageContentView,
+	parsePageContentBody,
+} from "./page-content-view";
 
 const headingNode = (
 	number: number | null,
@@ -36,6 +40,30 @@ const createSegment = (
 	annotations: [],
 });
 
+function extractFrom(mdast: Root, segments: SegmentForDetail[]) {
+	const view = buildPageContentView({
+		pageDetail: {
+			id: 1,
+			slug: "test",
+			title: "Test",
+			textLevel: "MULA",
+			parentId: null,
+			position: 0,
+			mdastJson: mdast,
+			segments,
+			createdAt: new Date(0),
+			updatedAt: new Date(0),
+		},
+		navigationData: null,
+		childPages: [],
+		completedTranslationLocales: [],
+		description: "",
+		annotationTypes: [],
+	});
+	const [, nodes] = parsePageContentBody(view.body);
+	return extractTocItems({ nodes, pageId: 1 });
+}
+
 describe("extractTocItems", () => {
 	it("深さ1-4の見出しだけを順序通りに抽出する", () => {
 		const slugger = new GithubSlugger();
@@ -52,7 +80,7 @@ describe("extractTocItems", () => {
 			createSegment(4, "Heading 4"),
 		];
 
-		const result = extractTocItems({ mdast, segments });
+		const result = extractFrom(mdast, segments);
 
 		expect(result).toEqual([
 			{
@@ -95,7 +123,7 @@ describe("extractTocItems", () => {
 		const mdast = root([headingNode(null, 1), headingNode(9, 2)]);
 		const segments = [createSegment(1, "Heading 1")];
 
-		const result = extractTocItems({ mdast, segments });
+		const result = extractFrom(mdast, segments);
 
 		expect(result).toEqual([]);
 	});
@@ -104,7 +132,7 @@ describe("extractTocItems", () => {
 		const mdast = root([headingNode(1, 1)]);
 		const segments = [createSegment(1, "   ")];
 
-		const result = extractTocItems({ mdast, segments });
+		const result = extractFrom(mdast, segments);
 
 		expect(result).toEqual([]);
 	});
@@ -116,7 +144,7 @@ describe("extractTocItems", () => {
 			createSegment(2, "Repeated"),
 		];
 
-		const result = extractTocItems({ mdast, segments });
+		const result = extractFrom(mdast, segments);
 
 		expect(result).toHaveLength(1);
 		expect(result[0]?.anchorId).toBe("repeated-1");

@@ -9,7 +9,6 @@ interface PageNavigationProps {
 	pageId: number;
 	locale: string;
 	data: NavigationData | null;
-	markdown: string;
 	slug: string;
 	title: string;
 	tocItems: TocItem[];
@@ -19,7 +18,6 @@ export function PageNavigation({
 	pageId,
 	locale,
 	data,
-	markdown,
 	slug,
 	title,
 	tocItems,
@@ -37,7 +35,7 @@ export function PageNavigation({
 				</div>
 			) : null}
 			<div className="ml-auto flex shrink-0 items-center gap-2">
-				<ExportMarkdownButton markdown={markdown} slug={slug} title={title} />
+				<ExportMarkdownButton locale={locale} slug={slug} title={title} />
 				<TocTrigger items={tocItems} />
 			</div>
 		</div>

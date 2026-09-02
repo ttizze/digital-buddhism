@@ -8,6 +8,14 @@ import {
 	RoutePendingComponent,
 } from "./-root-boundaries";
 
+const { captureBrowserExceptionMock } = vi.hoisted(() => ({
+	captureBrowserExceptionMock: vi.fn(),
+}));
+
+vi.mock("@/instrument", () => ({
+	captureBrowserException: captureBrowserExceptionMock,
+}));
+
 vi.mock("@tanstack/react-router", () => ({
 	Link: ({
 		children,
@@ -30,24 +38,19 @@ vi.mock("@tanstack/react-router", () => ({
 	),
 }));
 
-vi.mock("@sentry/tanstackstart-react", () => ({
-	captureException: vi.fn(),
-}));
-
 describe("TanStack Startのroot境界UI", () => {
 	it("エラー内容を表示し、再試行とホーム遷移を提供する", async () => {
 		const reset = vi.fn();
 		const user = userEvent.setup();
+		const error = Object.assign(new Error("読み込みに失敗しました"), {
+			digest: "error-123",
+		});
 
-		render(
-			<RootErrorComponent
-				error={Object.assign(new Error("読み込みに失敗しました"), {
-					digest: "error-123",
-				})}
-				reset={reset}
-			/>,
-		);
+		render(<RootErrorComponent error={error} reset={reset} />);
 
+		await vi.waitFor(() => {
+			expect(captureBrowserExceptionMock).toHaveBeenCalledWith(error);
+		});
 		expect(screen.getByText("Error")).toBeInTheDocument();
 		expect(screen.getByText("Error code:")).toBeInTheDocument();
 		expect(screen.getByText("error-123")).toBeInTheDocument();

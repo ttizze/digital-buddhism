@@ -9,7 +9,6 @@ interface CloudflareBindings {
 	GOOGLE_ANALYTICS_ID?: string;
 	LOG_LEVEL?: string;
 	OPENAI_API_KEY?: string;
-	SENTRY_DSN?: string;
 	TURSO_AUTH_TOKEN?: string;
 	TURSO_DATABASE_URL: string;
 }

@@ -1,54 +1,35 @@
 import useSWR from "swr";
 
 import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
-import { mdastToMarkdown } from "@/app/[locale]/_domain/mdast-to-markdown";
-import type { PageDetail } from "@/app/[locale]/types";
 import { getPageAnnotationsData } from "@/routes/$locale/-page-annotations-data";
 
 import { pageDetailRoute } from "@/app/[locale]/(common-layout)/_components/page-detail-route-api";
 import type { NavigationData } from "../_db/queries";
 import { extractTocItems } from "../_domain/extract-toc-items";
-import { mdastToReact } from "./mdast-to-react";
+import {
+	materializeContentViewSegment,
+	type PageContentBody,
+	type PageDetailView,
+} from "../_domain/page-content-view";
+import { contentViewToReact } from "./content-view";
 import { PageNavigation } from "./page-navigation";
 import { usePageSegmentGlosses } from "./segment-glosses/use-page-segment-glosses";
 import { SegmentGlossVoteProvider } from "./segment-glosses/vote-context";
 
 interface ContentWithTranslationsProps {
-	pageDetail: PageDetail;
+	body: PageContentBody;
+	pageDetail: PageDetailView;
 	locale: string;
 	navigationData: NavigationData | null;
 }
 
-type PageAnnotationsData = Awaited<ReturnType<typeof getPageAnnotationsData>>;
-type GlossUnitsData = ReturnType<typeof usePageSegmentGlosses>["data"];
-
-function buildDisplayPageDetail(
-	pageDetail: PageDetail,
-	annotations: PageAnnotationsData | undefined,
-	glossUnits: GlossUnitsData,
-): PageDetail {
-	if (!annotations && !glossUnits) return pageDetail;
-	const glossUnitsBySegment = new Map<number, NonNullable<GlossUnitsData>>();
-	for (const unit of glossUnits ?? []) {
-		const segmentGlossUnits = glossUnitsBySegment.get(unit.segmentId) ?? [];
-		segmentGlossUnits.push(unit);
-		glossUnitsBySegment.set(unit.segmentId, segmentGlossUnits);
-	}
-	return {
-		...pageDetail,
-		segments: pageDetail.segments.map((segment) => ({
-			...segment,
-			annotations: annotations?.[String(segment.id)] ?? segment.annotations,
-			glossUnits: glossUnitsBySegment.get(segment.id) ?? [],
-		})),
-	};
-}
-
 export function ContentWithTranslations({
+	body,
 	pageDetail,
 	locale,
 	navigationData,
 }: ContentWithTranslationsProps) {
+	const [titleSegmentData, nodes] = body;
 	const visibleAnnotations = pageDetailRoute.useSearch({
 		select: (search) => search.annotations,
 	});
@@ -66,35 +47,38 @@ export function ContentWithTranslations({
 		pageDetail.id,
 		locale,
 	);
-	const displayPageDetail = buildDisplayPageDetail(
-		pageDetail,
-		annotations,
-		glossUnits,
-	);
-	const content = mdastToReact({
-		mdast: displayPageDetail.mdastJson,
-		segments: displayPageDetail.segments,
+	const glossUnitsBySegment = new Map<number, NonNullable<typeof glossUnits>>();
+	for (const unit of glossUnits ?? []) {
+		const segmentGlossUnits = glossUnitsBySegment.get(unit.segmentId) ?? [];
+		segmentGlossUnits.push(unit);
+		glossUnitsBySegment.set(unit.segmentId, segmentGlossUnits);
+	}
+	const content = contentViewToReact({
+		nodes,
+		pageId: pageDetail.id,
+		annotations: annotations ?? undefined,
+		glossUnitsBySegment,
 	});
 	const tocItems = extractTocItems({
-		mdast: displayPageDetail.mdastJson,
-		segments: displayPageDetail.segments,
+		nodes,
+		pageId: pageDetail.id,
 	});
-
-	const titleSegment = displayPageDetail.segments.find(
-		(segment) => segment.number === 0,
+	if (!titleSegmentData) return null;
+	const titleSegment = materializeContentViewSegment(
+		titleSegmentData,
+		pageDetail.id,
+		"",
+		annotations?.[String(titleSegmentData[0])],
+		glossUnitsBySegment.get(titleSegmentData[0]),
 	);
-
-	const markdown = mdastToMarkdown(displayPageDetail.mdastJson);
-	if (!titleSegment) return null;
 	return (
 		<SegmentGlossVoteProvider locale={locale} mutate={mutateGlossUnits}>
 			<PageNavigation
 				data={navigationData}
 				locale={locale}
-				markdown={markdown}
-				pageId={displayPageDetail.id}
-				slug={displayPageDetail.slug}
-				title={displayPageDetail.title}
+				pageId={pageDetail.id}
+				slug={pageDetail.slug}
+				title={pageDetail.title}
 				tocItems={tocItems}
 			/>
 			<h1 className="mb-0!">

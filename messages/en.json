@@ -110,7 +110,8 @@
 		"loading": "Loading page tree…",
 		"unavailable": "Page tree unavailable.",
 		"tocTitle": "Table of Contents",
-		"exportMarkdown": "Export markdown"
+		"exportMarkdown": "Export markdown",
+		"exportMarkdownError": "Could not export Markdown."
 	},
 	"Footer": {
 		"privacyPolicy": "Privacy Policy",
