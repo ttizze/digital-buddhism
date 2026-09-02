@@ -11,7 +11,7 @@ import {
 	expect,
 	it,
 	vi,
-} from "vitest";
+} from "vite-plus/test";
 import { disposeDb } from "@/db";
 import type { JsonValue } from "@/drizzle/types";
 import { openMigratedTursoDatabase } from "../../../turso-migrations";

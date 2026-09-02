@@ -370,7 +370,7 @@ function convertIpeToLatin(ipe: string): string {
 
 function toTitleCase(value: string): string {
 	return value.replace(/\p{Letter}[\p{Letter}\p{Mark}'’-]*/gu, (word) => {
-		const [head, ...rest] = [...word];
+		const [head, ...rest] = Array.from(word);
 		return [head.toUpperCase(), ...rest].join("");
 	});
 }

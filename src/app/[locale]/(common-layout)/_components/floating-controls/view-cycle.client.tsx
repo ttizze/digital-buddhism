@@ -1,11 +1,10 @@
 /* app/_components/view-cycle.tsx */
 "use client";
 import { FileText } from "lucide-react";
-import { useQueryState } from "nuqs";
 import { useTranslations } from "use-intl";
 import type { View } from "@/app/_constants/view";
-import { viewQueryState } from "@/app/[locale]/(common-layout)/_components/view-query";
 import { Button } from "@/components/ui/button";
+import { pageDetailRoute } from "@/app/[locale]/(common-layout)/_components/page-detail-route-api";
 
 const getNextView = (view: View): View =>
 	view === "user" ? "source" : view === "source" ? "both" : "user";
@@ -18,7 +17,8 @@ interface Props {
 
 export function ViewCycle({ afterClick, userLocale, sourceLocale }: Props) {
 	const t = useTranslations("FloatingControls");
-	const [view, setQueryView] = useQueryState("view", viewQueryState);
+	const view = pageDetailRoute.useSearch({ select: (search) => search.view });
+	const navigate = pageDetailRoute.useNavigate();
 
 	const sourceLabel =
 		sourceLocale === "mixed" ? (
@@ -32,8 +32,13 @@ export function ViewCycle({ afterClick, userLocale, sourceLocale }: Props) {
 		);
 
 	const handleClick = () => {
-		const next = getNextView(view);
-		setQueryView(next);
+		void navigate({
+			search: (previous) => ({
+				...previous,
+				view: getNextView(previous.view),
+			}),
+			replace: true,
+		});
 		afterClick?.();
 	};
 

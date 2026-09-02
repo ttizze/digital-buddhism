@@ -25,7 +25,10 @@ async function resetLoopbackDatabase(databaseUrl: string): Promise<void> {
 		`);
 		const dropStatements = objects.rows.map((row) => {
 			const type = row.type === "view" ? "VIEW" : "TABLE";
-			return `DROP ${type} IF EXISTS ${quoteIdentifier(String(row.name))}`;
+			if (typeof row.name !== "string") {
+				throw new TypeError("SQLite object name must be a string");
+			}
+			return `DROP ${type} IF EXISTS ${quoteIdentifier(row.name)}`;
 		});
 		await client.executeMultiple(
 			[

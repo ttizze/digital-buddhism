@@ -13,7 +13,10 @@ export async function resetDatabase() {
 			"SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
 		);
 		for (const row of tables.rows) {
-			const tableName = String(row.name);
+			if (typeof row.name !== "string") {
+				throw new TypeError("SQLite table name must be a string");
+			}
+			const tableName = row.name;
 			if (!preservedTables[tableName]) {
 				if (!/^[A-Za-z0-9_]+$/.test(tableName)) {
 					throw new Error(`Unsafe SQLite table name: ${tableName}`);

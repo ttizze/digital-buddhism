@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vite-plus/test";
 import { db } from "@/db";
 import { resetDatabase } from "@/tests/db-helpers";
 import { createPage, createSegment, createUser } from "@/tests/factories";

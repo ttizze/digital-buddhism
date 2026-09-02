@@ -1,7 +1,14 @@
 // @vitest-environment node
 
 import { readFile } from "node:fs/promises";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	vi,
+} from "vite-plus/test";
 import { resetDatabase } from "@/tests/db-helpers";
 import { createPageWithSegments } from "@/tests/factories";
 import { setupDbPerFile } from "@/tests/test-db-manager";

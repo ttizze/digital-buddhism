@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import { vi } from "vitest";
+import { vi } from "vite-plus/test";
 import { SegmentGlossVoteProvider } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/segment-glosses/vote-context";
 import type { SegmentForDetail, TitleSegment } from "@/app/[locale]/types";
 import { SegmentElement } from "./segment";

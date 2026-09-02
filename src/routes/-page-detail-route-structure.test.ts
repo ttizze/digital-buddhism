@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 
 describe("Tipitakaルート", () => {
 	it("ユーザーhandleではなく静的namespaceとしてrootと記事詳細を公開する", () => {

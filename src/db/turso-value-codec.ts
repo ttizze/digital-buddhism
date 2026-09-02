@@ -99,13 +99,36 @@ function encodeJsonValue(
 	return JSON.stringify(value);
 }
 
+function describeValue(value: unknown): string {
+	if (value === null) return "null";
+	if (typeof value === "object") {
+		try {
+			return JSON.stringify(value) ?? "<undefined>";
+		} catch {
+			return "<unserializable>";
+		}
+	}
+	if (typeof value === "string") return value;
+	if (
+		typeof value === "number" ||
+		typeof value === "bigint" ||
+		typeof value === "boolean" ||
+		typeof value === "symbol"
+	) {
+		return value.toString();
+	}
+	return typeof value === "undefined" ? "undefined" : "<unserializable>";
+}
+
 function encodeInputValue(codec: InputCodec, value: unknown): unknown {
 	switch (codec) {
 		case "timestamp": {
 			if (value === null) return value;
 			const date = decodeTimestamp(value);
 			if (!(date instanceof Date)) {
-				throw new TypeError(`Invalid SQLite timestamp: ${String(value)}`);
+				throw new TypeError(
+					`Invalid SQLite timestamp: ${describeValue(value)}`,
+				);
 			}
 			return date.getTime();
 		}
@@ -247,7 +270,7 @@ function decodeTimestamp(value: unknown): unknown {
 			? new Date(value)
 			: undefined;
 	if (!date || Number.isNaN(date.valueOf())) {
-		throw new TypeError(`Invalid SQLite timestamp: ${String(value)}`);
+		throw new TypeError(`Invalid SQLite timestamp: ${describeValue(value)}`);
 	}
 	return date;
 }
@@ -256,7 +279,7 @@ function decodeBoolean(value: unknown): unknown {
 	if (value === null || typeof value === "boolean") return value;
 	if (value === 0 || value === 0n || value === "0") return false;
 	if (value === 1 || value === 1n || value === "1") return true;
-	throw new TypeError(`Invalid SQLite boolean: ${String(value)}`);
+	throw new TypeError(`Invalid SQLite boolean: ${describeValue(value)}`);
 }
 
 function decodeJson(value: unknown, column: string): unknown {

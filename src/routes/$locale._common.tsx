@@ -1,4 +1,9 @@
-import { ClientOnly, createFileRoute, Outlet } from "@tanstack/react-router";
+import {
+	ClientOnly,
+	createFileRoute,
+	Outlet,
+	stripSearchParams,
+} from "@tanstack/react-router";
 import * as v from "valibot";
 import { DEFAULT_VIEW, VIEW_VALUES } from "@/app/_constants/view";
 import { Footer } from "@/app/[locale]/(common-layout)/_components/footer";
@@ -7,13 +12,24 @@ import { HeaderUserSlot } from "@/app/[locale]/(common-layout)/_components/heade
 import { TranslationFormOnClick } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-form-on-click.client";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/json-ld";
 
+const annotationsSearchSchema = v.pipe(
+	v.union([v.array(v.string()), v.string()]),
+	v.transform((value) =>
+		typeof value === "string" ? value.split("~").filter(Boolean) : value,
+	),
+);
+
 export const Route = createFileRoute("/$locale/_common")({
 	validateSearch: v.looseObject({
 		view: v.optional(
 			v.fallback(v.picklist(VIEW_VALUES), DEFAULT_VIEW),
 			DEFAULT_VIEW,
 		),
+		annotations: v.optional(v.fallback(annotationsSearchSchema, []), []),
 	}),
+	search: {
+		middlewares: [stripSearchParams({ view: DEFAULT_VIEW, annotations: [] })],
+	},
 	component: CommonLayout,
 });
 

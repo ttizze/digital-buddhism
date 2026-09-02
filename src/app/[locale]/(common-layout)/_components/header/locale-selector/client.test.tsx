@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { LocaleSelector } from "./client";
 
 if (typeof global.ResizeObserver === "undefined") {
@@ -42,7 +42,7 @@ describe("LocaleSelector", () => {
 		expect(screen.getByText("English")).toBeInTheDocument();
 	});
 	it("opens popover and displays locale options", async () => {
-		const user = await userEvent.setup();
+		const user = userEvent.setup();
 		render(<LocaleSelector currentHandle="" userPlan="free" />);
 		const button = await screen.findByTestId("locale-selector-button");
 		await user.click(button);

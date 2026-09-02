@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { translateChunk } from "@/app/api/translate/chunk/_service/translate-chunk.server";
 import { db } from "@/db";
 import { resetDatabase } from "@/tests/db-helpers";

@@ -1,9 +1,18 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { NuqsTestingAdapter } from "nuqs/adapters/testing";
 import { IntlProvider } from "use-intl";
-import { vi } from "vitest";
+import { vi } from "vite-plus/test";
+import { TanStackSearchTestProvider } from "@/tests/tanstack-search-test-harness";
 import enMessages from "../../../../../../../../messages/en.json";
 import { PageNavigation } from "./index";
+
+vi.mock(
+	"@/app/[locale]/(common-layout)/_components/page-detail-route-api",
+	async () => {
+		const { testPageDetailRoute } =
+			await import("@/tests/tanstack-search-test-harness");
+		return { pageDetailRoute: testPageDetailRoute };
+	},
+);
 
 describe("PageNavigation", () => {
 	const tocItems = [
@@ -26,7 +35,7 @@ describe("PageNavigation", () => {
 
 	function renderNavigation(items = tocItems) {
 		return render(
-			<NuqsTestingAdapter>
+			<TanStackSearchTestProvider>
 				<IntlProvider locale="en" messages={enMessages}>
 					<PageNavigation
 						data={null}
@@ -38,7 +47,7 @@ describe("PageNavigation", () => {
 						tocItems={items}
 					/>
 				</IntlProvider>
-			</NuqsTestingAdapter>,
+			</TanStackSearchTestProvider>,
 		);
 	}
 

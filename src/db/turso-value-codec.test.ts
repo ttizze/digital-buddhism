@@ -1,7 +1,7 @@
 import { createClient } from "@libsql/client";
 import { LibsqlDialect } from "@libsql/kysely-libsql";
 import { CamelCasePlugin, type ColumnType, Kysely } from "kysely";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 import { TursoValueCodecPlugin } from "./turso-value-codec";
 
 type TestDatabase = {

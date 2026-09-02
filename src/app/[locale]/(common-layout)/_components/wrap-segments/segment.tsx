@@ -31,6 +31,7 @@ function SegmentPair({
 					segment.glossUnits,
 				)
 			: sourceChildren;
+	const tagId = typeof tagProps?.id === "string" ? tagProps.id : undefined;
 
 	return (
 		<>
@@ -46,7 +47,7 @@ function SegmentPair({
 					{...tagProps}
 					className={`${className} seg-tr whitespace-pre-wrap break-words ${interactive ? "cursor-pointer select-text" : ""}`}
 					data-number-id={segment.number}
-					id={tagProps?.id ? `${tagProps.id}-tr` : undefined}
+					id={tagId ? `${tagId}-tr` : undefined}
 					{...(interactive && {
 						role: "button",
 						tabIndex: 0,

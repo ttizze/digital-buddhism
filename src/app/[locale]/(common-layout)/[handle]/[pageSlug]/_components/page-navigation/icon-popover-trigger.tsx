@@ -1,10 +1,8 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
-import { useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { viewQueryState } from "@/app/[locale]/(common-layout)/_components/view-query";
 import { Button } from "@/components/ui/button";
 import {
 	Popover,
@@ -12,6 +10,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { pageDetailRoute } from "@/app/[locale]/(common-layout)/_components/page-detail-route-api";
 
 type Align = "start" | "center" | "end";
 
@@ -29,7 +28,7 @@ export function IconPopoverTrigger({
 	align,
 }: IconPopoverTriggerProps) {
 	const [isOpen, setIsOpen] = useState(false);
-	const [view] = useQueryState("view", viewQueryState);
+	const view = pageDetailRoute.useSearch({ select: (search) => search.view });
 
 	return (
 		<Popover onOpenChange={setIsOpen} open={isOpen}>

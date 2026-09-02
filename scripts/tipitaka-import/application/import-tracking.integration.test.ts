@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vite-plus/test";
 import { db } from "@/db";
 import { resetDatabase } from "@/tests/db-helpers";
 import { setupDbPerFile } from "@/tests/test-db-manager";

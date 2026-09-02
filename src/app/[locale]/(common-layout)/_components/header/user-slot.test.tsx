@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { HeaderUserSlot } from "./user-slot";
 
 vi.mock("@tanstack/react-router", () => ({

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { getNotifications } from "./handler";
 
 vi.mock("@/app/_service/current-user", () => ({

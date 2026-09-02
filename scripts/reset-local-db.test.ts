@@ -1,5 +1,5 @@
 import { createClient } from "@libsql/client";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 import { createLocalSqliteDatabase } from "./local-sqlite-db";
 import { resetLocalDatabase } from "./reset-local-db";
 

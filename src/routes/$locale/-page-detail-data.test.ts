@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
 
 const { readPageContentDataMock, setResponseHeadersMock } = vi.hoisted(() => ({

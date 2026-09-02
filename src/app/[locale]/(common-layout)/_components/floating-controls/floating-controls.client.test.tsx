@@ -1,8 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { NuqsTestingAdapter } from "nuqs/adapters/testing";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { TanStackSearchTestProvider } from "@/tests/tanstack-search-test-harness";
 import { FloatingControls } from "./floating-controls.client";
+
+vi.mock(
+	"@/app/[locale]/(common-layout)/_components/page-detail-route-api",
+	async () => {
+		const { testPageDetailRoute } =
+			await import("@/tests/tanstack-search-test-harness");
+		return { pageDetailRoute: testPageDetailRoute };
+	},
+);
 
 vi.mock("use-intl", async () => {
 	const { createEnTranslator } = await import("@/tests/en-translations");
@@ -35,13 +44,13 @@ function Harness({
 	userLocale?: string;
 }) {
 	return (
-		<NuqsTestingAdapter searchParams={initialSearchParams}>
+		<TanStackSearchTestProvider initialSearchParams={initialSearchParams}>
 			<FloatingControls
 				annotationTypes={annotationTypes}
 				sourceLocale={sourceLocale}
 				userLocale={userLocale}
 			/>
-		</NuqsTestingAdapter>
+		</TanStackSearchTestProvider>
 	);
 }
 

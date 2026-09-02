@@ -6,7 +6,7 @@ import {
 	it,
 	type MockInstance,
 	vi,
-} from "vitest";
+} from "vite-plus/test";
 import { buildTranslationData } from "./build-translation-data";
 
 describe("buildTranslationData", () => {

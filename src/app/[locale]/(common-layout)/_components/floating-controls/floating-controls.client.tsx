@@ -1,9 +1,9 @@
 "use client";
-import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
-import { Suspense, useEffect } from "react";
+import { useEffect } from "react";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { pageDetailRoute } from "../page-detail-route-api";
 import { useScrollVisibility } from "./hooks/use-scroll-visibility";
 import { ShareDialog } from "./share-dialog";
 import { ViewCycle } from "./view-cycle.client";
@@ -25,12 +25,10 @@ export function FloatingControls({
 }: FloatingControlsProps) {
 	const t = useTranslations("FloatingControls");
 	const { isVisible, ignoreNextScroll } = useScrollVisibility();
-	const [visibleAnnotations, setVisibleAnnotations] = useQueryState(
-		"annotations",
-		parseAsArrayOf(parseAsString, "~")
-			.withDefault([])
-			.withOptions({ shallow: true }),
-	);
+	const visibleAnnotations = pageDetailRoute.useSearch({
+		select: (search) => search.annotations,
+	});
+	const navigate = pageDetailRoute.useNavigate();
 	const visibleAnnotationSet = new Set(visibleAnnotations);
 	useEffect(() => {
 		const tokens = visibleAnnotations.filter(Boolean);
@@ -43,12 +41,18 @@ export function FloatingControls({
 
 	const toggleAnnotationType = (annotationType: AnnotationType) => {
 		const uniqueKey = annotationType.label;
-		const isVisible = visibleAnnotationSet.has(uniqueKey);
-		if (isVisible) {
-			setVisibleAnnotations(visibleAnnotations.filter((k) => k !== uniqueKey));
-		} else {
-			setVisibleAnnotations([...visibleAnnotations, uniqueKey]);
-		}
+		void navigate({
+			search: (previous) => {
+				const isVisible = previous.annotations.includes(uniqueKey);
+				return {
+					...previous,
+					annotations: isVisible
+						? previous.annotations.filter((key) => key !== uniqueKey)
+						: [...previous.annotations, uniqueKey],
+				};
+			},
+			replace: true,
+		});
 		ignoreNextScroll();
 	};
 
@@ -61,13 +65,11 @@ export function FloatingControls({
 		>
 			<div className="flex gap-6 justify-center">
 				<div className="flex flex-col items-center gap-1 group">
-					<Suspense fallback={null}>
-						<ViewCycle
-							afterClick={ignoreNextScroll}
-							sourceLocale={sourceLocale}
-							userLocale={userLocale}
-						/>
-					</Suspense>
+					<ViewCycle
+						afterClick={ignoreNextScroll}
+						sourceLocale={sourceLocale}
+						userLocale={userLocale}
+					/>
 					<span className="text-[10px] leading-none text-muted-foreground transition-colors group-hover:text-foreground">
 						{t("view")}
 					</span>

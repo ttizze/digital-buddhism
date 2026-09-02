@@ -1,6 +1,13 @@
 import { renderHook } from "@testing-library/react";
 import { toast } from "sonner";
-import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import {
+	beforeEach,
+	describe,
+	expect,
+	it,
+	type Mock,
+	vi,
+} from "vite-plus/test";
 
 import type { TranslationJobForToast } from "@/app/types/translation-job";
 import { useTranslationJobToast } from "./use-translation-job-toast";

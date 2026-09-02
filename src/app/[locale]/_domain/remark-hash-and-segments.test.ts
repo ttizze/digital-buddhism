@@ -3,7 +3,7 @@ import { toString as mdastToString } from "mdast-util-to-string";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import type { VFile } from "vfile";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	remarkHashAndSegments,
 	type SegmentDraft,
