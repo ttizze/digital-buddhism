@@ -1,10 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import * as v from "valibot";
 import { Button } from "@/components/ui/button";
 import { analyticsConsentStorageKey } from "./analytics-consent-storage";
 
 const analyticsConsentStates = ["accepted", "rejected"] as const;
 type AnalyticsConsentState = (typeof analyticsConsentStates)[number];
+const analyticsConsentSchema = v.picklist(analyticsConsentStates);
 
 export function AnalyticsConsent({
 	gaTrackingId,
@@ -25,11 +27,8 @@ export function AnalyticsConsent({
 
 	useEffect(() => {
 		const saved = window.localStorage.getItem(analyticsConsentStorageKey);
-		setConsent(
-			analyticsConsentStates.includes(saved as AnalyticsConsentState)
-				? (saved as AnalyticsConsentState)
-				: null,
-		);
+		const parsed = v.safeParse(analyticsConsentSchema, saved);
+		setConsent(parsed.success ? parsed.output : null);
 	}, []);
 
 	useEffect(() => {

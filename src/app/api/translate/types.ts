@@ -37,5 +37,5 @@ export type TranslationQueueMessage =
 	| { type: "chunk"; params: TranslateChunkParams };
 
 export type TranslationQueueBinding = {
-	send(message: TranslationQueueMessage): Promise<unknown>;
+	send(message: TranslationQueueMessage): Promise<void>;
 };

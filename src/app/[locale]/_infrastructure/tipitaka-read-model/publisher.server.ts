@@ -16,6 +16,7 @@ import {
 	pageStateKey,
 	pageTranslationKey,
 	pageTranslationPointerKey,
+	type ReadModelKey,
 	TIPITAKA_READ_MODEL_SCHEMA_VERSION,
 	type TranslationOverlay,
 	type TranslationPointer,
@@ -97,15 +98,10 @@ function collectTreeTranslations(
 
 async function readCurrentTranslationRevision(
 	store: TipitakaReadModelStore,
-	key: string,
+	key: ReadModelKey<TranslationPointer>,
 ): Promise<string | undefined> {
-	const value = await store.get(key);
-	if (!value) return undefined;
-	const pointer = JSON.parse(value) as Partial<TranslationPointer>;
-	return pointer.schemaVersion === TIPITAKA_READ_MODEL_SCHEMA_VERSION &&
-		typeof pointer.revision === "string"
-		? pointer.revision
-		: undefined;
+	const pointer = await store.get(key);
+	return pointer?.revision;
 }
 
 /**
@@ -120,8 +116,8 @@ async function writeTranslationOverlay({
 	loadTranslations,
 }: {
 	store: TipitakaReadModelStore;
-	pointerKey: string;
-	keyForRevision: (revision: string) => string;
+	pointerKey: ReadModelKey<TranslationPointer>;
+	keyForRevision: (revision: string) => ReadModelKey<TranslationOverlay>;
 	locale: string;
 	loadTranslations: () => Promise<Record<string, string>>;
 }): Promise<void> {
@@ -141,8 +137,8 @@ async function writeTranslationOverlay({
 		revision,
 		previousRevision,
 	};
-	await store.put(keyForRevision(revision), JSON.stringify(snapshot));
-	await store.put(pointerKey, JSON.stringify(pointer));
+	await store.put(keyForRevision(revision), snapshot);
+	await store.put(pointerKey, pointer);
 }
 
 export async function publishPageBase(
@@ -205,8 +201,8 @@ export async function publishPageBase(
 		annotationTypes: data.annotationTypes,
 		annotationsByTargetSegmentId,
 	};
-	await store.put(pageBaseKey(slug), JSON.stringify(snapshot));
-	await store.put(pageAnnotationsKey(slug), JSON.stringify(annotations));
+	await store.put(pageBaseKey(slug), snapshot);
+	await store.put(pageAnnotationsKey(slug), annotations);
 }
 
 export async function publishPageState(
@@ -218,7 +214,7 @@ export async function publishPageState(
 		generatedAt: new Date().toISOString(),
 		completedTranslationLocales: await queryCompletedTranslationLocales(pageId),
 	};
-	await store.put(pageStateKey(pageId), JSON.stringify(snapshot));
+	await store.put(pageStateKey(pageId), snapshot);
 }
 
 export async function publishPageTranslationOverlay(
@@ -250,7 +246,7 @@ export async function publishHomeBase(
 		rootPageId,
 		tipitakaPages,
 	};
-	await store.put(homeBaseKey(), JSON.stringify(snapshot));
+	await store.put(homeBaseKey(), snapshot);
 }
 
 export async function publishHomeTranslationOverlay(

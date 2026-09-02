@@ -10,15 +10,15 @@ import * as Sentry from "@sentry/cloudflare";
 import {
 	createStructuredLogger,
 	isLogLevel,
+	type LogContext,
 	type LogLevel,
 	type Logger,
 } from "./logger-core";
 
-interface LoggerContext {
+interface LoggerContext extends LogContext {
 	requestId?: string;
 	userId?: string;
 	path?: string;
-	[key: string]: unknown;
 }
 
 const resolveWorkerLogLevel = (): LogLevel => {

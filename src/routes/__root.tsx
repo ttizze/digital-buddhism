@@ -6,6 +6,7 @@ import {
 	useRouterState,
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import * as v from "valibot";
 import "@/app/globals.css";
 import {
 	RootErrorComponent,
@@ -47,9 +48,11 @@ function RootComponent() {
 function RootDocument({ children }: { children: ReactNode }) {
 	const locale = useRouterState({
 		select: (state) => {
-			const locale = state.matches.find((match) => match.routeId === "/$locale")
-				?.params.locale;
-			return typeof locale === "string" ? locale : "en";
+			const routeLocale = state.matches.find(
+				(match) => match.routeId === "/$locale",
+			)?.params.locale;
+			const parsed = v.safeParse(v.string(), routeLocale);
+			return parsed.success ? parsed.output : "en";
 		},
 	});
 	const direction = locale === "ar" || locale === "fa" ? "rtl" : "ltr";

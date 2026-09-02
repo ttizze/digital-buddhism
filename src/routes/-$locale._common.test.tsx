@@ -2,11 +2,9 @@ import { render, screen } from "@testing-library/react";
 import type { ComponentType, ReactNode } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
-const { registeredRoute } = vi.hoisted(() => ({
-	registeredRoute: {
-		component: undefined as ComponentType | undefined,
-	},
-}));
+const { registeredRoute } = vi.hoisted<{
+	registeredRoute: { component?: ComponentType };
+}>(() => ({ registeredRoute: {} }));
 
 vi.mock("@tanstack/react-router", () => ({
 	ClientOnly: ({ fallback }: { fallback: ReactNode }) => fallback,

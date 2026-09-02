@@ -3,7 +3,7 @@ import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
 
 const { readPageContentDataMock, setResponseHeadersMock } = vi.hoisted(() => ({
 	readPageContentDataMock: vi.fn(),
-	setResponseHeadersMock: vi.fn(),
+	setResponseHeadersMock: vi.fn<(headers: Headers) => void>(),
 }));
 
 vi.mock("@tanstack/react-start", () => ({
@@ -40,7 +40,8 @@ describe("getPageDetailData", () => {
 			pageDetail: { id: 1 },
 		});
 		expect(readPageContentDataMock).toHaveBeenCalledWith("vinaya-pitaka", "ja");
-		const headers = setResponseHeadersMock.mock.calls[0]?.[0] as Headers;
+		const headers = setResponseHeadersMock.mock.calls[0]?.[0];
+		if (!headers) throw new Error("response headers were not set");
 		expect(headers.get("Cache-Control")).toBe(
 			PUBLIC_PAGE_CACHE_HEADERS["Cache-Control"],
 		);

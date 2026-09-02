@@ -1,28 +1,9 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { TranslationFormOnClick } from "./translation-form-on-click";
+import { TranslationFormEventBridge } from "./translation-form-on-click";
 
-const locationState = vi.hoisted(() => ({ pathname: "/" }));
-vi.mock("@tanstack/react-router", () => ({
-	useLocation: ({
-		select,
-	}: {
-		select: (location: { pathname: string }) => string;
-	}) => select(locationState),
-}));
-
-beforeEach(() => {
-	locationState.pathname = "/";
-});
-
-vi.mock("./translation-section/add-and-vote-translations", () => ({
-	AddAndVoteTranslations: ({
-		segmentId,
-		translationElement,
-	}: {
-		segmentId: number;
-		translationElement: HTMLElement;
-	}) => (
+function renderTestForm(segmentId: number, translationElement: HTMLElement) {
+	return (
 		<button
 			data-testid="tr-ui"
 			onClick={() => {
@@ -32,8 +13,17 @@ vi.mock("./translation-section/add-and-vote-translations", () => ({
 		>
 			segment:{segmentId}
 		</button>
-	),
-}));
+	);
+}
+
+function TranslationFormOnClick({ pathname = "/" }: { pathname?: string }) {
+	return (
+		<TranslationFormEventBridge
+			pathname={pathname}
+			renderForm={renderTestForm}
+		/>
+	);
+}
 
 describe("TranslationFormOnClick", () => {
 	test("data-segment-id のクリックで、その段のUIだけが開く（イベント委譲）", async () => {
@@ -52,9 +42,8 @@ describe("TranslationFormOnClick", () => {
 		expect(await screen.findByTestId("tr-ui")).toHaveTextContent("segment:123");
 
 		const block = container.querySelector(".seg-tr");
-		expect(block).not.toBeNull();
-		const root = block?.nextElementSibling as HTMLElement | null;
-		expect(root?.dataset.trFormRoot).toBe("1");
+		if (!block) throw new Error("segment block was not rendered");
+		expect(block.nextElementSibling).toHaveAttribute("data-tr-form-root", "1");
 	});
 
 	test("data-segment-id 以外をクリックしてもUIは開かない", async () => {
@@ -115,17 +104,19 @@ describe("TranslationFormOnClick", () => {
 			</>,
 		);
 
-		const original = window.getSelection;
-		window.getSelection = () =>
-			({
-				isCollapsed: false,
-				toString: () => "selected",
-			}) as unknown as Selection;
+		const selection = window.getSelection();
+		const textNode = screen.getByText("open").firstChild;
+		if (!selection || !textNode)
+			throw new Error("text selection is unavailable");
+		const range = document.createRange();
+		range.selectNodeContents(textNode);
+		selection.removeAllRanges();
+		selection.addRange(range);
 
 		await user.click(screen.getByText("open"));
 		expect(screen.queryByTestId("tr-ui")).toBeNull();
 
-		window.getSelection = original;
+		selection.removeAllRanges();
 	});
 
 	test("リンク内ではキーボード（Enter/Space）でも UI は開かない", async () => {
@@ -156,11 +147,9 @@ describe("TranslationFormOnClick", () => {
 		);
 
 		await user.tab();
-		const el = container.querySelector(
-			"[data-segment-id='123']",
-		) as HTMLElement | null;
-		expect(el).not.toBeNull();
-		fireEvent.keyDown(el as HTMLElement, { key: "Enter" });
+		const el = container.querySelector<HTMLElement>("[data-segment-id='123']");
+		if (!el) throw new Error("segment trigger was not rendered");
+		fireEvent.keyDown(el, { key: "Enter" });
 		expect(screen.getByTestId("tr-ui")).toHaveTextContent("segment:123");
 	});
 
@@ -178,13 +167,12 @@ describe("TranslationFormOnClick", () => {
 		await user.click(screen.getByText("open"));
 		expect(screen.getByTestId("tr-ui")).toBeInTheDocument();
 
-		locationState.pathname = "/next";
 		rerender(
 			<>
 				<button className="seg-tr" data-segment-id="123" type="button">
 					open
 				</button>
-				<TranslationFormOnClick />
+				<TranslationFormOnClick pathname="/next" />
 			</>,
 		);
 

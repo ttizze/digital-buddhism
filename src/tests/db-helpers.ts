@@ -1,10 +1,15 @@
+import * as v from "valibot";
 import { db } from "@/db";
 
-const preservedTables: Record<string, true> = {
-	segment_metadata_types: true,
-	drizzle_migrations: true,
-	__drizzle_migrations: true,
-};
+const preservedTables = new Set([
+	"segment_metadata_types",
+	"drizzle_migrations",
+	"__drizzle_migrations",
+]);
+const tableNameSchema = v.pipe(
+	v.string(),
+	v.regex(/^[A-Za-z0-9_]+$/, "Unsafe SQLite table name"),
+);
 
 export async function resetDatabase() {
 	await db.client.execute("PRAGMA foreign_keys = OFF");
@@ -13,14 +18,8 @@ export async function resetDatabase() {
 			"SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
 		);
 		for (const row of tables.rows) {
-			if (typeof row.name !== "string") {
-				throw new TypeError("SQLite table name must be a string");
-			}
-			const tableName = row.name;
-			if (!preservedTables[tableName]) {
-				if (!/^[A-Za-z0-9_]+$/.test(tableName)) {
-					throw new Error(`Unsafe SQLite table name: ${tableName}`);
-				}
+			const tableName = v.parse(tableNameSchema, row.name);
+			if (!preservedTables.has(tableName)) {
 				await db.client.execute(`DELETE FROM "${tableName}"`);
 			}
 		}

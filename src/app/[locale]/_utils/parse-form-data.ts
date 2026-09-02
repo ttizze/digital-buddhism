@@ -13,7 +13,7 @@ export function parseFormData<const TSchema extends v.GenericSchema>(
 ): ParseFormDataResult<TSchema> {
 	const data: Record<string, string | string[]> = {};
 	for (const [key, value] of formData.entries()) {
-		if (typeof value !== "string") continue;
+		if (value instanceof File) continue;
 		const existing = data[key];
 		if (existing === undefined) {
 			data[key] = value;

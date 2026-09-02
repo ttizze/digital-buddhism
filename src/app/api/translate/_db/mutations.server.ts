@@ -1,6 +1,12 @@
 import { db } from "@/db";
 import type { TranslationStatus } from "@/drizzle/types";
 
+interface FailedJobUpdate {
+	status: TranslationStatus;
+	error: string;
+	progress?: number;
+}
+
 // Convenience helpers to avoid scattering raw status writes around the codebase
 export async function markJobInProgress(translationJobId: number) {
 	await db
@@ -23,13 +29,15 @@ export async function markJobFailed(
 	progress: number | null,
 	errorMessage: string,
 ) {
+	const update: FailedJobUpdate = {
+		status: "FAILED",
+		error: errorMessage,
+	};
+	if (progress !== null) update.progress = progress;
+
 	await db
 		.updateTable("translationJobs")
-		.set({
-			status: "FAILED" satisfies TranslationStatus,
-			...(progress === null ? {} : { progress }),
-			error: errorMessage,
-		})
+		.set(update)
 		.where("id", "=", translationJobId)
 		.execute();
 }

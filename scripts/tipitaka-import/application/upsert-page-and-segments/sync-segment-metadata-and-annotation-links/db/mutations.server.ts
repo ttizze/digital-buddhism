@@ -81,10 +81,9 @@ export async function syncSegmentMetadata(
 	for (const draft of metadataDrafts) {
 		// セグメントIDが有効か確認
 		if (!segmentIds.has(draft.segmentId)) {
-			logger.warn(
-				{ segmentId: draft.segmentId },
-				"Segment ID not found in segmentIds, skipping metadata",
-			);
+			logger.warn("Segment ID not found in segmentIds, skipping metadata", {
+				segmentId: draft.segmentId,
+			});
 			continue;
 		}
 
@@ -92,10 +91,10 @@ export async function syncSegmentMetadata(
 		for (const item of draft.items) {
 			const metadataTypeId = metadataTypeMap.get(item.typeKey);
 			if (!metadataTypeId) {
-				logger.warn(
-					{ typeKey: item.typeKey, segmentId: draft.segmentId },
-					"Metadata type not found, skipping segment metadata",
-				);
+				logger.warn("Metadata type not found, skipping segment metadata", {
+					typeKey: item.typeKey,
+					segmentId: draft.segmentId,
+				});
 				continue;
 			}
 			metadataToCreate.push({

@@ -13,10 +13,7 @@ import { beautifySlug } from "./utils/beautify-slug";
  * parseDirSegment("01-sutta") // { order: 1, title: "Sutta" }
  * parseDirSegment("02-diggha-nikaya") // { order: 2, title: "Diggha Nikaya" }
  */
-export function parseDirSegment(dirSegment: string): {
-	title: string;
-	order: number;
-} {
+export function parseDirSegment(dirSegment: string) {
 	const match = dirSegment.match(/^(\d+)-(.*)$/);
 	if (!match) {
 		throw new Error(`Invalid directory segment: ${dirSegment}`);

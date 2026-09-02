@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
+import { parseSegmentTranslationVoteResponse } from "@/app/api/segment-translations/_domain/segment-translations";
 import { db } from "@/db";
 import { resetDatabase } from "@/tests/db-helpers";
 import { createPageWithSegments, createUser } from "@/tests/factories";
@@ -237,9 +237,7 @@ describe("/api/segment-translations GET", () => {
 					body: formData,
 				}),
 			);
-			const body = (await response.json()) as {
-				data: { translations: SegmentTranslation[] };
-			};
+			const body = parseSegmentTranslationVoteResponse(await response.json());
 			return body.data.translations;
 		};
 

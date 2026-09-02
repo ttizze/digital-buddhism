@@ -29,7 +29,7 @@ export function toSessionUser(user: User): SessionUser {
 		totalPoints: user.totalPoints,
 		isAi: user.isAi,
 		image: user.image,
-		createdAt: user.createdAt as Date,
-		updatedAt: user.updatedAt as Date,
+		createdAt: user.createdAt,
+		updatedAt: user.updatedAt,
 	};
 }

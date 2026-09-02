@@ -16,9 +16,15 @@ const segmentTranslationSchema = v.object({
 });
 
 const segmentTranslationsSchema = v.array(segmentTranslationSchema);
+const segmentTranslationVoteResponseSchema = v.object({
+	success: v.literal(true),
+	data: v.object({ translations: segmentTranslationsSchema }),
+});
 
 export type SegmentTranslation = v.InferOutput<typeof segmentTranslationSchema>;
 
-export function parseSegmentTranslations(input: unknown): SegmentTranslation[] {
-	return v.parse(segmentTranslationsSchema, input);
-}
+export const parseSegmentTranslations = v.parser(segmentTranslationsSchema);
+
+export const parseSegmentTranslationVoteResponse = v.parser(
+	segmentTranslationVoteResponseSchema,
+);

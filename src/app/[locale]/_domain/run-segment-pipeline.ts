@@ -1,36 +1,39 @@
+import type { Root } from "mdast";
 import { removePosition } from "unist-util-remove-position";
 import { VFile } from "vfile";
-import type { JsonValue } from "@/drizzle/types";
 import type { SegmentDraft } from "./remark-hash-and-segments";
 
 export interface SegmentPipelineResult {
-	mdastJson: JsonValue; // DB 書き込み用
+	mdastJson: Root;
 	segments: SegmentDraft[];
-	file: VFile; // ログや警告を見たい時用
+	file: VFile;
+}
+
+interface SegmentProcessor {
+	parse(file: VFile): Root;
+	run(tree: Root, file: VFile): Promise<Root>;
 }
 
 /**
  * remarkHashAndSegments を末尾に持つ unified プロセッサを実行し、
  * MDAST(JSON) + SegmentDraft[] を返す共通ランナー。
  */
-export async function runSegmentPipeline<Tree>(
-	processor: {
-		parse(file: VFile): Tree;
-		run(tree: Tree, file: VFile): Promise<unknown>;
-	},
+export async function runSegmentPipeline(
+	processor: SegmentProcessor,
 	source: string,
 ): Promise<SegmentPipelineResult> {
 	const file = new VFile({ value: source });
 	const tree = await processor.run(processor.parse(file), file);
 
 	// 余計な position を削除して軽量化
-	removePosition(tree as Parameters<typeof removePosition>[0], {
-		force: true,
-	});
+	removePosition(tree, { force: true });
+	const segments = file.data.segments;
+	if (!segments)
+		throw new Error("remarkHashAndSegments did not produce segments");
 
 	return {
-		mdastJson: tree as JsonValue,
-		segments: (file.data as { segments: SegmentDraft[] }).segments,
+		mdastJson: tree,
+		segments,
 		file,
 	};
 }

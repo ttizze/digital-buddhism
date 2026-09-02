@@ -21,13 +21,13 @@ export function buildLocaleOptions({
 	existLocales,
 	supported,
 	sourceLocale,
-	proofStatusMap = {},
+	proofStatusMap,
 }: {
-	sourceLocale?: string;
+	sourceLocale: string | undefined;
 	existLocales: string[];
 	supported: LocaleOption[];
 	/** locale => proofStatus の対応表 */
-	proofStatusMap?: Record<string, TranslationProofStatus>;
+	proofStatusMap: ReadonlyMap<string, TranslationProofStatus>;
 }): LocaleOptionWithStatus[] {
 	/* name 解決を O(1) にするため Map 化 */
 	const nameMap = new Map(supported.map((o) => [o.code, o.name]));
@@ -37,14 +37,14 @@ export function buildLocaleOptions({
 		status: LocaleStatus,
 		proofStatus?: TranslationProofStatus,
 	): LocaleOptionWithStatus => {
-		const base = {
+		const base: LocaleOptionWithStatus = {
 			code,
 			name: nameMap.get(code) ?? code, // 未登録言語でもフォールバック
 			status,
-		} as LocaleOptionWithStatus;
+		};
 
 		if (proofStatus) {
-			(base as LocaleOptionWithStatus).proofStatus = proofStatus;
+			base.proofStatus = proofStatus;
 		}
 
 		return base;
@@ -62,7 +62,7 @@ export function buildLocaleOptions({
 	/* 2) 翻訳済み */
 	for (const code of existLocales) {
 		if (!seen.has(code)) {
-			result.push(toOption(code, "translated", proofStatusMap[code]));
+			result.push(toOption(code, "translated", proofStatusMap.get(code)));
 			seen.add(code);
 		}
 	}

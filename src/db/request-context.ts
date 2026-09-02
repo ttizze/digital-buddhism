@@ -4,9 +4,19 @@ import { type Client, createClient } from "@libsql/client";
 type DatabaseRequestContext = {
 	url?: string;
 	authToken?: string;
-	client?: Pick<Client, "close">;
+	client?: Client;
 	kysely?: { destroy(): Promise<void> };
 };
+
+interface DatabaseConnectionConfig {
+	url: string;
+	authToken?: string;
+}
+
+interface DatabaseConnection {
+	url?: string;
+	authToken?: string;
+}
 
 const storage = new AsyncLocalStorage<DatabaseRequestContext>();
 
@@ -20,10 +30,7 @@ export function getDatabaseRequestContext():
 	return storage.getStore();
 }
 
-export function getDatabaseConnectionConfig(): {
-	url: string;
-	authToken?: string;
-} {
+export function getDatabaseConnectionConfig(): DatabaseConnectionConfig {
 	const context = getDatabaseRequestContext();
 	const url = context ? context.url : process.env.TURSO_DATABASE_URL;
 	if (!url) {
@@ -42,7 +49,7 @@ export function getDatabaseClient(): Client {
 		if (!context.client) {
 			context.client = createClient(getDatabaseConnectionConfig());
 		}
-		return context.client as Client;
+		return context.client;
 	}
 
 	if (!globalThis.__tursoClient) {
@@ -51,10 +58,18 @@ export function getDatabaseClient(): Client {
 	return globalThis.__tursoClient;
 }
 
-export async function runWithDatabaseRequestContext<T>(
-	connection: { url?: string; authToken?: string },
+export function runWithDatabaseRequestContext(
+	connection: DatabaseConnection,
+	fn: () => Response | Promise<Response>,
+): Promise<Response>;
+export function runWithDatabaseRequestContext<T>(
+	connection: DatabaseConnection,
 	fn: () => T | Promise<T>,
-): Promise<T> {
+): Promise<T>;
+export async function runWithDatabaseRequestContext<T>(
+	connection: DatabaseConnection,
+	fn: () => T | Promise<T>,
+): Promise<T | Response> {
 	const context: DatabaseRequestContext = connection;
 	return storage.run(context, async () => {
 		let cleanupPromise: Promise<void> | undefined;
@@ -87,7 +102,7 @@ export async function runWithDatabaseRequestContext<T>(
 					headers: result.headers,
 					status: result.status,
 					statusText: result.statusText,
-				}) as T;
+				});
 			}
 
 			await cleanup();

@@ -24,11 +24,10 @@ export async function loadPageContentData(
 	pageDetail: PageDetail,
 	locale: string,
 ): Promise<PageContentData> {
-	const [navigationData, childPages, locales, description] = await Promise.all([
+	const [navigationData, childPages, locales] = await Promise.all([
 		queryPageNavigationData(pageDetail.id, locale),
 		queryChildPagesTree(pageDetail.id, locale),
 		queryCompletedTranslationLocales(pageDetail.id),
-		mdastToText(pageDetail.mdastJson).then((text) => text.slice(0, 200)),
 	]);
 
 	return {
@@ -36,7 +35,7 @@ export async function loadPageContentData(
 		navigationData,
 		childPages,
 		completedTranslationLocales: locales,
-		description,
+		description: mdastToText(pageDetail.mdastJson).slice(0, 200),
 		annotationTypes: collectAnnotationTypes(pageDetail.segments),
 	};
 }

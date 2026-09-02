@@ -1,6 +1,7 @@
 // VoteButton.test.tsx
 import { render, screen } from "@testing-library/react";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
+import { vi } from "vite-plus/test";
 import { VoteButton } from "./vote-button";
 
 describe("VoteButton コンポーネント", () => {
@@ -10,6 +11,7 @@ describe("VoteButton コンポーネント", () => {
 				icon={ThumbsUp}
 				isActive={true}
 				isVoting={false}
+				onClick={vi.fn()}
 				type="upvote"
 				voteCount={15}
 			/>,
@@ -41,6 +43,7 @@ describe("VoteButton コンポーネント", () => {
 				icon={ThumbsDown}
 				isActive={false}
 				isVoting={false}
+				onClick={vi.fn()}
 				type="downvote"
 				voteCount={20}
 			/>,
@@ -65,6 +68,7 @@ describe("VoteButton コンポーネント", () => {
 				icon={ThumbsUp}
 				isActive={false}
 				isVoting={true}
+				onClick={vi.fn()}
 				type="upvote"
 				voteCount={5}
 			/>,
@@ -80,6 +84,7 @@ describe("VoteButton コンポーネント", () => {
 				icon={ThumbsDown}
 				isActive={false}
 				isVoting={true}
+				onClick={vi.fn()}
 				type="downvote"
 			/>,
 		);

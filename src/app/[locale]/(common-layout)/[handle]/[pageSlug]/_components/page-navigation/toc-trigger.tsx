@@ -14,7 +14,7 @@ export function TocTrigger({ items }: { items: TocItem[] }) {
 			icon={<List className="size-5" />}
 			title={t("tocTitle")}
 		>
-			<Toc items={items} />
+			{() => <Toc items={items} />}
 		</IconPopoverTrigger>
 	);
 }

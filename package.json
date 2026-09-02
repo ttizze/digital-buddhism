@@ -94,6 +94,7 @@
 	},
 	"devDependencies": {
 		"@cloudflare/vite-plugin": "^1.54.3",
+		"@oxlint/plugins": "1.79.0",
 		"@tailwindcss/vite": "4.3.3",
 		"@testing-library/dom": "10.4.1",
 		"@testing-library/jest-dom": "7.0.1",

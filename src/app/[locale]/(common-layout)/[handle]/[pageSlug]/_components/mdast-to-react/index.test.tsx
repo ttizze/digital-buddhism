@@ -1,27 +1,23 @@
 import { queryByAttribute } from "@testing-library/dom";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vite-plus/test";
+import type { Root } from "mdast";
 
 import type { Segment } from "@/app/[locale]/types";
-import type { JsonValue } from "@/drizzle/types";
 
 import { mdastToReact } from "./index";
 
-const segments: Segment[] = Array.from(
-	{ length: 5 },
-	(_, i) =>
-		({
-			id: i + 1,
-			pageId: 1,
-			number: i + 1,
-			text: "",
-			translationText: null,
-		}) as Segment,
-);
+const segments: Segment[] = Array.from({ length: 5 }, (_, i) => ({
+	id: i + 1,
+	pageId: 1,
+	number: i + 1,
+	text: "",
+	translationText: null,
+}));
 
 describe("mdastToReact", () => {
 	it("セグメントの原文とユーザー翻訳を描画する", () => {
-		const mdast: JsonValue = {
+		const mdast: Root = {
 			type: "root",
 			children: [
 				{
@@ -57,7 +53,7 @@ describe("mdastToReact", () => {
 	});
 
 	it("Tipitakaで使う見出し・段落・強調・リストを描画する", () => {
-		const mdast: JsonValue = {
+		const mdast: Root = {
 			type: "root",
 			children: [
 				{
@@ -137,7 +133,7 @@ describe("mdastToReact", () => {
 	});
 
 	it("note・pb・bookマーカーを画面に描画しない", () => {
-		const mdast: JsonValue = {
+		const mdast: Root = {
 			type: "root",
 			children: [
 				{ type: "html", value: "<!--book:dn1-->" },

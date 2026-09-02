@@ -1,10 +1,13 @@
 import GithubSlugger from "github-slugger";
+import type { Heading, Root, RootContent } from "mdast";
 import { describe, expect, it } from "vite-plus/test";
 import type { SegmentForDetail } from "@/app/[locale]/types";
-import type { JsonValue } from "@/drizzle/types";
 import { extractTocItems } from "./extract-toc-items";
 
-const headingNode = (number: number | null, depth: number): JsonValue => ({
+const headingNode = (
+	number: number | null,
+	depth: Heading["depth"],
+): Heading => ({
 	type: "heading",
 	depth,
 	data:
@@ -14,7 +17,7 @@ const headingNode = (number: number | null, depth: number): JsonValue => ({
 	children: [{ type: "text", value: `Heading ${number ?? "?"}` }],
 });
 
-const root = (children: JsonValue[]): JsonValue => ({
+const root = (children: RootContent[]): Root => ({
 	type: "root",
 	children,
 });
@@ -23,16 +26,15 @@ const createSegment = (
 	number: number,
 	text: string,
 	translatedText: string | null = null,
-): SegmentForDetail =>
-	({
-		id: number,
-		pageId: 1,
-		number,
-		text,
-		translationText: translatedText,
-		textLevel: "MULA",
-		annotations: [],
-	}) as SegmentForDetail;
+): SegmentForDetail => ({
+	id: number,
+	pageId: 1,
+	number,
+	text,
+	translationText: translatedText,
+	textLevel: "MULA",
+	annotations: [],
+});
 
 describe("extractTocItems", () => {
 	it("深さ1-4の見出しだけを順序通りに抽出する", () => {

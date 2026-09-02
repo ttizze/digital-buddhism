@@ -107,16 +107,18 @@ function renderInlineNodeToString(node: Node): string {
 	if (node.nodeType === TEXT_NODE) {
 		return node.nodeValue ?? "";
 	}
-	if (node.nodeType === ELEMENT_NODE) {
-		return renderInlineElementToString(node as Element);
+	if (isElement(node)) {
+		return renderInlineElementToString(node);
 	}
 	return "";
+}
+
+function isElement(node: Node): node is Element {
+	return node.nodeType === ELEMENT_NODE;
 }
 
 // 目的: 指定要素の子ノードから要素ノードのみを列挙する。
 // 処理: childNodes をフィルタし、nodeType が ELEMENT_NODE のものだけを返す。
 export function getChildElements(element: Element): Element[] {
-	return Array.from(element.childNodes).filter(
-		(child): child is Element => child.nodeType === ELEMENT_NODE,
-	);
+	return Array.from(element.childNodes).filter(isElement);
 }

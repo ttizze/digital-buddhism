@@ -30,12 +30,8 @@ export type SegmentGlossVoteResponse = v.InferOutput<
 	typeof segmentGlossVoteResponseSchema
 >;
 
-export function parseSegmentGlossUnits(input: unknown): SegmentGlossUnit[] {
-	return v.parse(segmentGlossUnitsSchema, input);
-}
+export const parseSegmentGlossUnits = v.parser(segmentGlossUnitsSchema);
 
-export function parseSegmentGlossVoteResponse(
-	input: unknown,
-): SegmentGlossVoteResponse {
-	return v.parse(segmentGlossVoteResponseSchema, input);
-}
+export const parseSegmentGlossVoteResponse = v.parser(
+	segmentGlossVoteResponseSchema,
+);

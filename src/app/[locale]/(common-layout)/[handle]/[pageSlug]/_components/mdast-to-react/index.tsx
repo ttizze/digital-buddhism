@@ -1,14 +1,15 @@
 import GithubSlugger from "github-slugger";
 import type { Nodes, Parents, Root } from "mdast";
 import { createElement, Fragment, type JSX, type ReactNode } from "react";
-import { SegmentElement } from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
+import {
+	SegmentElement,
+	type SegmentTag,
+	type SegmentTagProps,
+} from "@/app/[locale]/(common-layout)/_components/wrap-segments/segment";
 import type { Segment } from "@/app/[locale]/types";
-import type { JsonObject, JsonValue } from "@/drizzle/types";
-
-type SegmentTag = "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "li";
 
 interface Params<T extends Segment = Segment> {
-	mdast: JsonValue;
+	mdast: Root;
 	segments: T[];
 	/** 翻訳をクリック可能にし、投票・追加UIを開けるようにする。 */
 	interactive?: boolean;
@@ -20,39 +21,27 @@ interface RenderState {
 	slugger: GithubSlugger;
 }
 
-interface MdastData {
-	hProperties?: Record<string, unknown>;
-}
+const HEADING_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6"] as const;
 
-function toRoot(value: JsonValue): Root | null {
-	if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-	const object = value as JsonObject;
-	if (object.type !== "root" || !Array.isArray(object.children)) return null;
-	return object as unknown as Root;
-}
-
-function getHProperties(node: Nodes): Record<string, unknown> | undefined {
-	return (node.data as MdastData | undefined)?.hProperties;
+function getHProperties(node: Nodes) {
+	return node.data?.hProperties;
 }
 
 function getDataNumber(node: Nodes): number | null {
 	const value = getHProperties(node)?.["data-number-id"];
-	if (typeof value !== "string" && typeof value !== "number") return null;
+	if (value === undefined) return null;
 	const number = Number(value);
 	return Number.isInteger(number) ? number : null;
 }
 
-function getTagProps(node: Nodes): Record<string, unknown> {
+function getTagProps(node: Nodes): SegmentTagProps {
 	const properties = getHProperties(node);
 	if (!properties) return {};
 
-	const props: Record<string, unknown> = {};
-	const className = properties.class ?? properties.className;
-	if (typeof className === "string") props.className = className;
+	const props: SegmentTagProps = {};
+	props.className = properties.class ?? properties.className;
 	const number = properties["data-number-id"];
-	if (typeof number === "string" || typeof number === "number") {
-		props["data-number-id"] = number;
-	}
+	if (number !== undefined) props["data-number-id"] = number;
 	return props;
 }
 
@@ -83,7 +72,7 @@ function renderSegmentTag(
 	children: ReactNode,
 	state: RenderState,
 	key: string,
-	extraProps: Record<string, unknown> = {},
+	extraProps: SegmentTagProps = {},
 ): ReactNode {
 	const number = getDataNumber(node);
 	const segment =
@@ -114,7 +103,7 @@ function renderListNode(
 	const children = node.children.map((child, index) =>
 		renderNode(child, state, `${key}.${index}`, tight && child.spread !== true),
 	);
-	const props: Record<string, unknown> = { key };
+	const props: SegmentTagProps & { key: string } = { key };
 	if (ordered && node.start && node.start !== 1) props.start = node.start;
 	return createElement(ordered ? "ol" : "ul", props, children);
 }
@@ -160,7 +149,7 @@ function renderNode(
 		return renderSegmentTag("p", node, children, state, key);
 	}
 	if (node.type === "heading") {
-		const tag = `h${node.depth}` as SegmentTag;
+		const tag = HEADING_TAGS[node.depth - 1];
 		const number = getDataNumber(node);
 		const text =
 			(number === null ? null : state.segmentsByNumber.get(number)?.text) ??
@@ -182,10 +171,7 @@ export function mdastToReact<T extends Segment = Segment>({
 	mdast,
 	segments,
 	interactive = true,
-}: Params<T>): JSX.Element | null {
-	const root = toRoot(mdast);
-	if (!root) return null;
-
+}: Params<T>): JSX.Element {
 	const segmentsByNumber = new Map<number, Segment>();
 	for (const segment of segments) {
 		segmentsByNumber.set(segment.number, segment);
@@ -195,5 +181,5 @@ export function mdastToReact<T extends Segment = Segment>({
 		segmentsByNumber,
 		slugger: new GithubSlugger(),
 	};
-	return <Fragment>{renderChildren(root, state, "root")}</Fragment>;
+	return <Fragment>{renderChildren(mdast, state, "root")}</Fragment>;
 }

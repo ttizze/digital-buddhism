@@ -1,8 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vite-plus/test";
-import type { SegmentTranslation } from "@/app/api/segment-translations/_domain/segment-translations";
-import { VoteButtons } from "./client";
+import { VoteButtons, type VoteTarget } from "./client";
 
 vi.mock("use-intl", () => ({
 	useLocale: () => "en",
@@ -10,27 +9,15 @@ vi.mock("use-intl", () => ({
 
 const dummyTranslationUpvote = {
 	id: 1,
-	segmentId: 1,
-	locale: "en",
-	text: "hello",
 	point: 10,
-	createdAt: "2024-01-01T00:00:00.000Z",
-	userName: "User",
-	userHandle: "user",
 	currentUserVoteIsUpvote: true,
-} as SegmentTranslation;
+} satisfies VoteTarget;
 
 const dummyTranslationDownvote = {
 	id: 2,
-	segmentId: 1,
-	locale: "en",
-	text: "world",
 	point: 5,
-	createdAt: "2024-01-01T00:00:00.000Z",
-	userName: "User",
-	userHandle: "user",
 	currentUserVoteIsUpvote: false,
-} as SegmentTranslation;
+} satisfies VoteTarget;
 
 describe("VoteButtons コンポーネント", () => {
 	afterEach(() => {
@@ -38,7 +25,7 @@ describe("VoteButtons コンポーネント", () => {
 		vi.unstubAllGlobals();
 	});
 
-	test("フォームとアップ／ダウンボタンがレンダリングされる", () => {
+	test("アップ／ダウンボタンがレンダリングされる", () => {
 		render(
 			<VoteButtons
 				isVoting={false}
@@ -47,7 +34,7 @@ describe("VoteButtons コンポーネント", () => {
 			/>,
 		);
 
-		expect(screen.getByTestId("vote-up-button").closest("form")).not.toBeNull();
+		expect(screen.getByTestId("vote-up-button")).toBeInTheDocument();
 		expect(screen.getByTestId("vote-down-button")).toBeInTheDocument();
 	});
 

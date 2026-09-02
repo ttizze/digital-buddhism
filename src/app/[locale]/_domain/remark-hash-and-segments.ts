@@ -11,17 +11,15 @@
 import type {
 	Blockquote,
 	Heading,
-	Html,
 	ListItem,
-	Node,
+	Nodes,
 	Paragraph,
 	Root,
-	RootContent,
 } from "mdast";
 import { toString as mdastToString } from "mdast-util-to-string";
 import type { Plugin } from "unified";
 import { visit } from "unist-util-visit";
-import type { Data, VFile } from "vfile";
+import type { VFile } from "vfile";
 import type { Segment } from "@/db/types.helpers";
 import { generateHashForText } from "../_utils/generate-hash-for-text";
 /* ---------- 共通型 ---------- */
@@ -46,31 +44,43 @@ export type SegmentDraft = Omit<
 /* mdast で「1 ブロック」とみなすノード型 */
 type BlockNode = Paragraph | Heading | ListItem | Blockquote;
 
-const BLOCK_TYPES: ReadonlyArray<BlockNode["type"]> = [
-	"paragraph",
-	"heading",
-	"listItem",
-	"blockquote",
-] as const;
-
 const PARA_NOTATION_REGEX = /^\{para:([^}]+)\}\s*/;
 const BOOK_MARKER_REGEX = /^<!--\s*book:([A-Za-z0-9._-]+)\s*-->$/;
 
 const canonicalize = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
-interface SegmentData extends Data {
-	segments: SegmentDraft[];
+interface PageBreak {
+	typeKey: string;
+	value: string;
+}
+
+interface ParagraphText {
+	paragraphNumber: string | null;
+	cleanedText: string;
+}
+
+interface SegmentBuildResult {
+	segment: SegmentDraft | null;
+	updatedParagraphNumber: string | null;
+	updatedParagraphOccurrence: number | null;
 }
 
 /* ---------- ヘルパー関数 ---------- */
 
-function isBlockNode(node: Node): node is BlockNode {
-	return BLOCK_TYPES.includes(node.type as BlockNode["type"]);
+function isBlockNode(node: Nodes): node is BlockNode {
+	switch (node.type) {
+		case "paragraph":
+		case "heading":
+		case "listItem":
+		case "blockquote":
+			return true;
+		default:
+			return false;
+	}
 }
 
 function hasNestedBlock(node: BlockNode): boolean {
-	if (!("children" in node)) return false;
-	return (node.children as RootContent[]).some((child) => isBlockNode(child));
+	return node.children.some((child) => isBlockNode(child));
 }
 
 function extractText(node: BlockNode): string {
@@ -85,19 +95,17 @@ const PB_SPAN_REGEX =
 	/<span\s+class="pb"((?:\s+data-(?:ed|n|value)="[^"]*")*)\s*><\/span>/;
 const PB_ATTRIBUTE_REGEX = /data-(ed|n|value)="([^"]*)"/g;
 
-const PB_EDITION_MAP: Record<string, string> = {
-	V: "VRI",
-	VRI: "VRI",
-	M: "MYANMAR",
-	P: "PTS",
-	T: "THAI",
-	O: "OTHER",
-	OTHER: "OTHER",
-};
+const PB_EDITION_MAP = new Map([
+	["V", "VRI"],
+	["VRI", "VRI"],
+	["M", "MYANMAR"],
+	["P", "PTS"],
+	["T", "THAI"],
+	["O", "OTHER"],
+	["OTHER", "OTHER"],
+]);
 
-function parsePageBreak(
-	html: string,
-): { typeKey: string; value: string } | null {
+function parsePageBreak(html: string): PageBreak | null {
 	const pbMatch = html.match(PB_SPAN_REGEX);
 	if (!pbMatch) return null;
 
@@ -109,27 +117,23 @@ function parsePageBreak(
 	// {pb:x} は版名かページ番号か曖昧な data-value になるため、既知の版名なら版として扱う
 	const ambiguous = attributes.get("value");
 	const ambiguousIsEdition =
-		ambiguous !== undefined && ambiguous.toUpperCase() in PB_EDITION_MAP;
+		ambiguous !== undefined && PB_EDITION_MAP.has(ambiguous.toUpperCase());
 	const edition =
 		attributes.get("ed") ?? (ambiguousIsEdition ? ambiguous : undefined);
 	const pageCode =
 		attributes.get("n") ?? (ambiguousIsEdition ? undefined : ambiguous) ?? "";
 	const normalizedEdition = edition
-		? PB_EDITION_MAP[edition.toUpperCase()] || edition.toUpperCase()
+		? (PB_EDITION_MAP.get(edition.toUpperCase()) ?? edition.toUpperCase())
 		: "OTHER";
 	return { typeKey: `${normalizedEdition}_PAGEBREAK`, value: pageCode };
 }
 
-function extractPageBreaksFromNode(node: BlockNode): Array<{
-	typeKey: string;
-	value: string;
-}> {
-	const pageBreaks: Array<{ typeKey: string; value: string }> = [];
-	if (!("children" in node)) return pageBreaks;
+function extractPageBreaksFromNode(node: BlockNode): PageBreak[] {
+	const pageBreaks: PageBreak[] = [];
 
 	for (const child of node.children) {
 		if (child.type === "html") {
-			const pageBreak = parsePageBreak((child as Html).value);
+			const pageBreak = parsePageBreak(child.value);
 			if (pageBreak) pageBreaks.push(pageBreak);
 		}
 	}
@@ -140,14 +144,10 @@ function setNodeDataNumber(node: BlockNode, number: number): void {
 	if (node.data === undefined) {
 		node.data = {};
 	}
-	const data = node.data as Data & {
-		hProperties?: Record<string, unknown>;
-	};
-	if (data.hProperties === undefined) {
-		data.hProperties = {};
+	if (node.data.hProperties === undefined) {
+		node.data.hProperties = {};
 	}
-	(data.hProperties as Record<string, string>)["data-number-id"] =
-		number.toString();
+	node.data.hProperties["data-number-id"] = number.toString();
 }
 
 function generateHashAndTrackOccurrence(
@@ -161,8 +161,7 @@ function generateHashAndTrackOccurrence(
 }
 
 function stripParagraphNotationFromNode(node: BlockNode): void {
-	if (!("children" in node)) return;
-	const children = node.children as RootContent[];
+	const children = node.children;
 	for (let i = 0; i < children.length; i += 1) {
 		const child = children[i];
 		if (child.type !== "text") continue;
@@ -182,10 +181,7 @@ function stripParagraphNotationFromNode(node: BlockNode): void {
 /**
  * ブロックノードから段落番号を抽出し、テキストから削除する
  */
-function extractParagraphNumber(
-	text: string,
-	node: BlockNode,
-): { paragraphNumber: string | null; cleanedText: string } {
+function extractParagraphNumber(text: string, node: BlockNode): ParagraphText {
 	const paraMatch = text.match(PARA_NOTATION_REGEX);
 	if (!paraMatch) {
 		return { paragraphNumber: null, cleanedText: text };
@@ -219,11 +215,7 @@ function createSegmentFromBlockNode(
 	currentParagraphOccurrence: number | null,
 	textOccurrenceMap: Map<string, number>,
 	paragraphOccurrenceMap: Map<string, number>,
-): {
-	segment: SegmentDraft | null;
-	updatedParagraphNumber: string | null;
-	updatedParagraphOccurrence: number | null;
-} {
+): SegmentBuildResult {
 	if (hasNestedBlock(node)) {
 		return {
 			segment: null,
@@ -241,8 +233,8 @@ function createSegmentFromBlockNode(
 		};
 	}
 
-	const metadata: Array<{ typeKey: string; value: string }> = [];
-	const isHeading = "depth" in node;
+	const metadata: PageBreak[] = [];
+	const isHeading = node.type === "heading";
 	const { paragraphNumber: paragraphNumberFromBlock, cleanedText } =
 		extractParagraphNumber(text, node);
 
@@ -301,8 +293,7 @@ export const remarkHashAndSegments =
 	(header?: string): Plugin<[], Root> =>
 	() =>
 	(tree: Root, file: VFile) => {
-		const f = file as typeof file & { data: SegmentData };
-		f.data.segments ??= [];
+		const segments = (file.data.segments ??= []);
 
 		const textOccurrenceMap = new Map<string, number>();
 		const paragraphOccurrenceMap = new Map<string, number>();
@@ -310,7 +301,7 @@ export const remarkHashAndSegments =
 
 		if (header?.trim()) {
 			const textAndOccurrenceHash = generateHashForText(header, 0);
-			f.data.segments.push({
+			segments.push({
 				textAndOccurrenceHash,
 				text: header,
 				number: 0,
@@ -323,9 +314,9 @@ export const remarkHashAndSegments =
 		let currentParagraphNumber: string | null = null;
 		let currentParagraphOccurrence: number | null = null;
 
-		visit(tree, (node: Node) => {
+		visit(tree, (node: Nodes) => {
 			if (node.type === "html") {
-				const marker = (node as Html).value.trim().match(BOOK_MARKER_REGEX);
+				const marker = node.value.trim().match(BOOK_MARKER_REGEX);
 				if (marker) {
 					currentBookCode = marker[1] ?? null;
 					currentChapterNumber = null;
@@ -357,7 +348,7 @@ export const remarkHashAndSegments =
 
 			currentParagraphNumber = updatedParagraphNumber;
 			currentParagraphOccurrence = updatedParagraphOccurrence;
-			f.data.segments.push(segment);
+			segments.push(segment);
 			number += 1;
 		});
 	};

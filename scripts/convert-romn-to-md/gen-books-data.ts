@@ -29,6 +29,15 @@ interface BookOutput {
 
 type BookMap = Map<string, BookRecord>;
 
+interface BookOutputData {
+	[fileName: string]: BookOutput;
+}
+
+interface ExtractedNumberList {
+	indices: number[];
+	comment: string | null;
+}
+
 const ROOT = process.cwd();
 const BOOKS_SOURCE_PATH = path.resolve(
 	ROOT,
@@ -45,127 +54,133 @@ const OUTPUT_JSON_PATH = path.resolve(
 	"books.json",
 );
 
-const DEVA_TO_IPE: Record<string, string> = {
-	"\u0902": "\u00C0",
-	"\u00C1": "\u00C1",
-	"\u0905": "\u00C1",
-	"\u0906": "\u00C2",
-	"\u0907": "\u00C3",
-	"\u0908": "\u00C4",
-	"\u0909": "\u00C5",
-	"\u090A": "\u00C6",
-	"\u090F": "\u00C7",
-	"\u0913": "\u00C8",
-	"\u0915": "\u00C9",
-	"\u0916": "\u00CA",
-	"\u0917": "\u00CB",
-	"\u0918": "\u00CC",
-	"\u0919": "\u00CD",
-	"\u091A": "\u00CE",
-	"\u091B": "\u00CF",
-	"\u091C": "\u00D0",
-	"\u091D": "\u00D1",
-	"\u091E": "\u00D2",
-	"\u091F": "\u00D3",
-	"\u0920": "\u00D4",
-	"\u0921": "\u00D5",
-	"\u0922": "\u00D6",
-	"\u0923": "\u00D8",
-	"\u0924": "\u00D9",
-	"\u0925": "\u00DA",
-	"\u0926": "\u00DB",
-	"\u0927": "\u00DC",
-	"\u0928": "\u00DD",
-	"\u092A": "\u00DE",
-	"\u092B": "\u00DF",
-	"\u092C": "\u00E0",
-	"\u092D": "\u00E1",
-	"\u092E": "\u00E2",
-	"\u092F": "\u00E3",
-	"\u0930": "\u00E4",
-	"\u0932": "\u00E5",
-	"\u0935": "\u00E6",
-	"\u0938": "\u00E7",
-	"\u0939": "\u00E8",
-	"\u0933": "\u00E9",
-	"\u093E": "\u00C2",
-	"\u093F": "\u00C3",
-	"\u0940": "\u00C4",
-	"\u0941": "\u00C5",
-	"\u0942": "\u00C6",
-	"\u0947": "\u00C7",
-	"\u094B": "\u00C8",
-	"\u094D": "",
-	"\u200C": "",
-	"\u200D": "",
-	"\u0966": "0",
-	"\u0967": "1",
-	"\u0968": "2",
-	"\u0969": "3",
-	"\u096A": "4",
-	"\u096B": "5",
-	"\u096C": "6",
-	"\u096D": "7",
-	"\u096E": "8",
-	"\u096F": "9",
-};
+const DEVA_TO_IPE = new Map(
+	Object.entries({
+		"\u0902": "\u00C0",
+		"\u00C1": "\u00C1",
+		"\u0905": "\u00C1",
+		"\u0906": "\u00C2",
+		"\u0907": "\u00C3",
+		"\u0908": "\u00C4",
+		"\u0909": "\u00C5",
+		"\u090A": "\u00C6",
+		"\u090F": "\u00C7",
+		"\u0913": "\u00C8",
+		"\u0915": "\u00C9",
+		"\u0916": "\u00CA",
+		"\u0917": "\u00CB",
+		"\u0918": "\u00CC",
+		"\u0919": "\u00CD",
+		"\u091A": "\u00CE",
+		"\u091B": "\u00CF",
+		"\u091C": "\u00D0",
+		"\u091D": "\u00D1",
+		"\u091E": "\u00D2",
+		"\u091F": "\u00D3",
+		"\u0920": "\u00D4",
+		"\u0921": "\u00D5",
+		"\u0922": "\u00D6",
+		"\u0923": "\u00D8",
+		"\u0924": "\u00D9",
+		"\u0925": "\u00DA",
+		"\u0926": "\u00DB",
+		"\u0927": "\u00DC",
+		"\u0928": "\u00DD",
+		"\u092A": "\u00DE",
+		"\u092B": "\u00DF",
+		"\u092C": "\u00E0",
+		"\u092D": "\u00E1",
+		"\u092E": "\u00E2",
+		"\u092F": "\u00E3",
+		"\u0930": "\u00E4",
+		"\u0932": "\u00E5",
+		"\u0935": "\u00E6",
+		"\u0938": "\u00E7",
+		"\u0939": "\u00E8",
+		"\u0933": "\u00E9",
+		"\u093E": "\u00C2",
+		"\u093F": "\u00C3",
+		"\u0940": "\u00C4",
+		"\u0941": "\u00C5",
+		"\u0942": "\u00C6",
+		"\u0947": "\u00C7",
+		"\u094B": "\u00C8",
+		"\u094D": "",
+		"\u200C": "",
+		"\u200D": "",
+		"\u0966": "0",
+		"\u0967": "1",
+		"\u0968": "2",
+		"\u0969": "3",
+		"\u096A": "4",
+		"\u096B": "5",
+		"\u096C": "6",
+		"\u096D": "7",
+		"\u096E": "8",
+		"\u096F": "9",
+	}),
+);
 
-const IPE_TO_LATIN: Record<string, string> = {
-	"\u00C0": "\u1E43",
-	"\u00C1": "a",
-	"\u00C2": "\u0101",
-	"\u00C3": "i",
-	"\u00C4": "\u012B",
-	"\u00C5": "u",
-	"\u00C6": "\u016B",
-	"\u00C7": "e",
-	"\u00C8": "o",
-	"\u00C9": "k",
-	"\u00CA": "kh",
-	"\u00CB": "g",
-	"\u00CC": "gh",
-	"\u00CD": "\u1E45",
-	"\u00CE": "c",
-	"\u00CF": "ch",
-	"\u00D0": "j",
-	"\u00D1": "jh",
-	"\u00D2": "\u00F1",
-	"\u00D3": "\u1E6D",
-	"\u00D4": "\u1E6Dh",
-	"\u00D5": "\u1E0D",
-	"\u00D6": "\u1E0Dh",
-	"\u00D8": "\u1E47",
-	"\u00D9": "t",
-	"\u00DA": "th",
-	"\u00DB": "d",
-	"\u00DC": "dh",
-	"\u00DD": "n",
-	"\u00DE": "p",
-	"\u00DF": "ph",
-	"\u00E0": "b",
-	"\u00E1": "bh",
-	"\u00E2": "m",
-	"\u00E3": "y",
-	"\u00E4": "r",
-	"\u00E5": "l",
-	"\u00E6": "v",
-	"\u00E7": "s",
-	"\u00E8": "h",
-	"\u00E9": "\u1E37",
-};
+const IPE_TO_LATIN = new Map(
+	Object.entries({
+		"\u00C0": "\u1E43",
+		"\u00C1": "a",
+		"\u00C2": "\u0101",
+		"\u00C3": "i",
+		"\u00C4": "\u012B",
+		"\u00C5": "u",
+		"\u00C6": "\u016B",
+		"\u00C7": "e",
+		"\u00C8": "o",
+		"\u00C9": "k",
+		"\u00CA": "kh",
+		"\u00CB": "g",
+		"\u00CC": "gh",
+		"\u00CD": "\u1E45",
+		"\u00CE": "c",
+		"\u00CF": "ch",
+		"\u00D0": "j",
+		"\u00D1": "jh",
+		"\u00D2": "\u00F1",
+		"\u00D3": "\u1E6D",
+		"\u00D4": "\u1E6Dh",
+		"\u00D5": "\u1E0D",
+		"\u00D6": "\u1E0Dh",
+		"\u00D8": "\u1E47",
+		"\u00D9": "t",
+		"\u00DA": "th",
+		"\u00DB": "d",
+		"\u00DC": "dh",
+		"\u00DD": "n",
+		"\u00DE": "p",
+		"\u00DF": "ph",
+		"\u00E0": "b",
+		"\u00E1": "bh",
+		"\u00E2": "m",
+		"\u00E3": "y",
+		"\u00E4": "r",
+		"\u00E5": "l",
+		"\u00E6": "v",
+		"\u00E7": "s",
+		"\u00E8": "h",
+		"\u00E9": "\u1E37",
+	}),
+);
 
-const DEVANAGARI_DIGITS: Record<string, string> = {
-	"०": "0",
-	"१": "1",
-	"२": "2",
-	"३": "3",
-	"४": "4",
-	"५": "5",
-	"६": "6",
-	"७": "7",
-	"८": "8",
-	"९": "9",
-};
+const DEVANAGARI_DIGITS = new Map(
+	Object.entries({
+		"०": "0",
+		"१": "1",
+		"२": "2",
+		"३": "3",
+		"४": "4",
+		"५": "5",
+		"६": "6",
+		"७": "7",
+		"८": "8",
+		"९": "9",
+	}),
+);
 
 function readBooksSource(): string {
 	let content = fs.readFileSync(BOOKS_SOURCE_PATH, "utf16le");
@@ -178,7 +193,7 @@ function readBooksSource(): string {
 	return content;
 }
 
-function parseBooks(): { byFile: BookMap; byIndex: Map<number, BookRecord> } {
+function parseBooks() {
 	const raw = readBooksSource();
 	const blocks = raw.split("book = new Book();");
 	const byFile: BookMap = new Map();
@@ -299,7 +314,7 @@ function extractNumber(block: string, property: string): number | null {
 function extractNumberList(
 	block: string,
 	property: string,
-): { indices: number[]; comment: string | null } {
+): ExtractedNumberList {
 	const regex = new RegExp(
 		`book\\.${property}\\s*=\\s*(-?\\d+);(?:\\s*//\\s*([^\\n]+))?`,
 	);
@@ -342,7 +357,10 @@ function mapLevel(value: string | null): CommentaryLevel {
 function convertDevaToLatin(input: string): string {
 	const ipe = convertDevaToIpe(input);
 	const latin = convertIpeToLatin(ipe);
-	return latin.replace(/[०-९]/g, (digit) => DEVANAGARI_DIGITS[digit] ?? digit);
+	return latin.replace(
+		/[०-९]/g,
+		(digit) => DEVANAGARI_DIGITS.get(digit) ?? digit,
+	);
 }
 
 function convertDevaToIpe(devStr: string): string {
@@ -353,7 +371,7 @@ function convertDevaToIpe(devStr: string): string {
 
 	let result = "";
 	for (const ch of devStr) {
-		const mapped = DEVA_TO_IPE[ch];
+		const mapped = DEVA_TO_IPE.get(ch);
 		result += mapped ?? ch;
 	}
 	return result;
@@ -362,7 +380,7 @@ function convertDevaToIpe(devStr: string): string {
 function convertIpeToLatin(ipe: string): string {
 	let result = "";
 	for (const ch of ipe) {
-		const mapped = IPE_TO_LATIN[ch];
+		const mapped = IPE_TO_LATIN.get(ch);
 		result += mapped ?? ch;
 	}
 	return result;
@@ -408,8 +426,8 @@ function assignOrders(root: OrderNode, segments: string[]): number[] {
 	return orders;
 }
 
-function buildOutputData(byFile: BookMap): Record<string, BookOutput> {
-	const output: Record<string, BookOutput> = {};
+function buildOutputData(byFile: BookMap): BookOutputData {
+	const output: BookOutputData = {};
 	const navRoot = createOrderNode();
 	const records = [...byFile.values()].sort((a, b) => a.index - b.index);
 	const byIndex = new Map(records.map((record) => [record.index, record]));

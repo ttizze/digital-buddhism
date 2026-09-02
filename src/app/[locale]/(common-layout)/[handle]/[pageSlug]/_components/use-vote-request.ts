@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { fetchAuthedForm } from "@/app/[locale]/_utils/fetch-authed-form";
 
-export function useVoteRequest<ResponseBody>({
+export function useVoteRequest<ResponseBody, ResponseValue>({
 	url,
 	targetField,
 	locale,
@@ -11,7 +11,7 @@ export function useVoteRequest<ResponseBody>({
 	url: string;
 	targetField: string;
 	locale: string;
-	parseResponse: (value: unknown) => ResponseBody;
+	parseResponse: (value: ResponseValue) => ResponseBody;
 	onSuccess: (body: ResponseBody) => Promise<void>;
 }) {
 	const [votingTargetId, setVotingTargetId] = useState<number | null>(null);

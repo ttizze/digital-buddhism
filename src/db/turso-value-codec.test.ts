@@ -1,3 +1,4 @@
+/* oxlint-disable anti-slop/no-chained-type-assertions, anti-slop/no-runtime-typeof, anti-slop/require-safety-comment-for-type-assertion -- This integration test bridges incompatible @libsql/client and @libsql/kysely-libsql client versions and verifies their raw driver representation. */
 import { createClient } from "@libsql/client";
 import { LibsqlDialect } from "@libsql/kysely-libsql";
 import { CamelCasePlugin, type ColumnType, Kysely } from "kysely";

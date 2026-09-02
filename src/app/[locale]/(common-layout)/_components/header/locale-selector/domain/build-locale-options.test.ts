@@ -14,6 +14,7 @@ describe("buildLocaleOptions", () => {
 		const result = buildLocaleOptions({
 			sourceLocale,
 			existLocales,
+			proofStatusMap: new Map(),
 			supported: supportedLocaleOptions,
 		});
 
@@ -34,6 +35,7 @@ describe("buildLocaleOptions", () => {
 		const result = buildLocaleOptions({
 			sourceLocale,
 			existLocales,
+			proofStatusMap: new Map(),
 			supported: supportedLocaleOptions,
 		});
 

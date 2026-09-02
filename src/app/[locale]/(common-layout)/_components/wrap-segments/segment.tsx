@@ -1,13 +1,35 @@
-import type { JSX, ReactNode } from "react";
+import type { AriaRole, ReactNode } from "react";
 import { renderGlossedChildren } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/segment-glosses/render-glossed-children";
 import type { Segment } from "@/app/[locale]/types";
 
+export type SegmentTag =
+	| "span"
+	| "p"
+	| "h1"
+	| "h2"
+	| "h3"
+	| "h4"
+	| "h5"
+	| "h6"
+	| "li";
+
+export interface SegmentTagProps {
+	className?: string;
+	id?: string;
+	role?: AriaRole;
+	start?: number;
+	tabIndex?: number;
+	"data-annotation-type"?: string;
+	"data-number-id"?: number | string;
+	"data-segment-id"?: number;
+}
+
 type SegmentElementProps = {
-	tagName?: keyof JSX.IntrinsicElements;
+	tagName?: SegmentTag;
 	segment: Segment;
 	interactive?: boolean;
 	className?: string;
-	tagProps?: Record<string, unknown>;
+	tagProps?: SegmentTagProps;
 	/** mdast経由の場合はネストされたReact要素を保持するために使用。なければsegment.textをパース */
 	children?: ReactNode;
 };
@@ -31,7 +53,13 @@ function SegmentPair({
 					segment.glossUnits,
 				)
 			: sourceChildren;
-	const tagId = typeof tagProps?.id === "string" ? tagProps.id : undefined;
+	const tagId = tagProps?.id;
+	const translationProps: SegmentTagProps = { ...tagProps };
+	if (interactive) {
+		translationProps.role = "button";
+		translationProps.tabIndex = 0;
+		translationProps["data-segment-id"] = segment.id;
+	}
 
 	return (
 		<>
@@ -44,15 +72,10 @@ function SegmentPair({
 			</Tag>
 			{hasTr && (
 				<Tag
-					{...tagProps}
+					{...translationProps}
 					className={`${className} seg-tr whitespace-pre-wrap break-words ${interactive ? "cursor-pointer select-text" : ""}`}
 					data-number-id={segment.number}
 					id={tagId ? `${tagId}-tr` : undefined}
-					{...(interactive && {
-						role: "button",
-						tabIndex: 0,
-						"data-segment-id": segment.id,
-					})}
 				>
 					{segment.translationText}
 				</Tag>

@@ -1,29 +1,21 @@
 import { createServerLogger } from "@/app/_service/logger.server";
+import * as v from "valibot";
 import type { TranslatedElement } from "../../types";
 
 const logger = createServerLogger("extract-translations");
+const translationsSchema = v.array(
+	v.object({ number: v.number(), text: v.string() }),
+);
 
 const parseJsonTranslations = (text: string): TranslatedElement[] | null => {
-	const parsed = JSON.parse(text);
-	if (!Array.isArray(parsed)) return null;
-	const normalized = parsed.map((item) => {
-		if (!item || typeof item !== "object") return null;
-		const { number, text: translatedText } = item as {
-			number?: unknown;
-			text?: unknown;
-		};
-		if (typeof number !== "number" || typeof translatedText !== "string") {
-			return null;
-		}
-		return { number, text: translatedText };
-	});
-	if (normalized.some((item) => item === null)) return null;
-	return normalized as TranslatedElement[];
+	const parsed = v.safeParse(translationsSchema, JSON.parse(text));
+	return parsed.success ? parsed.output : null;
 };
 
 const decodeJsonString = (raw: string) => {
 	try {
-		return JSON.parse(`"${raw}"`) as string;
+		const parsed = v.safeParse(v.string(), JSON.parse(`"${raw}"`));
+		return parsed.success ? parsed.output : raw;
 	} catch {
 		return raw;
 	}
@@ -35,15 +27,12 @@ export function extractTranslations(text: string): TranslatedElement[] {
 		if (parsed) return parsed;
 		throw new SyntaxError("Parsed JSON is not a valid translation array");
 	} catch (error) {
-		logger.warn(
-			{
-				error_message: error instanceof Error ? error.message : String(error),
-				input_length: text.length,
-				input_preview: text.slice(0, 300),
-				input_end: text.slice(-300),
-			},
-			"Failed to parse as JSON, falling back to regex parsing",
-		);
+		logger.warn("Failed to parse as JSON, falling back to regex parsing", {
+			error_message: error instanceof Error ? error.message : String(error),
+			input_length: text.length,
+			input_preview: text.slice(0, 300),
+			input_end: text.slice(-300),
+		});
 	}
 
 	const translations: TranslatedElement[] = [];
@@ -60,10 +49,9 @@ export function extractTranslations(text: string): TranslatedElement[] {
 		match = regex.exec(text);
 	}
 
-	logger.debug(
-		{ extracted_count: translations.length },
-		"Regex fallback extraction completed",
-	);
+	logger.debug("Regex fallback extraction completed", {
+		extracted_count: translations.length,
+	});
 
 	return translations;
 }

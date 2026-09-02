@@ -15,14 +15,14 @@ import type { BookDoc } from "./types";
 
 // 目的: チャプター分割せず、書籍単位で Markdown を 1 ファイル出力する。
 
-const REND_HEADING_LEVELS: Record<string, number> = {
-	nikaya: 1,
-	book: 2,
-	chapter: 3,
-	title: 4,
-	subhead: 4,
-	subsubhead: 4,
-};
+const REND_HEADING_LEVELS = new Map([
+	["nikaya", 1],
+	["book", 2],
+	["chapter", 3],
+	["title", 4],
+	["subhead", 4],
+	["subsubhead", 4],
+]);
 
 const GATHA_RENDS = new Set<string>(GATHA_BLOCK_TYPES);
 const BLOCK_RENDS = new Set<string>(BLOCK_TYPES);
@@ -60,8 +60,9 @@ function renderParagraph(node: Element): string[] {
 	const rend = (node.getAttribute("rend") ?? "").toLowerCase();
 
 	// 見出しとして扱うrend属性の場合
-	if (rend in REND_HEADING_LEVELS) {
-		return [renderHeading(node, REND_HEADING_LEVELS[rend])];
+	const headingLevel = REND_HEADING_LEVELS.get(rend);
+	if (headingLevel !== undefined) {
+		return [renderHeading(node, headingLevel)];
 	}
 
 	// 偈（詩）として扱うrend属性の場合
@@ -122,7 +123,7 @@ function renderBlockElement(node: Element): string[] {
 		case "div":
 			return renderDiv(node);
 		case "head": {
-			const level = REND_HEADING_LEVELS[rend] ?? 3;
+			const level = REND_HEADING_LEVELS.get(rend) ?? 3;
 			return [renderHeading(node, level)];
 		}
 		case "p":

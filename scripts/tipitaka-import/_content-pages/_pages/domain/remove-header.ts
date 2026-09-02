@@ -2,9 +2,7 @@
  * マークダウンテキストからヘッダー（`# ` で始まる最初の行）と、
  * その次の行が `##` で始まる場合はそれも削除する
  */
-export function removeHeader(markdown: string): {
-	body: string;
-} {
+export function removeHeader(markdown: string) {
 	const lines = markdown.split(/\r?\n/);
 	const bodyLines: string[] = [];
 	let headerRemoved = false;

@@ -57,40 +57,70 @@ export type TranslationPointer = {
 	previousRevision?: string;
 };
 
-export function pageBaseKey(slug: string): string {
-	return `tipitaka/v1/pages/${encodeURIComponent(slug)}/base`;
+export type TipitakaReadModelSnapshot =
+	| PageBaseSnapshot
+	| PageStateSnapshot
+	| PageAnnotationsSnapshot
+	| HomeBaseSnapshot
+	| TranslationOverlay
+	| TranslationPointer;
+
+declare const snapshotType: unique symbol;
+export type ReadModelKey<Snapshot extends TipitakaReadModelSnapshot> =
+	string & {
+		readonly [snapshotType]: Snapshot;
+	};
+
+function readModelKey<Snapshot extends TipitakaReadModelSnapshot>(
+	value: string,
+): ReadModelKey<Snapshot> {
+	// SAFETY: The brand only associates a deterministic namespaced key with its snapshot contract; runtime storage remains a string.
+	return value as ReadModelKey<Snapshot>;
 }
 
-export function pageAnnotationsKey(slug: string): string {
-	return `tipitaka/v1/pages/${encodeURIComponent(slug)}/annotations`;
+export function pageBaseKey(slug: string) {
+	return readModelKey<PageBaseSnapshot>(
+		`tipitaka/v1/pages/${encodeURIComponent(slug)}/base`,
+	);
 }
 
-export function pageTranslationPointerKey(
-	pageId: number,
-	locale: string,
-): string {
-	return `tipitaka/v1/translations/${encodeURIComponent(locale)}/${pageId}/current`;
+export function pageAnnotationsKey(slug: string) {
+	return readModelKey<PageAnnotationsSnapshot>(
+		`tipitaka/v1/pages/${encodeURIComponent(slug)}/annotations`,
+	);
+}
+
+export function pageTranslationPointerKey(pageId: number, locale: string) {
+	return readModelKey<TranslationPointer>(
+		`tipitaka/v1/translations/${encodeURIComponent(locale)}/${pageId}/current`,
+	);
 }
 
 export function pageTranslationKey(
 	pageId: number,
 	locale: string,
 	revision: string,
-): string {
-	return `tipitaka/v1/translations/${encodeURIComponent(locale)}/${pageId}/${revision}`;
+) {
+	return readModelKey<TranslationOverlay>(
+		`tipitaka/v1/translations/${encodeURIComponent(locale)}/${pageId}/${revision}`,
+	);
 }
 
-export function homeBaseKey(): string {
-	return "tipitaka/v1/home/base";
+export function homeBaseKey() {
+	return readModelKey<HomeBaseSnapshot>("tipitaka/v1/home/base");
 }
-export function pageStateKey(pageId: number): string {
-	return `tipitaka/v1/pages/${pageId}/state`;
-}
-
-export function homeTranslationPointerKey(locale: string): string {
-	return `tipitaka/v1/home/translations/${encodeURIComponent(locale)}/current`;
+export function pageStateKey(pageId: number) {
+	return readModelKey<PageStateSnapshot>(`tipitaka/v1/pages/${pageId}/state`);
 }
 
-export function homeTranslationKey(locale: string, revision: string): string {
-	return `tipitaka/v1/home/translations/${encodeURIComponent(locale)}/${revision}`;
+export function homeTranslationPointerKey(locale: string) {
+	return readModelKey<TranslationPointer>(
+		`tipitaka/v1/home/translations/${encodeURIComponent(locale)}/current`,
+	);
+}
+
+export function homeTranslationKey(locale: string, revision: string) {
+	return readModelKey<TranslationOverlay>(
+		`tipitaka/v1/home/translations/${encodeURIComponent(locale)}/${revision}`,
+	);
 }

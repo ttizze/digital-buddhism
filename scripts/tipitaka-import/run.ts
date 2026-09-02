@@ -7,10 +7,9 @@ import { readBooksJson } from "./utils/books";
 
 export async function runTipitakaImport(): Promise<void> {
 	const logger = createCliLogger("tipitaka-import");
-	logger.info(
-		{ logLevel: process.env.LOG_LEVEL || "default" },
-		"Starting Tipitaka import",
-	);
+	logger.info("Starting Tipitaka import", {
+		logLevel: process.env.LOG_LEVEL || "default",
+	});
 
 	await withImportRun(async (importRunId) => {
 		// Step 1: メタデータタイプとルートページを初期化する。

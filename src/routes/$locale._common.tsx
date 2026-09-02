@@ -13,10 +13,13 @@ import { TranslationFormOnClick } from "@/app/[locale]/(common-layout)/[handle]/
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/json-ld";
 
 const annotationsSearchSchema = v.pipe(
-	v.union([v.array(v.string()), v.string()]),
-	v.transform((value) =>
-		typeof value === "string" ? value.split("~").filter(Boolean) : value,
-	),
+	v.union([
+		v.array(v.string()),
+		v.pipe(
+			v.string(),
+			v.transform((value) => value.split("~").filter(Boolean)),
+		),
+	]),
 );
 
 export const Route = createFileRoute("/$locale/_common")({

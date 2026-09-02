@@ -25,15 +25,12 @@ export async function projectPendingTipitakaReadModels(
 			completed += 1;
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			serverLogger.error(
-				{
-					err: error,
-					pageId: job.pageId,
-					locale: job.locale,
-					attempt: job.attempts + 1,
-				},
-				"Tipitaka read model publication failed",
-			);
+			serverLogger.error("Tipitaka read model publication failed", {
+				err: error instanceof Error ? error : message,
+				pageId: job.pageId,
+				locale: job.locale,
+				attempt: job.attempts + 1,
+			});
 			await db
 				.updateTable("tipitakaReadModelJobs")
 				.set({

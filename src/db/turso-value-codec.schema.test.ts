@@ -1,3 +1,4 @@
+/* oxlint-disable anti-slop/require-safety-comment-for-type-assertion -- Drizzle exposes heterogeneous schema exports while getTableColumns accepts only its internal table type. */
 import { getTableColumns } from "drizzle-orm";
 import { describe, expect, it } from "vite-plus/test";
 import * as schema from "@/drizzle/schema";

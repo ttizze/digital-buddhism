@@ -7,6 +7,7 @@ interface VoteButtonProps {
 	isVoting: boolean;
 	voteCount?: number;
 	icon: LucideIcon;
+	onClick: () => void;
 }
 
 export function VoteButton({
@@ -15,6 +16,7 @@ export function VoteButton({
 	isVoting,
 	voteCount,
 	icon: Icon,
+	onClick,
 }: VoteButtonProps) {
 	const testId = type === "upvote" ? "vote-up-button" : "vote-down-button";
 	const iconClass = `mr-2 h-4 w-4 transition-all duration-300 ${
@@ -25,10 +27,9 @@ export function VoteButton({
 		<Button
 			data-testid={testId}
 			disabled={isVoting}
-			name="isUpvote"
+			onClick={onClick}
 			size="sm"
-			type="submit"
-			value={type === "upvote" ? "true" : "false"}
+			type="button"
 			variant="ghost"
 		>
 			<Icon className={iconClass} />

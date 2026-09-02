@@ -16,9 +16,17 @@ type WorkerExecutionContext = {
 	waitUntil(promise: Promise<unknown>): void;
 };
 
-type DefaultCacheStorage = CacheStorage & {
-	default?: Cache;
-};
+interface WorkerScheduledController {
+	readonly cron: string;
+	readonly scheduledTime: number;
+	noRetry(): void;
+}
+
+declare global {
+	interface CacheStorage {
+		readonly default?: Cache;
+	}
+}
 
 function runTipitakaProjector(env: CloudflareBindings): Promise<number> {
 	return runWithTipitakaReadModelStore(
@@ -41,9 +49,7 @@ const workerEntry = {
 		ctx: WorkerExecutionContext | undefined,
 	) {
 		const cache =
-			request.method === "GET"
-				? (globalThis.caches as DefaultCacheStorage | undefined)?.default
-				: undefined;
+			request.method === "GET" ? globalThis.caches.default : undefined;
 		const cachedResponse = await cache?.match(request);
 		if (cachedResponse) return cachedResponse;
 
@@ -94,7 +100,7 @@ const workerEntry = {
 		return securedResponse;
 	},
 	async scheduled(
-		_controller: unknown,
+		_controller: WorkerScheduledController,
 		env: CloudflareBindings,
 		ctx: WorkerExecutionContext,
 	) {

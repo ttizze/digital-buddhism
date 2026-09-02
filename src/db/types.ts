@@ -3,15 +3,15 @@
  * Please do not edit it manually.
  */
 
-import type { ColumnType } from "kysely";
 import type {
 	ImportFileStatus,
 	ImportRunStatus,
-	JsonValue,
 	TipitakaTextLevel,
 	TranslationProofStatus,
 	TranslationStatus,
 } from "../drizzle/types";
+import type { ColumnType } from "kysely";
+import type { Root } from "mdast";
 
 export type Generated<T> =
 	T extends ColumnType<infer S, infer I, infer U>
@@ -177,7 +177,7 @@ export interface TipitakaPages {
 	createdAt: Generated<Date>;
 	id: Generated<number>;
 	importFileId: number | null;
-	mdastJson: JsonValue;
+	mdastJson: Root;
 	parentId: number | null;
 	position: Generated<number>;
 	slug: string;

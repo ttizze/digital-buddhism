@@ -79,7 +79,10 @@ export async function syncAnnotationRelations(
 	let unmatchedParagraphGroupCount = 0;
 	for (const fileMeta of fileMetas) {
 		if (fileMeta.annotationTargetFileKeys.length === 0) continue;
-		const annotationPageId = pageIdByFileKey.get(fileMeta.fileKey) as number;
+		const annotationPageId = pageIdByFileKey.get(fileMeta.fileKey);
+		if (annotationPageId === undefined) {
+			throw new Error(`Imported page is missing: ${fileMeta.fileKey}`);
+		}
 		const targetPagesByLevel = new Map<
 			TipitakaTextLevel,
 			AnnotationTargetPage[]
@@ -152,11 +155,11 @@ export async function syncAnnotationRelations(
 
 	if (unmatchedParagraphGroupCount > 0) {
 		logger.warn(
+			"Some annotation paragraph groups have no official target anchor",
 			{
 				matchedParagraphGroupCount,
 				unmatchedParagraphGroupCount,
 			},
-			"Some annotation paragraph groups have no official target anchor",
 		);
 	}
 

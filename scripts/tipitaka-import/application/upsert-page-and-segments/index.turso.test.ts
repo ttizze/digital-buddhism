@@ -13,8 +13,8 @@ import {
 	vi,
 } from "vite-plus/test";
 import { disposeDb } from "@/db";
-import type { JsonValue } from "@/drizzle/types";
 import { openMigratedTursoDatabase } from "../../../turso-migrations";
+import type { UpsertPageAndSegmentsInput } from "./index";
 
 const databasePath = join(
 	tmpdir(),
@@ -46,13 +46,13 @@ describe("upsertPageAndSegments の libSQL トランザクション", () => {
 	const params = {
 		catalogKey: "tipitaka-page",
 		pageSlug: "tipitaka-page",
-		mdastJson: JSON.stringify({ type: "root", children: [] }) as JsonValue,
+		mdastJson: { type: "root", children: [] },
 		textLevel: null,
 		parentId: null,
 		position: 0,
 		importFileId: null,
 		segments: [],
-	};
+	} satisfies UpsertPageAndSegmentsInput;
 
 	it("Tipitakaページを作成し後続処理までcommitする", async () => {
 		await setupClient.execute("INSERT INTO import_runs DEFAULT VALUES");

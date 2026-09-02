@@ -3,7 +3,7 @@ import { createId } from "@paralleldrive/cuid2";
 import type { Root as MdastRoot } from "mdast";
 import { TIPITAKA_ROOT_SLUG } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { db } from "@/db";
-import type { JsonValue, TipitakaTextLevel } from "@/drizzle/types";
+import type { TipitakaTextLevel } from "@/drizzle/types";
 
 export async function createUser(data?: {
 	handle?: string;
@@ -31,7 +31,7 @@ export async function createPage(data: {
 	slug: string;
 	catalogKey?: string;
 	textLevel?: TipitakaTextLevel | null;
-	mdastJson?: unknown;
+	mdastJson?: MdastRoot;
 	parentId?: number | null;
 	position?: number;
 	importFileId?: number | null;
@@ -51,7 +51,7 @@ export async function createPage(data: {
 					catalogKey: TIPITAKA_ROOT_SLUG,
 					slug: TIPITAKA_ROOT_SLUG,
 					textLevel: null,
-					mdastJson: {} as JsonValue,
+					mdastJson: { type: "root", children: [] },
 					position: 0,
 					parentId: null,
 					importFileId: null,
@@ -72,7 +72,7 @@ export async function createPage(data: {
 						? null
 						: "MULA"
 					: data.textLevel,
-			mdastJson: (data.mdastJson ?? {}) as JsonValue,
+			mdastJson: data.mdastJson ?? { type: "root", children: [] },
 			parentId,
 			position: data.position ?? 0,
 			importFileId: data.importFileId ?? null,
