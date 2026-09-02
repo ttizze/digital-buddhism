@@ -37,6 +37,37 @@ function stringifyAttributes(attrs: Attr[]): string {
 		.join("");
 }
 
+function renderHighlightElement(element: Element): string | undefined {
+	const rend = (element.getAttribute("rend") ?? "").toLowerCase();
+	if (rend === "dot") return ".";
+
+	const parts = rend.split(/\s+/);
+	const content = renderInlineChildren(element);
+	const leading = content.match(/^\s*/)?.[0] ?? "";
+	const trailing = content.match(/\s*$/)?.[0] ?? "";
+	const inner = content.trim();
+	if (parts.includes("bold")) {
+		return inner ? `${leading}**${inner}**${trailing}` : content;
+	}
+	if (parts.includes("italics") || parts.includes("italic")) {
+		return inner ? `${leading}_${inner}_${trailing}` : content;
+	}
+	if (parts.includes("paranum")) {
+		// Markdown の番号付きリスト判定を避けるため、直後のドットをエスケープ
+		return `${content}\\`;
+	}
+	return undefined;
+}
+
+function renderPageBreakElement(element: Element): string {
+	const ed = element.getAttribute("ed") ?? "";
+	const n = element.getAttribute("n") ?? "";
+	if (ed && n) return `{pb:${ed}:${n}}`;
+	if (ed) return `{pb:${ed}}`;
+	if (n) return `{pb:${n}}`;
+	return "{pb}";
+}
+
 // 目的: インライン要素とテキストを Markdown/HTML 文字列として直列化する。
 // 処理: 子ノードを順にたどり、テキストはそのまま、要素は `renderInlineElementToString` を通じて再帰的に処理する。
 export function renderInlineChildren(element: Element): string {
@@ -52,25 +83,8 @@ export function renderInlineChildren(element: Element): string {
 export function renderInlineElementToString(element: Element): string {
 	const tag = normalizeTagName(element.tagName);
 	if (tag === "hi") {
-		const rend = (element.getAttribute("rend") ?? "").toLowerCase();
-		if (rend === "dot") {
-			return ".";
-		}
-		const parts = rend.split(/\s+/);
-		const content = renderInlineChildren(element);
-		const leading = content.match(/^\s*/)?.[0] ?? "";
-		const trailing = content.match(/\s*$/)?.[0] ?? "";
-		const inner = content.trim();
-		if (parts.includes("bold")) {
-			return inner ? `${leading}**${inner}**${trailing}` : content;
-		}
-		if (parts.includes("italics") || parts.includes("italic")) {
-			return inner ? `${leading}_${inner}_${trailing}` : content;
-		}
-		if (parts.includes("paranum")) {
-			// Markdown の番号付きリスト判定を避けるため、直後のドットをエスケープ
-			return `${content}\\`;
-		}
+		const highlighted = renderHighlightElement(element);
+		if (highlighted !== undefined) return highlighted;
 	}
 	if (tag === "note") {
 		// 異読をインライン表示: {note:内容} 形式（Markdownリンク記法と衝突しない）
@@ -79,18 +93,7 @@ export function renderInlineElementToString(element: Element): string {
 	}
 	if (tag === "pb") {
 		// ページブレークを特殊記法で表示: {pb:ed:n} 形式（noteと区別し、Markdownリンク記法と衝突しない）
-		const ed = element.getAttribute("ed") ?? "";
-		const n = element.getAttribute("n") ?? "";
-		if (ed && n) {
-			return `{pb:${ed}:${n}}`;
-		}
-		if (ed) {
-			return `{pb:${ed}}`;
-		}
-		if (n) {
-			return `{pb:${n}}`;
-		}
-		return "{pb}";
+		return renderPageBreakElement(element);
 	}
 	const attrsString = stringifyAttributes(Array.from(element.attributes ?? []));
 	if (!element.firstChild) {

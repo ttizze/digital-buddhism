@@ -104,6 +104,38 @@ function renderSegmentTag(
 	);
 }
 
+function renderListNode(
+	node: Extract<Nodes, { type: "list" }>,
+	state: RenderState,
+	key: string,
+): ReactNode {
+	const ordered = node.ordered === true;
+	const tight = node.spread !== true;
+	const children = node.children.map((child, index) =>
+		renderNode(child, state, `${key}.${index}`, tight && child.spread !== true),
+	);
+	const props: Record<string, unknown> = { key };
+	if (ordered && node.start && node.start !== 1) props.start = node.start;
+	return createElement(ordered ? "ol" : "ul", props, children);
+}
+
+function renderListItemNode(
+	node: Extract<Nodes, { type: "listItem" }>,
+	state: RenderState,
+	key: string,
+	tightListItem: boolean,
+): ReactNode {
+	const onlyChild = node.children.length === 1 ? node.children[0] : null;
+	const paragraph =
+		tightListItem && onlyChild?.type === "paragraph" ? onlyChild : null;
+	const segmentNode =
+		getDataNumber(node) === null && paragraph ? paragraph : node;
+	const children = paragraph
+		? renderChildren(paragraph, state, `${key}.0`)
+		: renderChildren(node, state, key);
+	return renderSegmentTag("li", segmentNode, children, state, key);
+}
+
 function renderNode(
 	node: Nodes,
 	state: RenderState,
@@ -113,30 +145,10 @@ function renderNode(
 	if (node.type === "html") return null;
 	if (node.type === "text") return node.value;
 	if (node.type === "list") {
-		const ordered = node.ordered === true;
-		const tight = node.spread !== true;
-		const children = node.children.map((child, index) =>
-			renderNode(
-				child,
-				state,
-				`${key}.${index}`,
-				tight && child.spread !== true,
-			),
-		);
-		const props: Record<string, unknown> = { key };
-		if (ordered && node.start && node.start !== 1) props.start = node.start;
-		return createElement(ordered ? "ol" : "ul", props, children);
+		return renderListNode(node, state, key);
 	}
 	if (node.type === "listItem") {
-		const onlyChild = node.children.length === 1 ? node.children[0] : null;
-		const paragraph =
-			tightListItem && onlyChild?.type === "paragraph" ? onlyChild : null;
-		const segmentNode =
-			getDataNumber(node) === null && paragraph ? paragraph : node;
-		const children = paragraph
-			? renderChildren(paragraph, state, `${key}.0`)
-			: renderChildren(node, state, key);
-		return renderSegmentTag("li", segmentNode, children, state, key);
+		return renderListItemNode(node, state, key, tightListItem);
 	}
 
 	const children =

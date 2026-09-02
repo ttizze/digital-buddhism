@@ -170,6 +170,7 @@ export default defineConfig(({ command, mode }) => {
 				},
 			],
 			rules: {
+				complexity: ["error", 22],
 				"vite-plus/prefer-vite-plus-imports": "error",
 			},
 		},
