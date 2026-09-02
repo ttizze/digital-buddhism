@@ -7,7 +7,12 @@
 
 import { env } from "cloudflare:workers";
 import * as Sentry from "@sentry/cloudflare";
-import pino, { type Logger } from "pino";
+import {
+	createStructuredLogger,
+	isLogLevel,
+	type LogLevel,
+	type Logger,
+} from "./logger-core";
 
 interface LoggerContext {
 	requestId?: string;
@@ -16,8 +21,8 @@ interface LoggerContext {
 	[key: string]: unknown;
 }
 
-const resolveWorkerLogLevel = (): string => {
-	if (env.LOG_LEVEL) return env.LOG_LEVEL;
+const resolveWorkerLogLevel = (): LogLevel => {
+	if (isLogLevel(env.LOG_LEVEL)) return env.LOG_LEVEL;
 	if (import.meta.env.MODE === "test") return "error";
 	if (import.meta.env.PROD) return "info";
 	return "debug";
@@ -31,14 +36,6 @@ export const createServerLogger = (
 	service: string,
 	context?: LoggerContext,
 ): Logger => {
-	const childLogger = pino({
-		level: resolveWorkerLogLevel(),
-		name: service,
-	});
-
-	// コンテキストをロガーに追加
-	const logWithContext = context ? childLogger.child(context) : childLogger;
-
 	// 本番環境でSentryにコンテキストを設定（必要に応じて）
 	if (import.meta.env.PROD && context) {
 		try {
@@ -57,7 +54,7 @@ export const createServerLogger = (
 		}
 	}
 
-	return logWithContext;
+	return createStructuredLogger(service, resolveWorkerLogLevel(), context);
 };
 
 /**

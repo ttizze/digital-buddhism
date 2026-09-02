@@ -176,7 +176,6 @@ export default defineConfig(({ command, mode }) => {
 		resolve: {
 			alias: {
 				"@": path.resolve(import.meta.dirname, "src"),
-				pino: path.resolve(import.meta.dirname, "node_modules/pino/browser.js"),
 			},
 		},
 		optimizeDeps: {

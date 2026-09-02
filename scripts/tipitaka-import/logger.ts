@@ -1,18 +1,20 @@
-import pino, { type Logger } from "pino";
+import {
+	createStructuredLogger,
+	isLogLevel,
+	type LogContext,
+	type LogLevel,
+	type Logger,
+} from "@/app/_service/logger-core";
 
-const resolveCliLogLevel = (): string => {
-	if (process.env.LOG_LEVEL) return process.env.LOG_LEVEL;
+const resolveCliLogLevel = (): LogLevel => {
+	if (isLogLevel(process.env.LOG_LEVEL)) return process.env.LOG_LEVEL;
 	if (process.env.NODE_ENV === "test") return "error";
 	return "info";
 };
 
 export const createCliLogger = (
 	service: string,
-	context?: Record<string, unknown>,
+	context?: LogContext,
 ): Logger => {
-	const logger = pino({
-		level: resolveCliLogLevel(),
-		name: service,
-	});
-	return context ? logger.child(context) : logger;
+	return createStructuredLogger(service, resolveCliLogLevel(), context);
 };

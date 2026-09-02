@@ -1,13 +1,13 @@
 # ロギングガイド
 
-このプロジェクトでは、[Pino](https://github.com/pinojs/pino)を使用した構造化ロギングを実装しています。
+このプロジェクトでは、Cloudflare Workers標準の`console` APIを使用した構造化ロギングを実装しています。
 
 ## 特徴
 
-- **高速**: Pinoは非常に高速なログライブラリです
+- **Worker互換**: Node.js専用のログ依存を持たず、Cloudflare Workersで直接動作
 - **構造化ログ**: すべての環境でJSON形式のログを出力
 - **ランタイム分離**: WorkerはCloudflare binding、Tipitaka CLIはBunの環境変数を参照
-- **Sentry統合**: Worker側ロガーはSentryと自動統合
+- **Sentry統合**: Worker側ロガーはリクエストコンテキストをSentryへ設定
 
 ## 基本的な使い方
 
@@ -27,7 +27,7 @@ logger.info({ pageId: 456 }, "Page loaded");
 // 警告ログ
 logger.warn({ slug: "invalid-page" }, "Page not found");
 
-// エラーログ（Sentryにも送信）
+// エラーログ（Errorのname/message/stackも構造化）
 logger.error({ err: error }, "Failed to load page");
 ```
 
@@ -45,6 +45,7 @@ const logger = createCliLogger("tipitaka-import");
 
 CLIコードからWorker用の`logger.server.ts`をimportしません。Worker用ロガーは
 `cloudflare:workers`のbindingに依存し、通常のBunプロセスでは解決できないためです。
+WorkerとCLIは環境ごとのログレベルだけを分け、出力処理は`logger-core.ts`で共有します。
 
 ## ログレベル
 
@@ -293,7 +294,7 @@ Cloudflare Workerの`LOG_LEVEL` bindingを`debug`へ変更してください。
 - **デフォルト（LOG_LEVEL=info）**: 1リクエストあたり 0-2ログ（エラー・警告・重要なイベントのみ）
 - **DEBUG有効時（LOG_LEVEL=debug）**: 1リクエストあたり 5-10ログ（エントリーポイント、主要な分岐点、処理完了など）
 - **正常フロー**: DEBUGレベルで記録（本番ではデフォルトで出力されない）
-- **エラー・警告**: 常に記録（LOG_LEVELに関係なく）
+- **エラー・警告**: 設定したLOG_LEVEL以上の場合に記録
 
 **注意**: ログ量が多すぎると：
 - ストレージコストが増加
