@@ -1,0 +1,26 @@
+@reference "../../../../../globals.css";
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+@plugin "@tailwindcss/typography";
+@source inline("prose dark:prose-invert prose-a:underline lg:prose-lg not-prose");
+
+.prose {
+	word-break: break-word;
+}
+
+.prose h1 {
+	line-height: 1.2;
+}
+
+@layer utilities {
+	.js-content > .seg-cv {
+		content-visibility: auto;
+		contain-intrinsic-size: auto 3rem;
+		contain: layout paint style;
+	}
+
+	.js-content > .seg-cv:nth-child(-n + 24) {
+		content-visibility: visible;
+		contain-intrinsic-size: none;
+		contain: none;
+	}
+}

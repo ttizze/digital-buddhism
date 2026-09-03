@@ -40,7 +40,7 @@ async function handleSignOut() {
 export function UserMenu({ currentUser, locale }: UserMenuProps) {
 	const t = useTranslations("UserMenu");
 	return (
-		<DropdownMenu modal={false}>
+		<DropdownMenu defaultOpen modal={false}>
 			<DropdownMenuTrigger>
 				<Avatar className="w-6 h-6 cursor-pointer">
 					<AvatarImage

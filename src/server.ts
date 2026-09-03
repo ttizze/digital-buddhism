@@ -27,6 +27,12 @@ declare global {
 	}
 }
 
+const htmlResponseOptions = {
+	responseLinkHeader: {
+		filter: ({ hint }) => hint.as === "style",
+	},
+} satisfies NonNullable<Parameters<typeof handler.fetch>[1]>;
+
 function runTipitakaProjector(env: CloudflareBindings): Promise<number> {
 	return runWithTipitakaReadModelStore(
 		createKvReadModelStore(env.TIPITAKA_READ_MODELS),
@@ -60,7 +66,7 @@ const workerEntry = {
 						url: env.TURSO_DATABASE_URL,
 						authToken: env.TURSO_AUTH_TOKEN,
 					},
-					() => handler.fetch(request),
+					() => handler.fetch(request, htmlResponseOptions),
 				),
 			),
 		);

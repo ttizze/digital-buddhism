@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@plugin "@tailwindcss/typography";
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
@@ -73,14 +72,6 @@
 	--size-container-2xl: 1400px; /* .container 2xl 幅 */
 }
 
-.prose {
-	word-break: break-word;
-}
-
-.prose h1 {
-	line-height: 1.2;
-}
-
 .seg-src:has(+ .seg-tr) {
   margin-bottom: 0.25rem;
 }
@@ -94,19 +85,6 @@
 }
 
 @layer utilities {
-	/* Long article blocks only: title and navigation segments must stay eager. */
-	.js-content > .seg-cv {
-		content-visibility: auto;
-		contain-intrinsic-size: auto 3rem;
-		contain: layout paint style;
-	}
-	/* A translated segment emits two siblings; keep the first viewport eager. */
-	.js-content > .seg-cv:nth-child(-n + 24) {
-		content-visibility: visible;
-		contain-intrinsic-size: none;
-		contain: none;
-	}
-
 	/* View (source/user/both) without per-segment hydration */
 	[data-view="source"] .seg-tr {
 		display: none !important;

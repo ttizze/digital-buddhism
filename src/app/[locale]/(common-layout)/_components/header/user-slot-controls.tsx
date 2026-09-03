@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { type ComponentProps, lazy, Suspense, useState } from "react";
 import { authClient } from "@/app/[locale]/_service/auth-client";
 import { HeaderUserControlsLoading } from "./user-controls-loading";
 
@@ -23,6 +23,46 @@ const UserMenu = lazy(() =>
 	})),
 );
 
+function UserMenuButton({
+	name,
+	onClick,
+}: {
+	name: string;
+	onClick: () => void;
+}) {
+	return (
+		<button
+			aria-label={name}
+			className="flex size-6 items-center justify-center rounded-full bg-muted text-xs font-medium"
+			onClick={onClick}
+			type="button"
+		>
+			<span aria-hidden="true">{name.charAt(0).toUpperCase()}</span>
+		</button>
+	);
+}
+
+function DeferredUserMenu(props: ComponentProps<typeof UserMenu>) {
+	const [isRequested, setIsRequested] = useState(false);
+	const requestMenu = () => setIsRequested(true);
+
+	if (!isRequested) {
+		return (
+			<UserMenuButton name={props.currentUser.name} onClick={requestMenu} />
+		);
+	}
+
+	return (
+		<Suspense
+			fallback={
+				<UserMenuButton name={props.currentUser.name} onClick={requestMenu} />
+			}
+		>
+			<UserMenu {...props} />
+		</Suspense>
+	);
+}
+
 export function HeaderUserControls({ locale }: { locale: string }) {
 	const { data: session, isPending } = authClient.useSession();
 	const currentUser = session?.user;
@@ -43,7 +83,7 @@ export function HeaderUserControls({ locale }: { locale: string }) {
 			) : (
 				<>
 					<NotificationsDropdownClient locale={locale} />
-					<UserMenu currentUser={currentUser} locale={locale} />
+					<DeferredUserMenu currentUser={currentUser} locale={locale} />
 				</>
 			)}
 		</Suspense>

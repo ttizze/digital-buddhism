@@ -3,6 +3,7 @@ import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
 import { TIPITAKA_SOURCE_LOCALE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { FloatingControls } from "@/app/[locale]/(common-layout)/_components/floating-controls/floating-controls";
 import { PageContent } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/page-content";
+import pageContentCss from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/page-content.css?url";
 import { TranslationFormOnClick } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-form-on-click";
 import { parsePageContentBody } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_domain/page-content-view";
 import { buildPageMetadata } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_service/page-metadata";
@@ -48,6 +49,7 @@ export const Route = createFileRoute("/$locale/_common/tipitaka_/$pageSlug")({
 				},
 			],
 			links: [
+				{ rel: "stylesheet", href: pageContentCss },
 				{ rel: "canonical", href: metadata.canonicalUrl },
 				...Object.entries(metadata.alternateLocales ?? {}).map(
 					([hrefLang, href]) => ({ rel: "alternate", hrefLang, href }),

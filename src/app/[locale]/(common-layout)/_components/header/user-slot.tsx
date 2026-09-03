@@ -18,7 +18,7 @@ const HeaderUserControls = lazy(() =>
 export function HeaderUserSlot({ locale }: { locale: string }) {
 	const t = useTranslations("Search");
 	return (
-		<div className="flex items-center gap-4">
+		<div className="flex h-11 items-center gap-4">
 			<ClientOnly
 				fallback={<CircleHelp aria-hidden="true" className="h-6 w-6" />}
 			>

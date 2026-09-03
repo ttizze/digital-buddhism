@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { HeaderUserControls } from "./user-slot-controls";
 
@@ -43,7 +43,14 @@ describe("HeaderUserControls", () => {
 
 	it("認証済みなら通知とユーザーメニューを表示する", async () => {
 		useSessionMock.mockReturnValue({
-			data: { user: {} },
+			data: {
+				user: {
+					handle: "tomoki",
+					image: "https://example.com/avatar.jpg",
+					name: "Tomoki",
+					plan: "free",
+				},
+			},
 			isPending: false,
 		});
 
@@ -52,7 +59,13 @@ describe("HeaderUserControls", () => {
 		expect(
 			await screen.findByRole("button", { name: "Notifications" }),
 		).toBeVisible();
-		expect(screen.getByRole("button", { name: "User menu" })).toBeVisible();
+		expect(screen.queryByRole("button", { name: "User menu" })).toBeNull();
+
+		fireEvent.click(screen.getByRole("button", { name: "Tomoki" }));
+
+		expect(
+			await screen.findByRole("button", { name: "User menu" }),
+		).toBeVisible();
 	});
 
 	it("未認証なら言語選択と開始ボタンを表示する", async () => {
