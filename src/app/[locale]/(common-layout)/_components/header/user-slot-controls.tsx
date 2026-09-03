@@ -75,7 +75,7 @@ export function HeaderUserControls({ locale }: { locale: string }) {
 				<>
 					<LocaleSelector
 						currentHandle={undefined}
-						localeSelectorClassName="border rounded-full w-[150px]"
+						localeSelectorClassName="w-[110px] rounded-full border sm:w-[150px]"
 						userPlan="free"
 					/>
 					<StartButton />

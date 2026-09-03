@@ -22,7 +22,7 @@ export function StartButton({ className }: StartButtonProps) {
 			trigger={
 				<Button
 					className={cn(
-						"relative rounded-full",
+						"relative rounded-full px-3 sm:px-8",
 						/* ---- Inner highlight ---- */
 						"before:absolute before:inset-0 before:rounded-full",
 						"before:bg-[linear-gradient(145deg,rgba(255,255,255,0.35)_0%,rgba(255,255,255,0.05)_40%,transparent_80%)]",
