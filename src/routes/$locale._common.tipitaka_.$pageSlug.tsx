@@ -3,6 +3,7 @@ import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
 import { TIPITAKA_SOURCE_LOCALE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { FloatingControls } from "@/app/[locale]/(common-layout)/_components/floating-controls/floating-controls";
 import { PageContent } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/page-content";
+import { TranslationFormOnClick } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-form-on-click";
 import { parsePageContentBody } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_domain/page-content-view";
 import { buildPageMetadata } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_service/page-metadata";
 import { getPageDetailData } from "./$locale/-page-detail-data";
@@ -64,22 +65,27 @@ function PageDetailRoute() {
 	const body = parsePageContentBody(data.body);
 
 	return (
-		<PageContent
-			body={body}
-			childPages={data.childPages}
-			description={data.description}
-			floatingControls={
-				<ClientOnly fallback={null}>
-					<FloatingControls
-						annotationTypes={data.annotationTypes}
-						sourceLocale={TIPITAKA_SOURCE_LOCALE}
-						userLocale={locale}
-					/>
-				</ClientOnly>
-			}
-			locale={locale}
-			navigationData={data.navigationData}
-			pageDetail={data.pageDetail}
-		/>
+		<>
+			<PageContent
+				body={body}
+				childPages={data.childPages}
+				description={data.description}
+				floatingControls={
+					<ClientOnly fallback={null}>
+						<FloatingControls
+							annotationTypes={data.annotationTypes}
+							sourceLocale={TIPITAKA_SOURCE_LOCALE}
+							userLocale={locale}
+						/>
+					</ClientOnly>
+				}
+				locale={locale}
+				navigationData={data.navigationData}
+				pageDetail={data.pageDetail}
+			/>
+			<ClientOnly fallback={null}>
+				<TranslationFormOnClick />
+			</ClientOnly>
+		</>
 	);
 }

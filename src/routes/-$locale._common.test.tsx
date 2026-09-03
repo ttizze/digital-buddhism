@@ -33,11 +33,6 @@ vi.mock("@/app/[locale]/(common-layout)/_components/header/user-slot", () => ({
 	HeaderUserSlot: () => <button type="button">User menu</button>,
 }));
 
-vi.mock(
-	"@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-form-on-click",
-	() => ({ TranslationFormOnClick: () => null }),
-);
-
 vi.mock("@/components/seo/json-ld", () => ({
 	OrganizationJsonLd: () => null,
 	WebSiteJsonLd: () => null,

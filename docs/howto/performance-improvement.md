@@ -1,91 +1,90 @@
 # パフォーマンス改善の測定手順
 
-変更の効果を比較できるように、同じ条件で「変更前」「変更後」を計測します。
+変更前後を同じ production build、URL、Lighthouse 設定で計測します。
+Vite の開発サーバーは未圧縮・未 minify のモジュールを配信するため、性能比較には
+使用しません。
 
-## 1. 変更ごとにログフォルダーを作る
+## 1. ローカルDBを先に起動する
 
-- 例: `/tmp/digital-buddhism-perf/20260205-change-xx-<slug>/`
-- 変更前/後を分ける
-
-```
-/tmp/digital-buddhism-perf/20260205-change-xx-<slug>/
-  before/
-    build.log
-    server.log
-    run-1.json
-    run-2.json
-    run-3.json
-    run-4.json
-    run-5.json
-    summary.json
-  after/
-    build.log
-    server.log
-    run-1.json
-    run-2.json
-    run-3.json
-    run-4.json
-    run-5.json
-    summary.json
-```
-
-## 2. 変更前に 5 回計測する
-
-1. ビルド
-2. サーバー起動（ログをファイルに保存）
-3. 5回計測してログに保存
-4. 5回の平均を `summary.json` に出す
-
-例:
+すべてのコマンドは `nix develop` 内で実行します。別のターミナルでローカル
+libSQLを起動し、準備完了を確認します。
 
 ```bash
-CHANGE_ID=20260205-change-xx-<slug>
-LOG_ROOT=/tmp/digital-buddhism-perf/$CHANGE_ID
-PORT=3105
-
-mkdir -p $LOG_ROOT/before
-
-# build
-bun run build > $LOG_ROOT/before/build.log 2>&1
-
-# start
-PORT=$PORT PERF_LOG=1 bun run start > $LOG_ROOT/before/server.log 2>&1 &
-START_PID=$!
-
-# measure (5 runs)
-for i in 1 2 3 4 5; do
-  node /path/to/perf-script.js --url http://localhost:$PORT/ja > $LOG_ROOT/before/run-$i.json
-  sleep 1
-done
-
-# summarize (example)
-jq -s '{
-  count: length,
-  fcpAvgMs: (map(.perf.paints[] | select(.name=="first-contentful-paint") | .startTime) | add/length),
-  lcpAvgMs: (map(.perf.lcp) | add/length),
-  ttfbAvgMs: (map(.perf.nav.responseStart) | add/length)
-}' $LOG_ROOT/before/run-*.json > $LOG_ROOT/before/summary.json
-
-# stop
-kill $START_PID
+sqld \
+  --db-path "$PWD/.data/digital-buddshim.sqld" \
+  --http-listen-addr 127.0.0.1:18080 \
+  --max-response-size 128MB \
+  --max-total-response-size 256MB \
+  --no-welcome
 ```
 
-## 3. 変更後に 5 回計測する
+```bash
+curl --fail http://127.0.0.1:18080/version
+```
 
-変更を入れたら、同じ条件で 5 回計測して `after/` に保存します。
+Tipiṭaka DBの data と WAL が大きい場合、起動に5秒以上かかります。その状態で
+`bun run dev` を先に実行すると、`db:with-local` の起動待ち上限を超えて終了時に
+`hrana server loop exited` / `Invalid argument` が表示されることがあります。
+上記のように `sqld` を先に起動すれば、同じDBへ接続して処理を続行できます。
 
-- ビルド
-- サーバー起動
-- 5回計測
-- 平均を `summary.json` に出す
+## 2. production Workerを起動する
 
-## 4. 比較して効果を分析する
+```bash
+bun run build
 
-- `before/summary.json` と `after/summary.json` を比較
-- どの指標が改善/悪化したかを記録
-- 異常値がある場合は、ログを見て原因を特定する
+wrangler dev \
+  --config dist/server/wrangler.json \
+  --port 3000 \
+  --persist-to "$PWD/.wrangler/state" \
+  --var TURSO_DATABASE_URL:http://127.0.0.1:18080 \
+  --var BETTER_AUTH_SECRET:digital-buddshim-local-development-secret \
+  --var VITE_PUBLIC_DOMAIN:http://localhost:3000
+```
 
-### 目安
-- FCP/LCP が短縮されていれば体感改善に繋がる
-- TTFB が増えていればサーバー側の負荷増加の可能性あり
+`vp preview` はこの用途では使用しません。生成済み Worker に必要なローカル変数を
+明示できず、認証設定エラーで500になるためです。一時的な
+`dist/server/.dev.vars` で回避しても、preview応答はgzip/Brotli圧縮されず、総転送量が
+実運用条件と一致しません。
 
+`--persist-to` は必須です。生成済み config は `dist/server` にあるため、省略すると
+Wrangler は空の `dist/server/.wrangler/state` を作ります。公開 Tipiṭaka ページは
+KV read modelを読むため、空のstateでは404になります。リポジトリ直下の
+`.wrangler/state` は `bun run tipitaka` または `bun run tipitaka:read-model` が生成します。
+
+## 3. Lighthouseを5回実行する
+
+変更単位の一時ディレクトリに JSON を保存します。変更前後でURLとオプションを
+変えません。
+
+```bash
+DIGITAL_BUDDHISM_CHANGE_ID=20260903-page-load
+DIGITAL_BUDDHISM_LOG_ROOT=/tmp/digital-buddhism-perf/$DIGITAL_BUDDHISM_CHANGE_ID
+DIGITAL_BUDDHISM_URL=http://localhost:3000/ja/tipitaka/tipitaka-s0101m-mul-xml
+DIGITAL_BUDDHISM_CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+
+mkdir -p "$DIGITAL_BUDDHISM_LOG_ROOT/before"
+
+for DIGITAL_BUDDHISM_RUN in 1 2 3 4 5; do
+  npx --yes lighthouse@12.8.2 "$DIGITAL_BUDDHISM_URL" \
+    --only-categories=performance \
+    --output=json \
+    --output-path="$DIGITAL_BUDDHISM_LOG_ROOT/before/run-$DIGITAL_BUDDHISM_RUN.json" \
+    --chrome-path="$DIGITAL_BUDDHISM_CHROME_PATH" \
+    --chrome-flags="--headless --disable-gpu" \
+    --quiet
+done
+```
+
+変更後は同じコマンドの出力先だけを `after` に変えます。ChromeとLighthouseの
+バージョンも揃えます。macOS以外では `DIGITAL_BUDDHISM_CHROME_PATH` をローカルの
+Chrome/Chromium実行ファイルへ変更します。
+
+## 4. 比較する
+
+単発スコアではなく、5回の中央値で FCP、LCP、TBT、CLS、TTFB、総転送量を比較
+します。Lighthouse の `audits` から各値を抽出し、外れ値と server log も確認します。
+
+- FCP/LCP短縮: 初期表示の体感改善
+- TBT短縮: 操作可能になるまでのCPU停止を削減
+- TTFB増加: Worker、KV、DB、SSR処理の回帰候補
+- 総転送量削減: mobile回線でのFCP/LCP改善候補

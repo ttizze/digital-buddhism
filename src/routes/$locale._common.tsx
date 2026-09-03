@@ -1,5 +1,4 @@
 import {
-	ClientOnly,
 	createFileRoute,
 	Outlet,
 	stripSearchParams,
@@ -9,7 +8,6 @@ import { DEFAULT_VIEW, VIEW_VALUES } from "@/app/_constants/view";
 import { Footer } from "@/app/[locale]/(common-layout)/_components/footer";
 import { HeaderFrame } from "@/app/[locale]/(common-layout)/_components/header";
 import { HeaderUserSlot } from "@/app/[locale]/(common-layout)/_components/header/user-slot";
-import { TranslationFormOnClick } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_components/translation-form-on-click";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/json-ld";
 
 const annotationsSearchSchema = v.pipe(
@@ -54,9 +52,6 @@ function CommonLayout() {
 						<Outlet />
 					</div>
 				</main>
-				<ClientOnly fallback={null}>
-					<TranslationFormOnClick />
-				</ClientOnly>
 				<Footer />
 			</div>
 		</>
