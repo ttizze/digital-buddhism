@@ -174,4 +174,24 @@ describe("remarkHashAndSegments", () => {
 			["2", 1],
 		]);
 	});
+
+	it("分割ページのchapterマーカーから元XMLの章番号を引き継ぐ", async () => {
+		const md =
+			"<!--book:dn1-->\n\n<!--chapter:12-->\n\n{para:1} A\n\n### 13. Chapter\n\n{para:2} B";
+		const file = await processSegments(md);
+		const paraSegs = file.segments.filter(
+			(segment) => segment.sourceParagraphNumber,
+		);
+
+		expect(
+			paraSegs.map((segment) => ({
+				book: segment.sourceBookCode,
+				chapter: segment.sourceChapterNumber,
+				paragraph: segment.sourceParagraphNumber,
+			})),
+		).toEqual([
+			{ book: "dn1", chapter: 12, paragraph: "1" },
+			{ book: "dn1", chapter: 13, paragraph: "2" },
+		]);
+	});
 });

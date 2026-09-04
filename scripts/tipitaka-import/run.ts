@@ -31,6 +31,7 @@ export async function runTipitakaImport(): Promise<void> {
 			categoryPageLookup,
 			rootPageId,
 			importRunId,
+			catalogImportFileId,
 		);
 	});
 }

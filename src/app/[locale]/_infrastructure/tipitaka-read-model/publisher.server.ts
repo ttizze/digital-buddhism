@@ -99,8 +99,12 @@ function collectTreeTranslations(
 async function readCurrentTranslationRevision(
 	store: TipitakaReadModelStore,
 	key: ReadModelKey<TranslationPointer>,
+	generation: string | undefined,
 ): Promise<string | undefined> {
 	const pointer = await store.get(key);
+	if (generation !== undefined && pointer?.generation !== generation) {
+		return undefined;
+	}
 	return pointer?.revision;
 }
 
@@ -113,27 +117,31 @@ async function writeTranslationOverlay({
 	pointerKey,
 	keyForRevision,
 	locale,
+	generation,
 	loadTranslations,
 }: {
 	store: TipitakaReadModelStore;
 	pointerKey: ReadModelKey<TranslationPointer>;
 	keyForRevision: (revision: string) => ReadModelKey<TranslationOverlay>;
 	locale: string;
+	generation: string | undefined;
 	loadTranslations: () => Promise<Record<string, string>>;
 }): Promise<void> {
 	const revision = crypto.randomUUID();
 	const [previousRevision, translations] = await Promise.all([
-		readCurrentTranslationRevision(store, pointerKey),
+		readCurrentTranslationRevision(store, pointerKey, generation),
 		loadTranslations(),
 	]);
 	const snapshot: TranslationOverlay = {
 		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
 		generatedAt: new Date().toISOString(),
+		generation,
 		locale,
 		translations,
 	};
 	const pointer: TranslationPointer = {
 		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
+		generation,
 		revision,
 		previousRevision,
 	};
@@ -143,6 +151,7 @@ async function writeTranslationOverlay({
 
 export async function publishPageBase(
 	slug: string,
+	generation: string,
 	store: TipitakaReadModelStore = getTipitakaReadModelStore(),
 ): Promise<void> {
 	const pageDetail = await queryPageDetail(slug, READ_MODEL_SOURCE_LOCALE);
@@ -179,6 +188,7 @@ export async function publishPageBase(
 	const snapshot: PageBaseSnapshot = {
 		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
 		generatedAt,
+		generation,
 		translationPageIds: [...translationPageIds].sort(
 			(left, right) => left - right,
 		),
@@ -195,6 +205,7 @@ export async function publishPageBase(
 	const annotations: PageAnnotationsSnapshot = {
 		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
 		generatedAt,
+		generation,
 		translationPageIds: [...annotationTranslationPageIds].sort(
 			(left, right) => left - right,
 		),
@@ -220,6 +231,7 @@ export async function publishPageState(
 export async function publishPageTranslationOverlay(
 	pageId: number,
 	locale: string,
+	generation: string | undefined,
 	store: TipitakaReadModelStore = getTipitakaReadModelStore(),
 ): Promise<void> {
 	await writeTranslationOverlay({
@@ -227,11 +239,13 @@ export async function publishPageTranslationOverlay(
 		pointerKey: pageTranslationPointerKey(pageId, locale),
 		keyForRevision: (revision) => pageTranslationKey(pageId, locale, revision),
 		locale,
+		generation,
 		loadTranslations: () => queryBestTranslationTextsForPage(pageId, locale),
 	});
 }
 
 export async function publishHomeBase(
+	generation: string,
 	store: TipitakaReadModelStore = getTipitakaReadModelStore(),
 ): Promise<void> {
 	const [rootPageId, tipitakaPages] = await Promise.all([
@@ -243,6 +257,7 @@ export async function publishHomeBase(
 	const snapshot: HomeBaseSnapshot = {
 		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
 		generatedAt: new Date().toISOString(),
+		generation,
 		rootPageId,
 		tipitakaPages,
 	};
@@ -251,6 +266,7 @@ export async function publishHomeBase(
 
 export async function publishHomeTranslationOverlay(
 	locale: string,
+	generation: string | undefined,
 	store: TipitakaReadModelStore = getTipitakaReadModelStore(),
 ): Promise<void> {
 	await writeTranslationOverlay({
@@ -258,6 +274,7 @@ export async function publishHomeTranslationOverlay(
 		pointerKey: homeTranslationPointerKey(locale),
 		keyForRevision: (revision) => homeTranslationKey(locale, revision),
 		locale,
+		generation,
 		loadTranslations: async () => {
 			const tree = await fetchTipitakaPageTree(locale);
 			const translations: Record<string, string> = {};
@@ -272,10 +289,12 @@ export async function publishTipitakaProjection(
 	locale: string,
 	store: TipitakaReadModelStore = getTipitakaReadModelStore(),
 ): Promise<void> {
+	const home = await store.get(homeBaseKey());
+	const generation = home?.generation;
 	await Promise.all([
-		publishPageTranslationOverlay(pageId, locale, store),
+		publishPageTranslationOverlay(pageId, locale, generation, store),
 		publishPageState(pageId, store),
-		publishHomeTranslationOverlay(locale, store),
+		publishHomeTranslationOverlay(locale, generation, store),
 	]);
 }
 
@@ -288,11 +307,12 @@ export async function publishAllTipitakaReadModels(
 		queryTranslationLocales(),
 	]);
 	const serializedStore = serializeStoreWrites(store);
+	const generation = crypto.randomUUID();
 
-	await publishHomeBase(serializedStore);
+	await publishHomeBase(generation, serializedStore);
 	await runPublishPhase(
 		pages.flatMap((page) => [
-			() => publishPageBase(page.slug, serializedStore),
+			() => publishPageBase(page.slug, generation, serializedStore),
 			() => publishPageState(page.id, serializedStore),
 		]),
 	);
@@ -302,13 +322,15 @@ export async function publishAllTipitakaReadModels(
 				publishPageTranslationOverlay(
 					item.pageId,
 					item.locale,
+					generation,
 					serializedStore,
 				),
 		),
 	);
 	await runPublishPhase(
 		locales.map(
-			(locale) => () => publishHomeTranslationOverlay(locale, serializedStore),
+			(locale) => () =>
+				publishHomeTranslationOverlay(locale, generation, serializedStore),
 		),
 	);
 }

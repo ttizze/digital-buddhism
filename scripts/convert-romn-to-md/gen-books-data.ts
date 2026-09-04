@@ -14,7 +14,6 @@ interface BookRecord {
 	mulaIndices: number[];
 	atthakathaIndices: number[];
 	tikaIndices: number[];
-	chapterListTypes: string[];
 	mulaFileName: string | null;
 	mulaFileNames: string[];
 	unlinked: boolean;
@@ -24,7 +23,6 @@ interface BookOutput {
 	level: CommentaryLevel;
 	dirSegments: string[];
 	annotationTargetFileNames: string[];
-	chapterListTypes: string[];
 }
 
 type BookMap = Map<string, BookRecord>;
@@ -214,11 +212,6 @@ function parseBooks() {
 		const mulaIndices = mulaInfo.indices.filter((idx) => idx >= 0);
 		const atthaInfo = extractNumberList(block, "AtthakathaIndex");
 		const tikaInfo = extractNumberList(block, "TikaIndex");
-		const chapterListTypesRaw = extractString(block, "ChapterListTypes");
-		const chapterListTypes = chapterListTypesRaw
-			.split(",")
-			.map((s) => s.trim())
-			.filter((s) => s.length > 0);
 		const unlinked = /\/\/\s*unlinked/.test(block);
 
 		const navSegmentsDeva = longNavPath
@@ -239,7 +232,6 @@ function parseBooks() {
 			mulaIndices,
 			atthakathaIndices: atthaInfo.indices,
 			tikaIndices: tikaInfo.indices,
-			chapterListTypes,
 			mulaFileName: null,
 			mulaFileNames: [],
 			unlinked,
@@ -456,7 +448,6 @@ function buildOutputData(byFile: BookMap): BookOutputData {
 			level: record.level,
 			dirSegments,
 			annotationTargetFileNames,
-			chapterListTypes: [...record.chapterListTypes],
 		};
 	}
 	return output;

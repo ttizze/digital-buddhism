@@ -27,6 +27,7 @@ import { createKvReadModelStore, runWithTipitakaReadModelStore } from "./store";
 await setupDbPerFile(import.meta.url);
 
 const values = new Map<string, string>();
+const generation = "test-generation";
 const store = createKvReadModelStore({
 	get: async (key) => values.get(key) ?? null,
 	put: async (key, value) => {
@@ -86,13 +87,13 @@ describe("Tipitaka read model", () => {
 			.execute();
 
 		await Promise.all([
-			publishHomeBase(store),
-			publishPageBase(page.slug, store),
+			publishHomeBase(generation, store),
+			publishPageBase(page.slug, generation, store),
 			publishPageState(page.id, store),
 		]);
 		await Promise.all([
-			publishHomeTranslationOverlay("ja", store),
-			publishPageTranslationOverlay(page.id, "ja", store),
+			publishHomeTranslationOverlay("ja", generation, store),
+			publishPageTranslationOverlay(page.id, "ja", generation, store),
 		]);
 
 		const [home, content] = await runWithTipitakaReadModelStore(store, () =>
@@ -110,7 +111,7 @@ describe("Tipitaka read model", () => {
 			.set({ text: "新しい翻訳本文" })
 			.where("segmentId", "=", bodySegment.id)
 			.execute();
-		await publishPageTranslationOverlay(page.id, "ja", store);
+		await publishPageTranslationOverlay(page.id, "ja", generation, store);
 		const pointerKey = pageTranslationPointerKey(page.id, "ja");
 		const pointer = await store.get(pointerKey);
 		if (!pointer) throw new Error("Translation pointer not found");
@@ -142,7 +143,7 @@ describe("Tipitaka read model", () => {
 				},
 			],
 		});
-		await publishPageBase(targetPage.slug, store);
+		await publishPageBase(targetPage.slug, generation, store);
 
 		const [content, annotations] = await runWithTipitakaReadModelStore(
 			store,
@@ -240,5 +241,40 @@ describe("Tipitaka read model", () => {
 		await publishAllTipitakaReadModels(delayedStore);
 
 		expect(maxActivePuts).toBe(1);
+	});
+
+	it("全read model再生成後は前世代の翻訳を適用しない", async () => {
+		const translator = await createUser({ handle: "stale-translator" });
+		const root = await createPageWithSegments({
+			slug: "tipitaka",
+			textLevel: null,
+			mdastJson: { type: "root", children: [] },
+			segments: [
+				{ number: 0, text: "Tipitaka", textAndOccurrenceHash: "root-title" },
+			],
+		});
+		const segment = await db
+			.selectFrom("segments")
+			.select("id")
+			.where("tipitakaPageId", "=", root.id)
+			.executeTakeFirstOrThrow();
+		await db
+			.insertInto("segmentTranslations")
+			.values({
+				segmentId: segment.id,
+				locale: "ja",
+				text: "古い翻訳",
+				userId: translator.id,
+			})
+			.execute();
+
+		await publishAllTipitakaReadModels(store);
+		await db.deleteFrom("segmentTranslations").execute();
+		await publishAllTipitakaReadModels(store);
+
+		const content = await runWithTipitakaReadModelStore(store, () =>
+			readPageContentData(root.slug, "ja"),
+		);
+		expect(content?.pageDetail.segments[0]?.translationText).toBeNull();
 	});
 });

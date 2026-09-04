@@ -39,17 +39,31 @@ function applyTreeTranslations(
 async function readPointedTranslationOverlay(
 	pointerKey: ReadModelKey<TranslationPointer>,
 	keyForRevision: (revision: string) => ReadModelKey<TranslationOverlay>,
+	generation: string | undefined,
 ): Promise<TranslationOverlay | null> {
 	const store = getTipitakaReadModelStore();
 	const pointerValue = await store.get(pointerKey);
 	if (!pointerValue) return null;
+	if (generation !== undefined && pointerValue.generation !== generation) {
+		return null;
+	}
 	const currentKey = keyForRevision(pointerValue.revision);
 	const currentValue = await store.get(currentKey);
-	if (currentValue) return currentValue;
+	if (
+		currentValue &&
+		(generation === undefined || currentValue.generation === generation)
+	) {
+		return currentValue;
+	}
 	if (pointerValue.previousRevision) {
 		const previousKey = keyForRevision(pointerValue.previousRevision);
 		const previousValue = await store.get(previousKey);
-		if (previousValue) return previousValue;
+		if (
+			previousValue &&
+			(generation === undefined || previousValue.generation === generation)
+		) {
+			return previousValue;
+		}
 	}
 	throw new Error(`Tipitaka translation revision not found: ${currentKey}`);
 }
@@ -57,19 +71,23 @@ async function readPointedTranslationOverlay(
 function readPageTranslationOverlay(
 	pageId: number,
 	locale: string,
+	generation: string | undefined,
 ): Promise<TranslationOverlay | null> {
 	return readPointedTranslationOverlay(
 		pageTranslationPointerKey(pageId, locale),
 		(revision) => pageTranslationKey(pageId, locale, revision),
+		generation,
 	);
 }
 
 function readHomeTranslationOverlay(
 	locale: string,
+	generation: string | undefined,
 ): Promise<TranslationOverlay | null> {
 	return readPointedTranslationOverlay(
 		homeTranslationPointerKey(locale),
 		(revision) => homeTranslationKey(locale, revision),
+		generation,
 	);
 }
 
@@ -77,9 +95,12 @@ function readHomeTranslationOverlay(
 async function collectPageTranslations(
 	pageIds: readonly number[],
 	locale: string,
+	generation: string | undefined,
 ): Promise<Record<string, string>> {
 	const overlays = await Promise.all(
-		pageIds.map((pageId) => readPageTranslationOverlay(pageId, locale)),
+		pageIds.map((pageId) =>
+			readPageTranslationOverlay(pageId, locale, generation),
+		),
 	);
 	const translations: Record<string, string> = {};
 	for (const overlay of overlays) {
@@ -107,7 +128,7 @@ export async function readHomeData(
 	const baseValue = await store.get(homeBaseKey());
 	if (!baseValue) return null;
 	const base: HomeBaseSnapshot = baseValue;
-	const overlay = await readHomeTranslationOverlay(locale);
+	const overlay = await readHomeTranslationOverlay(locale, base.generation);
 	applyTreeTranslations(base.tipitakaPages, overlay?.translations ?? {});
 	return base;
 }
@@ -123,7 +144,7 @@ export async function readPageContentData(
 	const base: PageBaseSnapshot = baseValue;
 	const [stateValue, translations] = await Promise.all([
 		store.get(pageStateKey(base.data.pageDetail.id)),
-		collectPageTranslations(base.translationPageIds, locale),
+		collectPageTranslations(base.translationPageIds, locale, base.generation),
 	]);
 
 	for (const segment of base.data.pageDetail.segments) {
@@ -175,6 +196,7 @@ export async function readPageAnnotations(
 	const translations = await collectPageTranslations(
 		snapshot.translationPageIds,
 		locale,
+		snapshot.generation,
 	);
 	for (const annotations of Object.values(
 		snapshot.annotationsByTargetSegmentId,

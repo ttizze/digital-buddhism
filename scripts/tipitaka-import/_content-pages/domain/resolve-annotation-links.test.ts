@@ -110,4 +110,30 @@ describe("resolveAnnotationLinks", () => {
 			unmatchedParagraphGroups: 1,
 		});
 	});
+
+	test("分割された注釈の前置セグメントを段落が一致した対象ページへ結ぶ", () => {
+		const source = [
+			segment(100, 10, 0, "dn1", null, null, 2),
+			segment(101, 10, 1, "dn1", "1", 1, 2),
+		];
+		const targets = [
+			targetPage(20, 0, [
+				segment(200, 20, 0, "dn1", null, null, 1),
+				segment(201, 20, 1, "dn1", "1", 1, 1),
+			]),
+			targetPage(21, 1, [
+				segment(210, 21, 0, "dn1", null, null, 2),
+				segment(211, 21, 1, "dn1", "1", 1, 2),
+			]),
+		];
+
+		expect(resolveAnnotationLinks(source, targets)).toEqual({
+			links: [
+				{ targetSegmentId: 211, annotationSegmentId: 101 },
+				{ targetSegmentId: 210, annotationSegmentId: 100 },
+			],
+			matchedParagraphGroups: 1,
+			unmatchedParagraphGroups: 0,
+		});
+	});
 });

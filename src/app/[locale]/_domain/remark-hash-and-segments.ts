@@ -46,6 +46,7 @@ type BlockNode = Paragraph | Heading | ListItem | Blockquote;
 
 const PARA_NOTATION_REGEX = /^\{para:([^}]+)\}\s*/;
 const BOOK_MARKER_REGEX = /^<!--\s*book:([A-Za-z0-9._-]+)\s*-->$/;
+const CHAPTER_MARKER_REGEX = /^<!--\s*chapter:(\d+)\s*-->$/;
 
 const canonicalize = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
@@ -316,10 +317,18 @@ export const remarkHashAndSegments =
 
 		visit(tree, (node: Nodes) => {
 			if (node.type === "html") {
-				const marker = node.value.trim().match(BOOK_MARKER_REGEX);
-				if (marker) {
-					currentBookCode = marker[1] ?? null;
+				const value = node.value.trim();
+				const bookMarker = value.match(BOOK_MARKER_REGEX);
+				if (bookMarker) {
+					currentBookCode = bookMarker[1] ?? null;
 					currentChapterNumber = null;
+					currentParagraphNumber = null;
+					currentParagraphOccurrence = null;
+					return;
+				}
+				const chapterMarker = value.match(CHAPTER_MARKER_REGEX);
+				if (chapterMarker) {
+					currentChapterNumber = Number.parseInt(chapterMarker[1] ?? "", 10);
 					currentParagraphNumber = null;
 					currentParagraphOccurrence = null;
 				}

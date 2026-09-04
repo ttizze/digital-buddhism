@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-30T02:50:07.723Z",
+	"generatedAt": "2026-09-04T17:52:59.872Z",
 	"count": 217,
 	"data": {
 		"s0101m.mul.xml": {
@@ -10,8 +10,7 @@
 				"01-digha-nikaya",
 				"01-silakkhandhavaggapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "sutta"]
+			"annotationTargetFileNames": []
 		},
 		"s0102m.mul.xml": {
 			"level": "Mula",
@@ -21,8 +20,7 @@
 				"01-digha-nikaya",
 				"02-mahavaggapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "sutta"]
+			"annotationTargetFileNames": []
 		},
 		"s0103m.mul.xml": {
 			"level": "Mula",
@@ -32,8 +30,7 @@
 				"01-digha-nikaya",
 				"03-pathikavaggapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "sutta"]
+			"annotationTargetFileNames": []
 		},
 		"s0201m.mul.xml": {
 			"level": "Mula",
@@ -43,8 +40,7 @@
 				"02-majjhima-nikaya",
 				"01-mulapannasapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": []
 		},
 		"s0202m.mul.xml": {
 			"level": "Mula",
@@ -54,8 +50,7 @@
 				"02-majjhima-nikaya",
 				"02-majjhimapannasapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": []
 		},
 		"s0203m.mul.xml": {
 			"level": "Mula",
@@ -65,8 +60,7 @@
 				"02-majjhima-nikaya",
 				"03-uparipannasapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": []
 		},
 		"s0301m.mul.xml": {
 			"level": "Mula",
@@ -76,8 +70,7 @@
 				"03-samyutta-nikaya",
 				"01-sagathavaggapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": []
 		},
 		"s0302m.mul.xml": {
 			"level": "Mula",
@@ -87,8 +80,7 @@
 				"03-samyutta-nikaya",
 				"02-nidanavaggapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": []
 		},
 		"s0303m.mul.xml": {
 			"level": "Mula",
@@ -98,8 +90,7 @@
 				"03-samyutta-nikaya",
 				"03-khandhavaggapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": []
 		},
 		"s0304m.mul.xml": {
 			"level": "Mula",
@@ -109,8 +100,7 @@
 				"03-samyutta-nikaya",
 				"04-salayatanavaggapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": []
 		},
 		"s0305m.mul.xml": {
 			"level": "Mula",
@@ -120,8 +110,7 @@
 				"03-samyutta-nikaya",
 				"05-mahavaggapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": []
 		},
 		"s0401m.mul.xml": {
 			"level": "Mula",
@@ -131,8 +120,7 @@
 				"04-anguttara-nikaya",
 				"01-ekakanipatapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": []
 		},
 		"s0402m1.mul.xml": {
 			"level": "Mula",
@@ -142,8 +130,7 @@
 				"04-anguttara-nikaya",
 				"02-dukanipatapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "pannasaka", "vagga", "peyyala"]
+			"annotationTargetFileNames": []
 		},
 		"s0402m2.mul.xml": {
 			"level": "Mula",
@@ -153,8 +140,7 @@
 				"04-anguttara-nikaya",
 				"03-tikanipatapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "pannasaka", "vagga"]
+			"annotationTargetFileNames": []
 		},
 		"s0402m3.mul.xml": {
 			"level": "Mula",
@@ -164,8 +150,7 @@
 				"04-anguttara-nikaya",
 				"04-catukkanipatapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "pannasaka", "vagga"]
+			"annotationTargetFileNames": []
 		},
 		"s0403m1.mul.xml": {
 			"level": "Mula",
@@ -175,8 +160,7 @@
 				"04-anguttara-nikaya",
 				"05-pancakanipatapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "pannasaka", "vagga", "peyyala"]
+			"annotationTargetFileNames": []
 		},
 		"s0403m2.mul.xml": {
 			"level": "Mula",
@@ -186,8 +170,7 @@
 				"04-anguttara-nikaya",
 				"06-chakkanipatapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "pannasaka", "vagga", "peyyala"]
+			"annotationTargetFileNames": []
 		},
 		"s0403m3.mul.xml": {
 			"level": "Mula",
@@ -197,8 +180,7 @@
 				"04-anguttara-nikaya",
 				"07-sattakanipatapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "pannasaka", "vagga", "peyyala"]
+			"annotationTargetFileNames": []
 		},
 		"s0404m1.mul.xml": {
 			"level": "Mula",
@@ -208,8 +190,7 @@
 				"04-anguttara-nikaya",
 				"08-atthakanipatapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "pannasaka", "vagga", "peyyala"]
+			"annotationTargetFileNames": []
 		},
 		"s0404m2.mul.xml": {
 			"level": "Mula",
@@ -219,8 +200,7 @@
 				"04-anguttara-nikaya",
 				"09-navakanipatapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "pannasaka", "vagga", "peyyala"]
+			"annotationTargetFileNames": []
 		},
 		"s0404m3.mul.xml": {
 			"level": "Mula",
@@ -230,8 +210,7 @@
 				"04-anguttara-nikaya",
 				"10-dasakanipatapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "pannasaka", "vagga", "peyyala"]
+			"annotationTargetFileNames": []
 		},
 		"s0404m4.mul.xml": {
 			"level": "Mula",
@@ -241,8 +220,7 @@
 				"04-anguttara-nikaya",
 				"11-ekadasakanipatapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "vagga", "peyyala"]
+			"annotationTargetFileNames": []
 		},
 		"s0501m.mul.xml": {
 			"level": "Mula",
@@ -252,8 +230,7 @@
 				"05-khuddaka-nikaya",
 				"01-khuddakapathapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "chapter"]
+			"annotationTargetFileNames": []
 		},
 		"s0502m.mul.xml": {
 			"level": "Mula",
@@ -263,8 +240,7 @@
 				"05-khuddaka-nikaya",
 				"02-dhammapadapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": []
 		},
 		"s0503m.mul.xml": {
 			"level": "Mula",
@@ -274,8 +250,7 @@
 				"05-khuddaka-nikaya",
 				"03-udanapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": []
 		},
 		"s0504m.mul.xml": {
 			"level": "Mula",
@@ -285,8 +260,7 @@
 				"05-khuddaka-nikaya",
 				"04-itivuttakapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "nipata"]
+			"annotationTargetFileNames": []
 		},
 		"s0505m.mul.xml": {
 			"level": "Mula",
@@ -296,8 +270,7 @@
 				"05-khuddaka-nikaya",
 				"05-suttanipatapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": []
 		},
 		"s0506m.mul.xml": {
 			"level": "Mula",
@@ -307,8 +280,7 @@
 				"05-khuddaka-nikaya",
 				"06-vimanavatthupali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "vimana"]
+			"annotationTargetFileNames": []
 		},
 		"s0507m.mul.xml": {
 			"level": "Mula",
@@ -318,8 +290,7 @@
 				"05-khuddaka-nikaya",
 				"07-petavatthupali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": []
 		},
 		"s0508m.mul.xml": {
 			"level": "Mula",
@@ -329,8 +300,7 @@
 				"05-khuddaka-nikaya",
 				"08-theragathapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "nipata"]
+			"annotationTargetFileNames": []
 		},
 		"s0509m.mul.xml": {
 			"level": "Mula",
@@ -340,8 +310,7 @@
 				"05-khuddaka-nikaya",
 				"09-therigathapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "nipata"]
+			"annotationTargetFileNames": []
 		},
 		"s0510m1.mul.xml": {
 			"level": "Mula",
@@ -351,8 +320,7 @@
 				"05-khuddaka-nikaya",
 				"10-apadanapali-1"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": []
 		},
 		"s0510m2.mul.xml": {
 			"level": "Mula",
@@ -362,8 +330,7 @@
 				"05-khuddaka-nikaya",
 				"11-apadanapali-2"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": []
 		},
 		"s0511m.mul.xml": {
 			"level": "Mula",
@@ -373,8 +340,7 @@
 				"05-khuddaka-nikaya",
 				"12-buddhavamsapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "chapter"]
+			"annotationTargetFileNames": []
 		},
 		"s0512m.mul.xml": {
 			"level": "Mula",
@@ -384,8 +350,7 @@
 				"05-khuddaka-nikaya",
 				"13-cariyapitakapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": []
 		},
 		"s0513m.mul.xml": {
 			"level": "Mula",
@@ -395,8 +360,7 @@
 				"05-khuddaka-nikaya",
 				"14-jatakapali-1"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "nipata"]
+			"annotationTargetFileNames": []
 		},
 		"s0514m.mul.xml": {
 			"level": "Mula",
@@ -406,8 +370,7 @@
 				"05-khuddaka-nikaya",
 				"15-jatakapali-2"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "nipata"]
+			"annotationTargetFileNames": []
 		},
 		"s0515m.mul.xml": {
 			"level": "Mula",
@@ -417,8 +380,7 @@
 				"05-khuddaka-nikaya",
 				"16-mahaniddesapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "chapter"]
+			"annotationTargetFileNames": []
 		},
 		"s0516m.mul.xml": {
 			"level": "Mula",
@@ -428,8 +390,7 @@
 				"05-khuddaka-nikaya",
 				"17-culaniddesapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "chapter"]
+			"annotationTargetFileNames": []
 		},
 		"s0517m.mul.xml": {
 			"level": "Mula",
@@ -439,8 +400,7 @@
 				"05-khuddaka-nikaya",
 				"18-patisambhidamaggapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": []
 		},
 		"s0519m.mul.xml": {
 			"level": "Mula",
@@ -450,8 +410,7 @@
 				"05-khuddaka-nikaya",
 				"19-nettippakaranapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "chapter"]
+			"annotationTargetFileNames": []
 		},
 		"s0518m.nrf.xml": {
 			"level": "Mula",
@@ -461,8 +420,7 @@
 				"05-khuddaka-nikaya",
 				"20-milindapanhapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "chapter"]
+			"annotationTargetFileNames": []
 		},
 		"s0520m.nrf.xml": {
 			"level": "Mula",
@@ -472,8 +430,7 @@
 				"05-khuddaka-nikaya",
 				"21-petakopadesapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "chapter"]
+			"annotationTargetFileNames": []
 		},
 		"vin01m.mul.xml": {
 			"level": "Mula",
@@ -482,8 +439,7 @@
 				"02-vinaya-pitaka",
 				"01-parajikapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "kanda"]
+			"annotationTargetFileNames": []
 		},
 		"vin02m1.mul.xml": {
 			"level": "Mula",
@@ -492,8 +448,7 @@
 				"02-vinaya-pitaka",
 				"02-pacittiyapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "subbook", "kanda"]
+			"annotationTargetFileNames": []
 		},
 		"vin02m2.mul.xml": {
 			"level": "Mula",
@@ -502,8 +457,7 @@
 				"02-vinaya-pitaka",
 				"03-mahavaggapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "khandaka"]
+			"annotationTargetFileNames": []
 		},
 		"vin02m3.mul.xml": {
 			"level": "Mula",
@@ -512,8 +466,7 @@
 				"02-vinaya-pitaka",
 				"04-culavaggapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "khandaka"]
+			"annotationTargetFileNames": []
 		},
 		"vin02m4.mul.xml": {
 			"level": "Mula",
@@ -522,8 +475,7 @@
 				"02-vinaya-pitaka",
 				"05-parivarapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "chapter"]
+			"annotationTargetFileNames": []
 		},
 		"abh01m.mul.xml": {
 			"level": "Mula",
@@ -532,8 +484,7 @@
 				"03-abhidhamma-pitaka",
 				"01-dhammasanganipali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": ["book", "chapter"]
+			"annotationTargetFileNames": []
 		},
 		"abh02m.mul.xml": {
 			"level": "Mula",
@@ -542,8 +493,7 @@
 				"03-abhidhamma-pitaka",
 				"02-vibhangapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh03m1.mul.xml": {
 			"level": "Mula",
@@ -552,8 +502,7 @@
 				"03-abhidhamma-pitaka",
 				"03-dhatukathapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh03m2.mul.xml": {
 			"level": "Mula",
@@ -562,8 +511,7 @@
 				"03-abhidhamma-pitaka",
 				"04-puggalapannattipali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh03m3.mul.xml": {
 			"level": "Mula",
@@ -572,8 +520,7 @@
 				"03-abhidhamma-pitaka",
 				"05-kathavatthupali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh03m4.mul.xml": {
 			"level": "Mula",
@@ -582,8 +529,7 @@
 				"03-abhidhamma-pitaka",
 				"06-yamakapali-1"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh03m5.mul.xml": {
 			"level": "Mula",
@@ -592,8 +538,7 @@
 				"03-abhidhamma-pitaka",
 				"07-yamakapali-2"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh03m6.mul.xml": {
 			"level": "Mula",
@@ -602,8 +547,7 @@
 				"03-abhidhamma-pitaka",
 				"08-yamakapali-3"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh03m7.mul.xml": {
 			"level": "Mula",
@@ -612,8 +556,7 @@
 				"03-abhidhamma-pitaka",
 				"09-patthanapali-1"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh03m8.mul.xml": {
 			"level": "Mula",
@@ -622,8 +565,7 @@
 				"03-abhidhamma-pitaka",
 				"10-patthanapali-2"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh03m9.mul.xml": {
 			"level": "Mula",
@@ -632,8 +574,7 @@
 				"03-abhidhamma-pitaka",
 				"11-patthanapali-3"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh03m10.mul.xml": {
 			"level": "Mula",
@@ -642,8 +583,7 @@
 				"03-abhidhamma-pitaka",
 				"12-patthanapali-4"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh03m11.mul.xml": {
 			"level": "Mula",
@@ -652,8 +592,7 @@
 				"03-abhidhamma-pitaka",
 				"13-patthanapali-5"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"s0101a.att.xml": {
 			"level": "Atthakatha",
@@ -663,8 +602,7 @@
 				"01-digha-nikaya-atthakatha",
 				"01-silakkhandhavagga-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0101m.mul.xml"],
-			"chapterListTypes": ["book", "sutta"]
+			"annotationTargetFileNames": ["s0101m.mul.xml"]
 		},
 		"s0102a.att.xml": {
 			"level": "Atthakatha",
@@ -674,8 +612,7 @@
 				"01-digha-nikaya-atthakatha",
 				"02-mahavagga-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0102m.mul.xml"],
-			"chapterListTypes": ["book", "sutta"]
+			"annotationTargetFileNames": ["s0102m.mul.xml"]
 		},
 		"s0103a.att.xml": {
 			"level": "Atthakatha",
@@ -685,8 +622,7 @@
 				"01-digha-nikaya-atthakatha",
 				"03-pathikavagga-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0103m.mul.xml"],
-			"chapterListTypes": ["book", "sutta"]
+			"annotationTargetFileNames": ["s0103m.mul.xml"]
 		},
 		"s0201a.att.xml": {
 			"level": "Atthakatha",
@@ -696,8 +632,7 @@
 				"02-majjhima-nikaya-atthakatha",
 				"01-mulapannasa-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0201m.mul.xml"],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": ["s0201m.mul.xml"]
 		},
 		"s0202a.att.xml": {
 			"level": "Atthakatha",
@@ -707,8 +642,7 @@
 				"02-majjhima-nikaya-atthakatha",
 				"02-majjhimapannasa-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0202m.mul.xml"],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": ["s0202m.mul.xml"]
 		},
 		"s0203a.att.xml": {
 			"level": "Atthakatha",
@@ -718,8 +652,7 @@
 				"02-majjhima-nikaya-atthakatha",
 				"03-uparipannasa-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0203m.mul.xml"],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": ["s0203m.mul.xml"]
 		},
 		"s0301a.att.xml": {
 			"level": "Atthakatha",
@@ -729,8 +662,7 @@
 				"03-samyutta-nikaya-atthakatha",
 				"01-sagathavagga-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0301m.mul.xml"],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": ["s0301m.mul.xml"]
 		},
 		"s0302a.att.xml": {
 			"level": "Atthakatha",
@@ -740,8 +672,7 @@
 				"03-samyutta-nikaya-atthakatha",
 				"02-nidanavagga-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0302m.mul.xml"],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": ["s0302m.mul.xml"]
 		},
 		"s0303a.att.xml": {
 			"level": "Atthakatha",
@@ -751,8 +682,7 @@
 				"03-samyutta-nikaya-atthakatha",
 				"03-khandhavagga-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0303m.mul.xml"],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": ["s0303m.mul.xml"]
 		},
 		"s0304a.att.xml": {
 			"level": "Atthakatha",
@@ -762,8 +692,7 @@
 				"03-samyutta-nikaya-atthakatha",
 				"04-salayatanavagga-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0304m.mul.xml"],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": ["s0304m.mul.xml"]
 		},
 		"s0305a.att.xml": {
 			"level": "Atthakatha",
@@ -773,8 +702,7 @@
 				"03-samyutta-nikaya-atthakatha",
 				"05-mahavagga-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0305m.mul.xml"],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": ["s0305m.mul.xml"]
 		},
 		"s0401a.att.xml": {
 			"level": "Atthakatha",
@@ -784,8 +712,7 @@
 				"04-anguttara-nikaya-atthakatha",
 				"01-ekakanipata-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0401m.mul.xml"],
-			"chapterListTypes": ["book", "intro", "vagga"]
+			"annotationTargetFileNames": ["s0401m.mul.xml"]
 		},
 		"s0402a.att.xml": {
 			"level": "Atthakatha",
@@ -799,8 +726,7 @@
 				"s0402m1.mul.xml",
 				"s0402m2.mul.xml",
 				"s0402m3.mul.xml"
-			],
-			"chapterListTypes": ["book", "pannasaka", "vagga"]
+			]
 		},
 		"s0403a.att.xml": {
 			"level": "Atthakatha",
@@ -814,8 +740,7 @@
 				"s0403m1.mul.xml",
 				"s0403m2.mul.xml",
 				"s0403m3.mul.xml"
-			],
-			"chapterListTypes": ["book", "pannasaka", "vagga", "peyyala"]
+			]
 		},
 		"s0404a.att.xml": {
 			"level": "Atthakatha",
@@ -830,8 +755,7 @@
 				"s0404m2.mul.xml",
 				"s0404m3.mul.xml",
 				"s0404m4.mul.xml"
-			],
-			"chapterListTypes": ["book", "pannasaka", "vagga", "peyyala"]
+			]
 		},
 		"s0501a.att.xml": {
 			"level": "Atthakatha",
@@ -841,8 +765,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"01-khuddakapatha-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0501m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0501m.mul.xml"]
 		},
 		"s0502a.att.xml": {
 			"level": "Atthakatha",
@@ -852,8 +775,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"02-dhammapada-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0502m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0502m.mul.xml"]
 		},
 		"s0503a.att.xml": {
 			"level": "Atthakatha",
@@ -863,8 +785,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"03-udana-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0503m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0503m.mul.xml"]
 		},
 		"s0504a.att.xml": {
 			"level": "Atthakatha",
@@ -874,8 +795,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"04-itivuttaka-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0504m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0504m.mul.xml"]
 		},
 		"s0505a.att.xml": {
 			"level": "Atthakatha",
@@ -885,8 +805,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"05-suttanipata-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0505m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0505m.mul.xml"]
 		},
 		"s0506a.att.xml": {
 			"level": "Atthakatha",
@@ -896,8 +815,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"06-vimanavatthu-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0506m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0506m.mul.xml"]
 		},
 		"s0507a.att.xml": {
 			"level": "Atthakatha",
@@ -907,8 +825,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"07-petavatthu-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0507m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0507m.mul.xml"]
 		},
 		"s0508a1.att.xml": {
 			"level": "Atthakatha",
@@ -918,8 +835,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"08-theragatha-atthakatha-1"
 			],
-			"annotationTargetFileNames": ["s0508m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0508m.mul.xml"]
 		},
 		"s0508a2.att.xml": {
 			"level": "Atthakatha",
@@ -929,8 +845,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"09-theragatha-atthakatha-2"
 			],
-			"annotationTargetFileNames": ["s0508m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0508m.mul.xml"]
 		},
 		"s0509a.att.xml": {
 			"level": "Atthakatha",
@@ -940,8 +855,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"10-therigatha-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0509m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0509m.mul.xml"]
 		},
 		"s0510a.att.xml": {
 			"level": "Atthakatha",
@@ -951,8 +865,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"11-apadana-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0510m1.mul.xml", "s0510m2.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0510m1.mul.xml", "s0510m2.mul.xml"]
 		},
 		"s0511a.att.xml": {
 			"level": "Atthakatha",
@@ -962,8 +875,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"12-buddhavamsa-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0511m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0511m.mul.xml"]
 		},
 		"s0512a.att.xml": {
 			"level": "Atthakatha",
@@ -973,8 +885,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"13-cariyapitaka-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0512m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0512m.mul.xml"]
 		},
 		"s0513a1.att.xml": {
 			"level": "Atthakatha",
@@ -984,8 +895,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"14-jataka-atthakatha-1"
 			],
-			"annotationTargetFileNames": ["s0513m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0513m.mul.xml"]
 		},
 		"s0513a2.att.xml": {
 			"level": "Atthakatha",
@@ -995,8 +905,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"15-jataka-atthakatha-2"
 			],
-			"annotationTargetFileNames": ["s0513m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0513m.mul.xml"]
 		},
 		"s0513a3.att.xml": {
 			"level": "Atthakatha",
@@ -1006,8 +915,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"16-jataka-atthakatha-3"
 			],
-			"annotationTargetFileNames": ["s0513m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0513m.mul.xml"]
 		},
 		"s0513a4.att.xml": {
 			"level": "Atthakatha",
@@ -1017,8 +925,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"17-jataka-atthakatha-4"
 			],
-			"annotationTargetFileNames": ["s0513m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0513m.mul.xml"]
 		},
 		"s0514a1.att.xml": {
 			"level": "Atthakatha",
@@ -1028,8 +935,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"18-jataka-atthakatha-5"
 			],
-			"annotationTargetFileNames": ["s0514m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0514m.mul.xml"]
 		},
 		"s0514a2.att.xml": {
 			"level": "Atthakatha",
@@ -1039,8 +945,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"19-jataka-atthakatha-6"
 			],
-			"annotationTargetFileNames": ["s0514m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0514m.mul.xml"]
 		},
 		"s0514a3.att.xml": {
 			"level": "Atthakatha",
@@ -1050,8 +955,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"20-jataka-atthakatha-7"
 			],
-			"annotationTargetFileNames": ["s0514m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0514m.mul.xml"]
 		},
 		"s0515a.att.xml": {
 			"level": "Atthakatha",
@@ -1061,8 +965,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"21-mahaniddesa-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0515m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0515m.mul.xml"]
 		},
 		"s0516a.att.xml": {
 			"level": "Atthakatha",
@@ -1072,8 +975,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"22-culaniddesa-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0516m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0516m.mul.xml"]
 		},
 		"s0517a.att.xml": {
 			"level": "Atthakatha",
@@ -1083,8 +985,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"23-patisambhidamagga-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0517m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0517m.mul.xml"]
 		},
 		"s0519a.att.xml": {
 			"level": "Atthakatha",
@@ -1094,8 +995,7 @@
 				"05-khuddaka-nikaya-atthakatha",
 				"24-nettippakarana-atthakatha"
 			],
-			"annotationTargetFileNames": ["s0519m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0519m.mul.xml"]
 		},
 		"vin01a.att.xml": {
 			"level": "Atthakatha",
@@ -1104,8 +1004,7 @@
 				"02-vinaya-pitaka-atthakatha",
 				"01-parajikakanda-atthakatha"
 			],
-			"annotationTargetFileNames": ["vin01m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["vin01m.mul.xml"]
 		},
 		"vin02a1.att.xml": {
 			"level": "Atthakatha",
@@ -1114,8 +1013,7 @@
 				"02-vinaya-pitaka-atthakatha",
 				"02-pacittiya-atthakatha"
 			],
-			"annotationTargetFileNames": ["vin02m1.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["vin02m1.mul.xml"]
 		},
 		"vin02a2.att.xml": {
 			"level": "Atthakatha",
@@ -1124,8 +1022,7 @@
 				"02-vinaya-pitaka-atthakatha",
 				"03-mahavagga-atthakatha"
 			],
-			"annotationTargetFileNames": ["vin02m2.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["vin02m2.mul.xml"]
 		},
 		"vin02a3.att.xml": {
 			"level": "Atthakatha",
@@ -1134,8 +1031,7 @@
 				"02-vinaya-pitaka-atthakatha",
 				"04-culavagga-atthakatha"
 			],
-			"annotationTargetFileNames": ["vin02m3.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["vin02m3.mul.xml"]
 		},
 		"vin02a4.att.xml": {
 			"level": "Atthakatha",
@@ -1144,8 +1040,7 @@
 				"02-vinaya-pitaka-atthakatha",
 				"05-parivara-atthakatha"
 			],
-			"annotationTargetFileNames": ["vin02m4.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["vin02m4.mul.xml"]
 		},
 		"abh01a.att.xml": {
 			"level": "Atthakatha",
@@ -1154,8 +1049,7 @@
 				"03-abhidhamma-pitaka-atthakatha",
 				"01-dhammasangani-atthakatha"
 			],
-			"annotationTargetFileNames": ["abh01m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["abh01m.mul.xml"]
 		},
 		"abh02a.att.xml": {
 			"level": "Atthakatha",
@@ -1164,8 +1058,7 @@
 				"03-abhidhamma-pitaka-atthakatha",
 				"02-sammohavinodani-atthakatha"
 			],
-			"annotationTargetFileNames": ["abh02m.mul.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["abh02m.mul.xml"]
 		},
 		"abh03a.att.xml": {
 			"level": "Atthakatha",
@@ -1186,8 +1079,7 @@
 				"abh03m9.mul.xml",
 				"abh03m10.mul.xml",
 				"abh03m11.mul.xml"
-			],
-			"chapterListTypes": []
+			]
 		},
 		"s0101t.tik.xml": {
 			"level": "Tika",
@@ -1197,8 +1089,7 @@
 				"01-digha-nikaya-tika",
 				"01-silakkhandhavagga-tika"
 			],
-			"annotationTargetFileNames": ["s0101m.mul.xml", "s0101a.att.xml"],
-			"chapterListTypes": ["book", "sutta"]
+			"annotationTargetFileNames": ["s0101m.mul.xml", "s0101a.att.xml"]
 		},
 		"s0102t.tik.xml": {
 			"level": "Tika",
@@ -1208,8 +1099,7 @@
 				"01-digha-nikaya-tika",
 				"02-mahavagga-tika"
 			],
-			"annotationTargetFileNames": ["s0102m.mul.xml", "s0102a.att.xml"],
-			"chapterListTypes": ["book", "sutta"]
+			"annotationTargetFileNames": ["s0102m.mul.xml", "s0102a.att.xml"]
 		},
 		"s0103t.tik.xml": {
 			"level": "Tika",
@@ -1219,8 +1109,7 @@
 				"01-digha-nikaya-tika",
 				"03-pathikavagga-tika"
 			],
-			"annotationTargetFileNames": ["s0103m.mul.xml", "s0103a.att.xml"],
-			"chapterListTypes": ["book", "sutta"]
+			"annotationTargetFileNames": ["s0103m.mul.xml", "s0103a.att.xml"]
 		},
 		"s0104t.nrf.xml": {
 			"level": "Tika",
@@ -1230,8 +1119,7 @@
 				"01-digha-nikaya-tika",
 				"04-silakkhandhavagga-abhinavatika-1"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"s0105t.nrf.xml": {
 			"level": "Tika",
@@ -1241,8 +1129,7 @@
 				"01-digha-nikaya-tika",
 				"05-silakkhandhavagga-abhinavatika-2"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"s0201t.tik.xml": {
 			"level": "Tika",
@@ -1252,8 +1139,7 @@
 				"02-majjhima-nikaya-tika",
 				"01-mulapannasa-tika"
 			],
-			"annotationTargetFileNames": ["s0201m.mul.xml", "s0201a.att.xml"],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": ["s0201m.mul.xml", "s0201a.att.xml"]
 		},
 		"s0202t.tik.xml": {
 			"level": "Tika",
@@ -1263,8 +1149,7 @@
 				"02-majjhima-nikaya-tika",
 				"02-majjhimapannasa-tika"
 			],
-			"annotationTargetFileNames": ["s0202m.mul.xml", "s0202a.att.xml"],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": ["s0202m.mul.xml", "s0202a.att.xml"]
 		},
 		"s0203t.tik.xml": {
 			"level": "Tika",
@@ -1274,8 +1159,7 @@
 				"02-majjhima-nikaya-tika",
 				"03-uparipannasa-tika"
 			],
-			"annotationTargetFileNames": ["s0203m.mul.xml", "s0203a.att.xml"],
-			"chapterListTypes": ["book", "vagga"]
+			"annotationTargetFileNames": ["s0203m.mul.xml", "s0203a.att.xml"]
 		},
 		"s0301t.tik.xml": {
 			"level": "Tika",
@@ -1285,8 +1169,7 @@
 				"03-samyutta-nikaya-tika",
 				"01-sagathavagga-tika"
 			],
-			"annotationTargetFileNames": ["s0301m.mul.xml", "s0301a.att.xml"],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": ["s0301m.mul.xml", "s0301a.att.xml"]
 		},
 		"s0302t.tik.xml": {
 			"level": "Tika",
@@ -1296,8 +1179,7 @@
 				"03-samyutta-nikaya-tika",
 				"02-nidanavagga-tika"
 			],
-			"annotationTargetFileNames": ["s0302m.mul.xml", "s0302a.att.xml"],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": ["s0302m.mul.xml", "s0302a.att.xml"]
 		},
 		"s0303t.tik.xml": {
 			"level": "Tika",
@@ -1307,8 +1189,7 @@
 				"03-samyutta-nikaya-tika",
 				"03-khandhavagga-tika"
 			],
-			"annotationTargetFileNames": ["s0303m.mul.xml", "s0303a.att.xml"],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": ["s0303m.mul.xml", "s0303a.att.xml"]
 		},
 		"s0304t.tik.xml": {
 			"level": "Tika",
@@ -1318,8 +1199,7 @@
 				"03-samyutta-nikaya-tika",
 				"04-salayatanavagga-tika"
 			],
-			"annotationTargetFileNames": ["s0304m.mul.xml", "s0304a.att.xml"],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": ["s0304m.mul.xml", "s0304a.att.xml"]
 		},
 		"s0305t.tik.xml": {
 			"level": "Tika",
@@ -1329,8 +1209,7 @@
 				"03-samyutta-nikaya-tika",
 				"05-mahavagga-tika"
 			],
-			"annotationTargetFileNames": ["s0305m.mul.xml", "s0305a.att.xml"],
-			"chapterListTypes": ["book", "samyutta"]
+			"annotationTargetFileNames": ["s0305m.mul.xml", "s0305a.att.xml"]
 		},
 		"s0401t.tik.xml": {
 			"level": "Tika",
@@ -1340,8 +1219,7 @@
 				"04-anguttaranikaya-tika",
 				"01-ekakanipata-tika"
 			],
-			"annotationTargetFileNames": ["s0401m.mul.xml", "s0401a.att.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["s0401m.mul.xml", "s0401a.att.xml"]
 		},
 		"s0402t.tik.xml": {
 			"level": "Tika",
@@ -1356,8 +1234,7 @@
 				"s0402m2.mul.xml",
 				"s0402m3.mul.xml",
 				"s0402a.att.xml"
-			],
-			"chapterListTypes": []
+			]
 		},
 		"s0403t.tik.xml": {
 			"level": "Tika",
@@ -1372,8 +1249,7 @@
 				"s0403m2.mul.xml",
 				"s0403m3.mul.xml",
 				"s0403a.att.xml"
-			],
-			"chapterListTypes": []
+			]
 		},
 		"s0404t.tik.xml": {
 			"level": "Tika",
@@ -1389,8 +1265,7 @@
 				"s0404m3.mul.xml",
 				"s0404m4.mul.xml",
 				"s0404a.att.xml"
-			],
-			"chapterListTypes": []
+			]
 		},
 		"s0519t.tik.xml": {
 			"level": "Tika",
@@ -1400,8 +1275,7 @@
 				"05-khuddakanikaya-tika",
 				"01-nettippakarana-tika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"s0501t.nrf.xml": {
 			"level": "Tika",
@@ -1411,8 +1285,7 @@
 				"05-khuddakanikaya-tika",
 				"02-nettivibhavini"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"vin01t1.tik.xml": {
 			"level": "Tika",
@@ -1421,8 +1294,7 @@
 				"02-vinayapitaka-tika",
 				"01-saratthadipani-tika-1"
 			],
-			"annotationTargetFileNames": ["vin01m.mul.xml", "vin01a.att.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["vin01m.mul.xml", "vin01a.att.xml"]
 		},
 		"vin01t2.tik.xml": {
 			"level": "Tika",
@@ -1431,8 +1303,7 @@
 				"02-vinayapitaka-tika",
 				"02-saratthadipani-tika-2"
 			],
-			"annotationTargetFileNames": ["vin01m.mul.xml", "vin01a.att.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["vin01m.mul.xml", "vin01a.att.xml"]
 		},
 		"vin02t.tik.xml": {
 			"level": "Tika",
@@ -1450,14 +1321,12 @@
 				"vin02a2.att.xml",
 				"vin02a3.att.xml",
 				"vin02a4.att.xml"
-			],
-			"chapterListTypes": []
+			]
 		},
 		"vin04t.nrf.xml": {
 			"level": "Tika",
 			"dirSegments": ["03-tika", "02-vinayapitaka-tika", "04-dvematikapali"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"vin05t.nrf.xml": {
 			"level": "Tika",
@@ -1466,8 +1335,7 @@
 				"02-vinayapitaka-tika",
 				"05-vinayasangaha-atthakatha"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"vin06t.nrf.xml": {
 			"level": "Tika",
@@ -1476,8 +1344,7 @@
 				"02-vinayapitaka-tika",
 				"06-vajirabuddhi-tika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"vin07t.nrf.xml": {
 			"level": "Tika",
@@ -1486,8 +1353,7 @@
 				"02-vinayapitaka-tika",
 				"07-vimativinodani-tika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"vin08t.nrf.xml": {
 			"level": "Tika",
@@ -1496,8 +1362,7 @@
 				"02-vinayapitaka-tika",
 				"08-vinayalankara-tika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"vin09t.nrf.xml": {
 			"level": "Tika",
@@ -1506,8 +1371,7 @@
 				"02-vinayapitaka-tika",
 				"09-kankhavitaranipurana-tika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"vin10t.nrf.xml": {
 			"level": "Tika",
@@ -1516,8 +1380,7 @@
 				"02-vinayapitaka-tika",
 				"10-vinayavinicchaya-uttaravinicchaya"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"vin11t.nrf.xml": {
 			"level": "Tika",
@@ -1526,8 +1389,7 @@
 				"02-vinayapitaka-tika",
 				"11-vinayavinicchaya-tika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"vin12t.nrf.xml": {
 			"level": "Tika",
@@ -1536,8 +1398,7 @@
 				"02-vinayapitaka-tika",
 				"12-pacityadiyojanapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"vin13t.nrf.xml": {
 			"level": "Tika",
@@ -1546,8 +1407,7 @@
 				"02-vinayapitaka-tika",
 				"13-khuddasikkha-mulasikkha"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh01t.tik.xml": {
 			"level": "Tika",
@@ -1556,8 +1416,7 @@
 				"03-abhidhamma-pitaka-tika",
 				"01-dhammasangani-mulatika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh02t.tik.xml": {
 			"level": "Tika",
@@ -1566,8 +1425,7 @@
 				"03-abhidhamma-pitaka-tika",
 				"02-vibhanga-mulatika"
 			],
-			"annotationTargetFileNames": ["abh02m.mul.xml", "abh02a.att.xml"],
-			"chapterListTypes": []
+			"annotationTargetFileNames": ["abh02m.mul.xml", "abh02a.att.xml"]
 		},
 		"abh03t.tik.xml": {
 			"level": "Tika",
@@ -1586,8 +1444,7 @@
 				"abh03m9.mul.xml",
 				"abh03m11.mul.xml",
 				"abh03a.att.xml"
-			],
-			"chapterListTypes": []
+			]
 		},
 		"abh04t.nrf.xml": {
 			"level": "Tika",
@@ -1596,8 +1453,7 @@
 				"03-abhidhamma-pitaka-tika",
 				"04-dhammasangani-anutika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh05t.nrf.xml": {
 			"level": "Tika",
@@ -1606,8 +1462,7 @@
 				"03-abhidhamma-pitaka-tika",
 				"05-pancapakarana-anutika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh06t.nrf.xml": {
 			"level": "Tika",
@@ -1616,8 +1471,7 @@
 				"03-abhidhamma-pitaka-tika",
 				"06-abhidhammavataro-namarupaparicchedo"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh07t.nrf.xml": {
 			"level": "Tika",
@@ -1626,8 +1480,7 @@
 				"03-abhidhamma-pitaka-tika",
 				"07-abhidhammatthasangaho"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh08t.nrf.xml": {
 			"level": "Tika",
@@ -1636,8 +1489,7 @@
 				"03-abhidhamma-pitaka-tika",
 				"08-abhidhammavatara-puranatika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"abh09t.nrf.xml": {
 			"level": "Tika",
@@ -1646,20 +1498,17 @@
 				"03-abhidhamma-pitaka-tika",
 				"09-abhidhammamatikapali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0101n.mul.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "01-visuddhimagga", "01-visuddhimagga-1"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0102n.mul.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "01-visuddhimagga", "02-visuddhimagga-2"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0103n.att.xml": {
 			"level": "Other",
@@ -1668,8 +1517,7 @@
 				"01-visuddhimagga",
 				"03-visuddhimagga-mahatika-1"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0104n.att.xml": {
 			"level": "Other",
@@ -1678,8 +1526,7 @@
 				"01-visuddhimagga",
 				"04-visuddhimagga-mahatika-2"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0105n.nrf.xml": {
 			"level": "Other",
@@ -1688,8 +1535,7 @@
 				"01-visuddhimagga",
 				"05-visuddhimagga-nidanakatha"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0901n.nrf.xml": {
 			"level": "Other",
@@ -1698,8 +1544,7 @@
 				"02-samgayana-puccha-vissajjana",
 				"01-dighanikaya-pu-vi"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0902n.nrf.xml": {
 			"level": "Other",
@@ -1708,8 +1553,7 @@
 				"02-samgayana-puccha-vissajjana",
 				"02-majjhimanikaya-pu-vi"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0903n.nrf.xml": {
 			"level": "Other",
@@ -1718,8 +1562,7 @@
 				"02-samgayana-puccha-vissajjana",
 				"03-samyuttanikaya-pu-vi"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0904n.nrf.xml": {
 			"level": "Other",
@@ -1728,8 +1571,7 @@
 				"02-samgayana-puccha-vissajjana",
 				"04-anguttaranikaya-pu-vi"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0905n.nrf.xml": {
 			"level": "Other",
@@ -1738,8 +1580,7 @@
 				"02-samgayana-puccha-vissajjana",
 				"05-vinayapitaka-pu-vi"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0906n.nrf.xml": {
 			"level": "Other",
@@ -1748,8 +1589,7 @@
 				"02-samgayana-puccha-vissajjana",
 				"06-abhidhammapitaka-pu-vi"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0907n.nrf.xml": {
 			"level": "Other",
@@ -1758,8 +1598,7 @@
 				"02-samgayana-puccha-vissajjana",
 				"07-atthakatha-pu-vi"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0201n.nrf.xml": {
 			"level": "Other",
@@ -1768,8 +1607,7 @@
 				"03-ledi-sayado-gantha-sangaho",
 				"01-niruttidipani"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0301n.nrf.xml": {
 			"level": "Other",
@@ -1778,8 +1616,7 @@
 				"03-ledi-sayado-gantha-sangaho",
 				"02-paramatthadipani-sangahamahatikapatha"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0401n.nrf.xml": {
 			"level": "Other",
@@ -1788,8 +1625,7 @@
 				"03-ledi-sayado-gantha-sangaho",
 				"03-anudipanipatha"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0501n.nrf.xml": {
 			"level": "Other",
@@ -1798,8 +1634,7 @@
 				"03-ledi-sayado-gantha-sangaho",
 				"04-patthanuddesadipanipatha"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0601n.nrf.xml": {
 			"level": "Other",
@@ -1808,8 +1643,7 @@
 				"04-buddha-vandana-gantha-sangaho",
 				"01-namakkaratika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0602n.nrf.xml": {
 			"level": "Other",
@@ -1818,8 +1652,7 @@
 				"04-buddha-vandana-gantha-sangaho",
 				"02-mahapanamapatha"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0603n.nrf.xml": {
 			"level": "Other",
@@ -1828,8 +1661,7 @@
 				"04-buddha-vandana-gantha-sangaho",
 				"03-lakkhanato-buddhathomanagatha"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0604n.nrf.xml": {
 			"level": "Other",
@@ -1838,8 +1670,7 @@
 				"04-buddha-vandana-gantha-sangaho",
 				"04-sutavandana"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0605n.nrf.xml": {
 			"level": "Other",
@@ -1848,8 +1679,7 @@
 				"04-buddha-vandana-gantha-sangaho",
 				"05-jinalankara"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0606n.nrf.xml": {
 			"level": "Other",
@@ -1858,8 +1688,7 @@
 				"04-buddha-vandana-gantha-sangaho",
 				"06-kamalanjali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0607n.nrf.xml": {
 			"level": "Other",
@@ -1868,8 +1697,7 @@
 				"04-buddha-vandana-gantha-sangaho",
 				"07-pajjamadhu"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0608n.nrf.xml": {
 			"level": "Other",
@@ -1878,8 +1706,7 @@
 				"04-buddha-vandana-gantha-sangaho",
 				"08-buddhagunagathavali"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0701n.nrf.xml": {
 			"level": "Other",
@@ -1888,20 +1715,17 @@
 				"05-vamsa-gantha-sangaho",
 				"01-culaganthavamsa"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0702n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "05-vamsa-gantha-sangaho", "02-sasanavamsa"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0703n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "05-vamsa-gantha-sangaho", "03-mahavamsa"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0801n.nrf.xml": {
 			"level": "Other",
@@ -1910,8 +1734,7 @@
 				"06-byakarana-gantha-sangaho",
 				"01-moggallanabyakaranam"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0802n.nrf.xml": {
 			"level": "Other",
@@ -1920,8 +1743,7 @@
 				"06-byakarana-gantha-sangaho",
 				"02-kaccayanabyakaranam"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0803n.nrf.xml": {
 			"level": "Other",
@@ -1930,8 +1752,7 @@
 				"06-byakarana-gantha-sangaho",
 				"03-saddanitippakaranam-padamala"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0804n.nrf.xml": {
 			"level": "Other",
@@ -1940,8 +1761,7 @@
 				"06-byakarana-gantha-sangaho",
 				"04-saddanitippakaranam-dhatumala"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0805n.nrf.xml": {
 			"level": "Other",
@@ -1950,8 +1770,7 @@
 				"06-byakarana-gantha-sangaho",
 				"05-padarupasiddhi"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0806n.nrf.xml": {
 			"level": "Other",
@@ -1960,8 +1779,7 @@
 				"06-byakarana-gantha-sangaho",
 				"06-mogallanapancika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0807n.nrf.xml": {
 			"level": "Other",
@@ -1970,8 +1788,7 @@
 				"06-byakarana-gantha-sangaho",
 				"07-payogasiddhipatha"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0808n.nrf.xml": {
 			"level": "Other",
@@ -1980,8 +1797,7 @@
 				"06-byakarana-gantha-sangaho",
 				"08-vuttodayapatha"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0809n.nrf.xml": {
 			"level": "Other",
@@ -1990,8 +1806,7 @@
 				"06-byakarana-gantha-sangaho",
 				"09-abhidhanappadapikapatha"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0810n.nrf.xml": {
 			"level": "Other",
@@ -2000,8 +1815,7 @@
 				"06-byakarana-gantha-sangaho",
 				"10-abhidhanappadapikatika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0811n.nrf.xml": {
 			"level": "Other",
@@ -2010,8 +1824,7 @@
 				"06-byakarana-gantha-sangaho",
 				"11-subodhalankarapatha"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0812n.nrf.xml": {
 			"level": "Other",
@@ -2020,8 +1833,7 @@
 				"06-byakarana-gantha-sangaho",
 				"12-subodhalankaratika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e0813n.nrf.xml": {
 			"level": "Other",
@@ -2030,8 +1842,7 @@
 				"06-byakarana-gantha-sangaho",
 				"13-balavatara-ganthipadatthavinicchayasara"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1001n.nrf.xml": {
 			"level": "Other",
@@ -2040,50 +1851,42 @@
 				"07-niti-gantha-sangaho",
 				"01-kavidappananiti"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1002n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "07-niti-gantha-sangaho", "02-nitimanjari"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1003n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "07-niti-gantha-sangaho", "03-dhammaniti"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1004n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "07-niti-gantha-sangaho", "04-maharahaniti"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1005n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "07-niti-gantha-sangaho", "05-lokaniti"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1006n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "07-niti-gantha-sangaho", "06-suttantaniti"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1007n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "07-niti-gantha-sangaho", "07-surassatiniti"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1008n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "07-niti-gantha-sangaho", "08-canakyaniti"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1009n.nrf.xml": {
 			"level": "Other",
@@ -2092,8 +1895,7 @@
 				"07-niti-gantha-sangaho",
 				"09-naradakkhadipani"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1010n.nrf.xml": {
 			"level": "Other",
@@ -2102,8 +1904,7 @@
 				"07-niti-gantha-sangaho",
 				"10-caturarakkhadipani"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1101n.nrf.xml": {
 			"level": "Other",
@@ -2112,8 +1913,7 @@
 				"08-pakinnaka-gantha-sangaho",
 				"01-rasavahini"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1102n.nrf.xml": {
 			"level": "Other",
@@ -2122,8 +1922,7 @@
 				"08-pakinnaka-gantha-sangaho",
 				"02-simavisodhanipatha"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1103n.nrf.xml": {
 			"level": "Other",
@@ -2132,8 +1931,7 @@
 				"08-pakinnaka-gantha-sangaho",
 				"03-vessantaragiti"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1201n.nrf.xml": {
 			"level": "Other",
@@ -2142,20 +1940,17 @@
 				"09-sihala-gantha-sangaho",
 				"01-moggallana-vuttivivaranapancika"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1202n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "09-sihala-gantha-sangaho", "02-thupavamsa"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1203n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "09-sihala-gantha-sangaho", "03-dathavamsa"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1204n.nrf.xml": {
 			"level": "Other",
@@ -2164,14 +1959,12 @@
 				"09-sihala-gantha-sangaho",
 				"04-dhatupathavilasiniya"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1205n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "09-sihala-gantha-sangaho", "05-dhatuvamsa"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1206n.nrf.xml": {
 			"level": "Other",
@@ -2180,14 +1973,12 @@
 				"09-sihala-gantha-sangaho",
 				"06-hatthavanagallaviharavamsa"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1207n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "09-sihala-gantha-sangaho", "07-jinacaritaya"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1208n.nrf.xml": {
 			"level": "Other",
@@ -2196,8 +1987,7 @@
 				"09-sihala-gantha-sangaho",
 				"08-jinavamsadipam"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1209n.nrf.xml": {
 			"level": "Other",
@@ -2206,26 +1996,22 @@
 				"09-sihala-gantha-sangaho",
 				"09-telakatahagatha"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1210n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "09-sihala-gantha-sangaho", "10-milidatika"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1211n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "09-sihala-gantha-sangaho", "11-padamanjari"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1212n.nrf.xml": {
 			"level": "Other",
 			"dirSegments": ["04-anna", "09-sihala-gantha-sangaho", "12-padasadhanam"],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1213n.nrf.xml": {
 			"level": "Other",
@@ -2234,8 +2020,7 @@
 				"09-sihala-gantha-sangaho",
 				"13-saddabindupakaranam"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1214n.nrf.xml": {
 			"level": "Other",
@@ -2244,8 +2029,7 @@
 				"09-sihala-gantha-sangaho",
 				"14-kaccayanadhatumanjusa"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		},
 		"e1215n.nrf.xml": {
 			"level": "Other",
@@ -2254,8 +2038,7 @@
 				"09-sihala-gantha-sangaho",
 				"15-samantakutavannana"
 			],
-			"annotationTargetFileNames": [],
-			"chapterListTypes": []
+			"annotationTargetFileNames": []
 		}
 	}
 }

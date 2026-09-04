@@ -40,4 +40,28 @@ describe("markdownToMdastWithSegments", () => {
 			{ items: [{ typeKey: "OTHER_PAGEBREAK", value: "" }] },
 		]);
 	});
+
+	it("hangnumの段落番号を後続の詩句へ引き継ぐ", async () => {
+		const markdown = [
+			"::hangnum\n{para:1} 1\\.\n::",
+			"::gatha1\n詩句一\n::",
+			"::gathalast\n詩句末\n::",
+		].join("\n\n");
+		const { segments, mdastJson } = await markdownToMdastWithSegments({
+			markdown,
+		});
+
+		expect(
+			segments.map((segment) => ({
+				text: segment.text,
+				paragraph: segment.sourceParagraphNumber,
+				occurrence: segment.sourceParagraphOccurrence,
+			})),
+		).toEqual([
+			{ text: "1.", paragraph: "1", occurrence: 1 },
+			{ text: "詩句一", paragraph: "1", occurrence: 1 },
+			{ text: "詩句末", paragraph: "1", occurrence: 1 },
+		]);
+		expect(JSON.stringify(mdastJson)).not.toContain("{para:1}");
+	});
 });

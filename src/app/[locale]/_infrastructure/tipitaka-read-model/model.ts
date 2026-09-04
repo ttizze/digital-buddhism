@@ -14,6 +14,8 @@ type SerializedPageDetail = Omit<PageDetail, "createdAt" | "updatedAt"> & {
 export type PageBaseSnapshot = {
 	schemaVersion: typeof TIPITAKA_READ_MODEL_SCHEMA_VERSION;
 	generatedAt: string;
+	/** Legacy snapshots created before generation isolation omit this field. */
+	generation?: string;
 	translationPageIds: number[];
 	data: Omit<PageContentData, "pageDetail"> & {
 		pageDetail: SerializedPageDetail;
@@ -29,6 +31,8 @@ export type PageStateSnapshot = {
 export type PageAnnotationsSnapshot = {
 	schemaVersion: typeof TIPITAKA_READ_MODEL_SCHEMA_VERSION;
 	generatedAt: string;
+	/** Legacy snapshots created before generation isolation omit this field. */
+	generation?: string;
 	translationPageIds: number[];
 	annotationTypes: PageContentData["annotationTypes"];
 	annotationsByTargetSegmentId: Record<
@@ -40,6 +44,8 @@ export type PageAnnotationsSnapshot = {
 export type HomeBaseSnapshot = {
 	schemaVersion: typeof TIPITAKA_READ_MODEL_SCHEMA_VERSION;
 	generatedAt: string;
+	/** Legacy snapshots created before generation isolation omit this field. */
+	generation?: string;
 	rootPageId: number;
 	tipitakaPages: TipitakaPageTreeNode[];
 };
@@ -47,12 +53,16 @@ export type HomeBaseSnapshot = {
 export type TranslationOverlay = {
 	schemaVersion: typeof TIPITAKA_READ_MODEL_SCHEMA_VERSION;
 	generatedAt: string;
+	/** Legacy snapshots created before generation isolation omit this field. */
+	generation?: string;
 	locale: string;
 	translations: Record<string, string>;
 };
 
 export type TranslationPointer = {
 	schemaVersion: typeof TIPITAKA_READ_MODEL_SCHEMA_VERSION;
+	/** Legacy snapshots created before generation isolation omit this field. */
+	generation?: string;
 	revision: string;
 	previousRevision?: string;
 };

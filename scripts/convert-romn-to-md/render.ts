@@ -11,9 +11,7 @@ import {
 	renderInlineChildren,
 	renderInlineElementToString,
 } from "./tei";
-import type { BookDoc } from "./types";
-
-// 目的: チャプター分割せず、書籍単位で Markdown を 1 ファイル出力する。
+import type { BookDoc, SiteTocEntry } from "./types";
 
 const REND_HEADING_LEVELS = new Map([
 	["nikaya", 1],
@@ -58,6 +56,7 @@ function collapseBlankLines(lines: string[]): string[] {
 
 function renderParagraph(node: Element): string[] {
 	const rend = (node.getAttribute("rend") ?? "").toLowerCase();
+	const n = node.getAttribute("n");
 
 	// 見出しとして扱うrend属性の場合
 	const headingLevel = REND_HEADING_LEVELS.get(rend);
@@ -85,13 +84,14 @@ function renderParagraph(node: Element): string[] {
 		let content = renderInlineChildren(node).trim();
 		// paranumの処理で追加されたエスケープ記号を削除
 		content = content.replace(/\\$/, "");
-		return content ? [`::hangnum\n${content}\n::`] : [""];
+		if (!content) return [""];
+		const paragraphNotation = n ? `{para:${n}} ` : "";
+		return [`::hangnum\n${paragraphNotation}${content}\n::`];
 	}
 
 	// 通常の段落として処理（rend属性がない場合、またはbodytextの場合）
 	// すべてのrend属性は上記で処理済みなので、ここに到達するのはrend属性がない場合のみ
 	const content = renderInlineChildren(node).trim();
-	const n = node.getAttribute("n");
 	// 段落番号がある場合は {para:n} 形式で先頭に追加
 	if (n && content) {
 		return [`{para:${n}} ${content}`];
@@ -144,17 +144,122 @@ function ensureBookOutputDirectory(doc: BookDoc, outputDir: string): string {
 	return baseDir;
 }
 
+export function renderBookMarkdown(doc: BookDoc): string {
+	const content = doc.nodes.flatMap((node) => renderBlockElement(node));
+	const lines = collapseBlankLines(content);
+	return `${lines.join("\n\n").trim()}\n`;
+}
+
+const HEADING_PATTERN = /^(#{1,6})\s+(.+)$/;
+const BOOK_MARKER_PATTERN = /^<!--book:[A-Za-z0-9._-]+-->$/;
+
+function normalizeTitle(value: string): string {
+	return value
+		.replace(/\{note:[^}]*}/g, "")
+		.replace(/\{pb:[^}]*}/g, "")
+		.replace(/[*_]/g, "")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
+function findTitleLine(
+	lines: string[],
+	title: string,
+	startIndex: number,
+	chapterOnly: boolean,
+): number {
+	const normalizedTitle = normalizeTitle(title);
+	for (let index = startIndex; index < lines.length; index += 1) {
+		const match = lines[index]?.match(HEADING_PATTERN);
+		if (!match || (chapterOnly && match[1] !== "###")) continue;
+		if (normalizeTitle(match[2]) === normalizedTitle) return index;
+	}
+	return -1;
+}
+
+function chapterNumberAt(lines: string[], lineIndex: number): number {
+	let chapterNumber = 0;
+	for (let index = 0; index <= lineIndex; index += 1) {
+		if (lines[index]?.startsWith("### ")) chapterNumber += 1;
+	}
+	return chapterNumber;
+}
+
+function activeBookMarker(lines: string[], lineIndex: number): string | null {
+	for (let index = lineIndex - 1; index >= 0; index -= 1) {
+		const line = lines[index];
+		if (line && BOOK_MARKER_PATTERN.test(line)) return line;
+	}
+	return null;
+}
+
+export function splitBookMarkdownBySiteToc(
+	markdown: string,
+	tocEntries: SiteTocEntry[],
+): Array<SiteTocEntry & { markdown: string }> {
+	if (tocEntries.length === 0) {
+		throw new Error("Tipitaka.org TOC has no entries");
+	}
+
+	const lines = markdown.trim().split("\n");
+	const titleLineIndexes: number[] = [];
+	let searchFrom = 0;
+	for (const [index, entry] of tocEntries.entries()) {
+		const titleLineIndex = findTitleLine(
+			lines,
+			entry.title,
+			searchFrom,
+			index > 0,
+		);
+		if (index > 0 && titleLineIndex < 0) {
+			throw new Error(`Tipitaka.org TOC boundary not found: ${entry.title}`);
+		}
+		titleLineIndexes.push(titleLineIndex);
+		if (titleLineIndex >= 0) searchFrom = titleLineIndex + 1;
+	}
+
+	return tocEntries.map((entry, index) => {
+		const startIndex = index === 0 ? 0 : titleLineIndexes[index];
+		const endIndex = titleLineIndexes[index + 1] ?? lines.length;
+		if (startIndex === undefined || startIndex < 0 || endIndex < startIndex) {
+			throw new Error(`Invalid Tipitaka.org TOC order: ${entry.title}`);
+		}
+
+		const partLines = lines.slice(startIndex, endIndex);
+		const titleLineIndex = titleLineIndexes[index] ?? -1;
+		if (titleLineIndex >= startIndex && titleLineIndex < endIndex) {
+			const relativeTitleIndex = titleLineIndex - startIndex;
+			const titleLine = partLines[relativeTitleIndex] ?? "";
+			partLines[relativeTitleIndex] = titleLine.startsWith("### ")
+				? `<!--chapter:${chapterNumberAt(lines, titleLineIndex)}-->`
+				: "";
+		}
+
+		const marker = startIndex > 0 ? activeBookMarker(lines, startIndex) : null;
+		const body = collapseBlankLines([
+			...(marker ? [marker, ""] : []),
+			...partLines,
+		]);
+		return {
+			...entry,
+			markdown: `# ${entry.title}\n\n${body.join("\n").trim()}\n`,
+		};
+	});
+}
+
 export function writeBookMarkdown(
 	doc: BookDoc,
 	outputDir: string,
-	outputFileName: string = "index.md",
+	tocEntries: SiteTocEntry[],
 ): void {
 	const bookDir = ensureBookOutputDirectory(doc, outputDir);
+	const markdown = renderBookMarkdown(doc);
 
-	const content = doc.nodes.flatMap((n) => renderBlockElement(n));
-	const lines = collapseBlankLines(content);
-	const markdown = `${lines.join("\n\n").trim()}\n`;
-
-	const outputPath = path.join(bookDir, outputFileName);
-	fs.writeFileSync(outputPath, markdown, "utf8");
+	for (const part of splitBookMarkdownBySiteToc(markdown, tocEntries)) {
+		fs.writeFileSync(
+			path.join(bookDir, part.outputFileName),
+			part.markdown,
+			"utf8",
+		);
+	}
 }

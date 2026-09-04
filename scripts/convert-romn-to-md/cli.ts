@@ -5,21 +5,49 @@ import { DOMParser } from "@xmldom/xmldom";
 import { getFileData } from "./books";
 import { writeBookMarkdown } from "./render";
 import { getChildElements } from "./tei";
-import type { BookDoc } from "./types";
+import type { BookDoc, SiteTocEntry } from "./types";
 
 const fsPromises = fs.promises;
 
-// 単一 XML をチャプター分割せずに 1 ファイルの Markdown へ変換
+function parseXml(contents: string) {
+	const parser = new DOMParser({ errorHandler: () => undefined });
+	return parser.parseFromString(
+		contents.replace(/^\uFEFF/, ""),
+		"application/xml",
+	);
+}
+
+function readSiteTocEntries(fileName: string): SiteTocEntry[] {
+	const tocPath = path.resolve(
+		process.cwd(),
+		"tipitaka-xml",
+		"tipitaka.org",
+		"romn",
+		"cscd",
+		`${fileName.slice(0, -path.extname(fileName).length)}.toc.xml`,
+	);
+	const document = parseXml(fs.readFileSync(tocPath, "utf16le"));
+	return Array.from(document.getElementsByTagName("tree"))
+		.filter((element) => element.hasAttribute("action"))
+		.map((element) => {
+			const title = element.getAttribute("text")?.trim();
+			const action = element.getAttribute("action");
+			if (!title || !action) {
+				throw new Error(`Invalid Tipitaka.org TOC entry in ${tocPath}`);
+			}
+			return {
+				title,
+				outputFileName: `${path.basename(action, path.extname(action))}.md`,
+			};
+		});
+}
+
 export async function convertXmlFileToMarkdown(
 	filePath: string,
 	outputDir: string,
 ): Promise<void> {
 	const xmlContent = await fsPromises.readFile(filePath, "utf16le");
-	const parser = new DOMParser({ errorHandler: () => undefined });
-	const document = parser.parseFromString(
-		xmlContent.replace(/^\uFEFF/, ""),
-		"application/xml",
-	);
+	const document = parseXml(xmlContent);
 	const bodies = document.getElementsByTagName("body");
 	const body = bodies.item(0);
 	if (!body) throw new Error(`No <body> found in ${filePath}`);
@@ -29,23 +57,22 @@ export async function convertXmlFileToMarkdown(
 	const lower = path.basename(filePath).toLowerCase();
 	const own = getFileData(lower);
 
-	// 章概念を持たない単純なドキュメント（書籍単位）を構築
 	const doc: BookDoc = {
 		nodes: getChildElements(body),
 		dirSegments: [...own.dirSegments],
 	};
 
-	const outputFileName = `${path.basename(filePath, path.extname(filePath))}.md`;
-	writeBookMarkdown(doc, outputDir, outputFileName);
+	writeBookMarkdown(
+		doc,
+		outputDir,
+		readSiteTocEntries(path.basename(filePath)),
+	);
 }
 
-// 入力ディレクトリ配下の XML を列挙して逐次変換
-export async function runConversionCliNoSplit(): Promise<void> {
+export async function runConversionCli(): Promise<void> {
 	const inputDir = path.resolve(process.cwd(), "tipitaka-xml/romn");
-	// 既存の分割版と混ざらないよう、出力ルートを分ける
 	const outputDir = path.resolve(process.cwd(), "tipitaka-md");
 
-	// 既存の出力ディレクトリを削除してから再作成
 	if (fs.existsSync(outputDir)) {
 		await fsPromises.rm(outputDir, { recursive: true, force: true });
 	}

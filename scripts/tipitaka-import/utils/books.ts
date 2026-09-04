@@ -14,7 +14,6 @@ const booksJsonSchema = v.object({
 			level: v.string(),
 			dirSegments: v.array(v.string()),
 			annotationTargetFileNames: v.array(v.string()),
-			chapterListTypes: v.optional(v.array(v.string())),
 		}),
 	),
 });

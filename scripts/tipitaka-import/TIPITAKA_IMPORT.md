@@ -14,11 +14,15 @@
 
 本文位置の基準は、Vipassana Research Institute の [`tipitaka-xml`](https://github.com/VipassanaTech/tipitaka-xml) にある `romn/*.xml` である。
 
+記事の境界・タイトル・ファイル名の正本は、同リポジトリのTipitaka.org用 `tipitaka.org/romn/cscd/*.toc.xml` である。原文の長さや見出しレベルから独自に分割しない。
+
 CST の段落移動は [`FormBookDisplay.cs`](https://github.com/fsnow/cst/blob/cst4-final/src/Cst4/FormBookDisplay.cs) と [`tipitaka-latn.xsl`](https://github.com/fsnow/cst/blob/cst4-final/src/Cst4/Xsl/tipitaka-latn.xsl) の挙動に合わせる。
 
 ## 現在のカタログ
 
-`books.json` は217ページを定義する。
+`books.json` は217個の原典XMLを定義する。
+
+Tipitaka.orgのTOCに従う変換結果は2,698本文ページである。複数記事へ分かれる193原典には、既存の原典ページを目次ページとして残し、その子に本文ページを置く。分割されない24原典は従来どおり本文ページを直接置く。
 
 内訳は、Mūla 61、Aṭṭhakathā 47、Ṭīkā 41、Other 68である。
 
@@ -32,11 +36,11 @@ CST の段落移動は [`FormBookDisplay.cs`](https://github.com/fsnow/cst/blob/
 
 `tipitaka_pages.text_level` は、本文ページに `MULA`、`ATTHAKATHA`、`TIKA`、`OTHER` のいずれかを保存する。
 
-ルートページとカテゴリページの `text_level` は `NULL` である。
+ルートページ、カテゴリページ、複数記事を束ねる原典目次ページの `text_level` は `NULL` である。
 
 `tipitaka_page_annotation_targets` は、注釈ページと対象ページの公式なページ単位関係を保存する。
 
-`segments` は、変換元の `book` 識別子、段落番号、同一段落番号の出現順を `source_book_code`、`source_paragraph_number`、`source_paragraph_occurrence` に保存する。
+`segments` は、変換元の `book` 識別子、章番号、段落番号、同一段落番号の出現順を `source_book_code`、`source_chapter_number`、`source_paragraph_number`、`source_paragraph_occurrence` に保存する。
 
 章番号は位置キーに使わない。
 
@@ -48,9 +52,11 @@ CST の段落移動は [`FormBookDisplay.cs`](https://github.com/fsnow/cst/blob/
 
 ## 段落リンクの解決
 
-変換時に `<div type="book" id="…">` を `<!--book:…-->` としてMarkdownへ残す。
+変換時に `<div type="book" id="…">` を `<!--book:…-->` としてMarkdownへ残す。記事先頭から原文の章見出しを除く場合は `<!--chapter:N-->` を残し、分割前の章番号を維持する。
 
 `{para:N}` は、書籍コード、直前のレベル3見出しの章番号、段落番号、出現順をロケーターとして保存し、同一段落に属する全セグメントへ付ける。
+
+`<p rend="hangnum" n="N">` は `hangnum` ブロック内に `{para:N}` を保持する。番号段落に続く `gatha` ブロックも、次の段落番号まで同じロケーターを継承する。
 
 対象側の同じ書籍・章に同じ段落アンカーが複数ある場合、画面上で注釈を対象範囲の後ろへ配置するため、最後のアンカーを選ぶ。
 
@@ -72,7 +78,7 @@ CST の段落移動は [`FormBookDisplay.cs`](https://github.com/fsnow/cst/blob/
 nix develop --command bun scripts/convert-romn-to-md/gen-books-data.ts
 ```
 
-公式XMLを `tipitaka-xml/romn` に配置し、Markdownへ変換する。
+公式XMLを `tipitaka-xml/romn` に、対応するTipitaka.orgのTOCを `tipitaka-xml/tipitaka.org/romn/cscd` に配置し、Markdownへ変換する。
 
 ```bash
 nix develop --command bun run convert:romn
@@ -89,6 +95,8 @@ nix develop --command bun run tipitaka
 
 `bun run tipitaka` はTursoへの投入後、ローカルWorkers KVの表示用Read Modelも再生成する。
 
+全Read Model生成には世代IDを付ける。DB再構築でページ・セグメントIDが再利用されても、前世代の翻訳オーバーレイは新しい本文へ適用しない。
+
 本番KVを更新する場合は、`bun scripts/tipitaka-import.ts --remote-read-model`を使う。
 
 ## 原子性と失敗記録
@@ -101,4 +109,6 @@ nix develop --command bun run tipitaka
 
 読込、変換、保存のいずれかが失敗した場合、対応する行を `FAILED` にし、終了時刻とエラーメッセージを保存する。
 
-同じ入力を再実行した場合は、`catalog_key` とセグメントハッシュを基準に更新し、古いセグメントと古い注釈リンクを削除する。
+同じ入力を再実行した場合は、`catalog_key` とセグメントハッシュを基準に更新し、古い分割ページ、古いセグメント、古い注釈リンクを削除する。
+
+既存の1ページを目次ページと複数の本文ページへ切り替える場合は、本文が一致する旧セグメントから新セグメントへ翻訳・採用状態・投票・語釈を移す。対応先のない投稿データが残る場合は、削除せずインポートを失敗させる。

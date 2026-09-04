@@ -32,6 +32,7 @@ interface ParagraphGroup {
 }
 
 interface TargetAnchor {
+	pageId: number;
 	bookCode: string | null;
 	chapterNumber: number | null;
 	paragraphNumber: string;
@@ -42,6 +43,7 @@ interface TargetAnchors {
 	anchors: TargetAnchor[];
 	prefaceSegmentId: number | null;
 	prefaceSegmentIdByBook: Map<string, number>;
+	prefaceSegmentIdByPageAndBook: Map<string, number>;
 }
 
 function paragraphGroupKey(
@@ -50,6 +52,10 @@ function paragraphGroupKey(
 	occurrence: number,
 ): string {
 	return `${bookCode ?? ""}\u0000${paragraphNumber}\u0000${occurrence}`;
+}
+
+function pageAndBookKey(pageId: number, bookCode: string): string {
+	return `${pageId}\u0000${bookCode}`;
 }
 
 function groupSourceParagraphs(segments: LocatedSegment[]): ParagraphGroup[] {
@@ -84,6 +90,7 @@ function buildTargetAnchors(
 ): TargetAnchors {
 	const anchors: TargetAnchor[] = [];
 	const prefaceSegmentIdByBook = new Map<string, number>();
+	const prefaceSegmentIdByPageAndBook = new Map<string, number>();
 	const booksWithParagraphs = new Set<string>();
 	let firstSegmentId: number | null = null;
 	let prefaceSegmentId: number | null = null;
@@ -91,12 +98,14 @@ function buildTargetAnchors(
 
 	for (const page of targetPages) {
 		const groups = new Map<string, LocatedSegment[]>();
+		const pageBooksWithParagraphs = new Set<string>();
 		for (const segment of page.segments) {
 			firstSegmentId ??= segment.id;
 			if (segment.sourceParagraphNumber !== null) {
 				hasParagraph = true;
 				if (segment.sourceBookCode) {
 					booksWithParagraphs.add(segment.sourceBookCode);
+					pageBooksWithParagraphs.add(segment.sourceBookCode);
 				}
 			} else {
 				if (!hasParagraph) prefaceSegmentId = segment.id;
@@ -105,6 +114,15 @@ function buildTargetAnchors(
 					!booksWithParagraphs.has(segment.sourceBookCode)
 				) {
 					prefaceSegmentIdByBook.set(segment.sourceBookCode, segment.id);
+				}
+				if (
+					segment.sourceBookCode &&
+					!pageBooksWithParagraphs.has(segment.sourceBookCode)
+				) {
+					prefaceSegmentIdByPageAndBook.set(
+						pageAndBookKey(page.id, segment.sourceBookCode),
+						segment.id,
+					);
 				}
 			}
 			const paragraphNumber = segment.sourceParagraphNumber;
@@ -124,6 +142,7 @@ function buildTargetAnchors(
 			const last = group[group.length - 1];
 			if (!first || !last || first.sourceParagraphNumber === null) continue;
 			anchors.push({
+				pageId: page.id,
 				bookCode: first.sourceBookCode,
 				chapterNumber: first.sourceChapterNumber,
 				paragraphNumber: first.sourceParagraphNumber,
@@ -135,6 +154,7 @@ function buildTargetAnchors(
 		anchors,
 		prefaceSegmentId: prefaceSegmentId ?? firstSegmentId,
 		prefaceSegmentIdByBook,
+		prefaceSegmentIdByPageAndBook,
 	};
 }
 
@@ -226,10 +246,15 @@ export function resolveAnnotationLinks(
 				(left, right) => left.number - right.number || left.id - right.id,
 			),
 		}));
-	const { anchors, prefaceSegmentId, prefaceSegmentIdByBook } =
-		buildTargetAnchors(orderedTargets);
+	const {
+		anchors,
+		prefaceSegmentId,
+		prefaceSegmentIdByBook,
+		prefaceSegmentIdByPageAndBook,
+	} = buildTargetAnchors(orderedTargets);
 	const links: ResolvedAnnotationLinks["links"] = [];
 	const seenLinks = new Set<string>();
+	const firstMatchedAnchorByBook = new Map<string, TargetAnchor>();
 	let matchedParagraphGroups = 0;
 	let unmatchedParagraphGroups = 0;
 
@@ -253,13 +278,24 @@ export function resolveAnnotationLinks(
 			continue;
 		}
 		matchedParagraphGroups += 1;
+		const bookCode = group.bookCode ?? "";
+		if (!firstMatchedAnchorByBook.has(bookCode)) {
+			firstMatchedAnchorByBook.set(bookCode, anchor);
+		}
 		appendLinks(anchor.segmentId, group.segmentIds);
 	}
 
 	for (const [bookCode, annotationSegmentIds] of collectPrefaceSegmentIds(
 		orderedSource,
 	)) {
+		const matchedAnchor = firstMatchedAnchorByBook.get(bookCode);
 		const targetSegmentId =
+			(matchedAnchor && bookCode
+				? prefaceSegmentIdByPageAndBook.get(
+						pageAndBookKey(matchedAnchor.pageId, bookCode),
+					)
+				: null) ??
+			matchedAnchor?.segmentId ??
 			(bookCode ? prefaceSegmentIdByBook.get(bookCode) : null) ??
 			prefaceSegmentId;
 		if (targetSegmentId !== null && targetSegmentId !== undefined) {

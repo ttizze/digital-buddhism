@@ -5,7 +5,6 @@ import * as v from "valibot";
 const bookDataSchema = v.object({
 	level: v.picklist(["Mula", "Atthakatha", "Tika", "Other"]),
 	dirSegments: v.array(v.string()),
-	chapterListTypes: v.optional(v.array(v.string())),
 });
 const booksJsonPayloadSchema = v.object({
 	generatedAt: v.string(),
