@@ -97,7 +97,10 @@ nix develop --command bun run tipitaka
 
 全Read Model生成には世代IDを付ける。DB再構築でページ・セグメントIDが再利用されても、前世代の翻訳オーバーレイは新しい本文へ適用しない。
 
-本番KVを更新する場合は、`bun scripts/tipitaka-import.ts --remote-read-model`を使う。
+本番更新でもDBインポート自体はローカルSQLiteへ行う。検証済みSQLiteを
+`turso db import`で新しいDBとして一括投入し、接続先を切り替える。
+本番KVはローカルSQLiteを読み元に`tipitaka-read-model.ts --remote`で生成する。
+詳細は`PRODUCTION_DEPLOYMENT.md`を参照する。
 
 ## 原子性と失敗記録
 

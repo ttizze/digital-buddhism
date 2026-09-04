@@ -1,51 +1,63 @@
 # Tipitakaデータの本番環境への投入方法
 
-このドキュメントでは、Tipitakaデータを本番のTurso（libSQL）DBへ投入し、Cloudflare Workers KVの表示用Read Modelを更新する手順を説明します。
+このドキュメントでは、Tipitakaデータを本番のTurso（libSQL）DBへ一括投入し、Cloudflare Workers KVの表示用Read Modelを更新する手順を説明します。
 インポートはデプロイ処理やHTTPリクエストから実行せず、データ投入を行うオペレーターの環境から明示的に実行してください。
 
 ## 概要
 
-Tipitakaインポートスクリプトは冪等性を持ちます。
-同じスクリプトを複数回実行しても、既存ページは更新され、新しいデータだけが追加されます。
-DBへの投入が完了すると、本文・目次・翻訳・注釈の表示用Read Modelを再生成します。
+本番DBをSQLiteファイルへexportし、そのローカルコピーへTipitakaデータを投入します。
+検証済みファイルを`turso db import`で新しいDBとして一括uploadし、WorkerとGitHub Actionsの接続先を切り替えます。
+旧DBはロールバック用に残します。本番Tursoへページやセグメントを逐次INSERTしてはいけません。
 
 ## 実行前の確認
 
-1. **Tursoのマイグレーション**: 本番DBへ最新のSQLite/Tursoマイグレーションを
-   適用します。
-
-   ```bash
-   bun run db:prod:migrate
-   ```
-
-   このコマンドはDrizzleのmigration journalを読み、未適用のmigrationを一件ずつ
-   Tursoのmigration transactionで適用します。
-   各migrationとjournal更新は同じtransactionで確定するため、失敗時は最後に
-   完了したmigrationから再開します。
-
-2. **接続情報**: 実行環境に次の環境変数を安全に設定します。
-   - `TURSO_DATABASE_URL`（本番Tursoの接続URL）
-   - `TURSO_AUTH_TOKEN`（本番Tursoの認証トークン）
-
-   これらの値はGit、ログ、ドキュメントへ保存しません。
-
-3. **Cloudflareの権限**: Wranglerが対象アカウントへログイン済みであり、`wrangler.jsonc`の`TIPITAKA_READ_MODELS` bindingへ書き込めることを確認します。
-
-4. **Tipitakaファイル**: `tipitaka-md*` ディレクトリと `books.json` が存在することを確認します。
-
-マイグレーションは、投入対象と同じTurso環境を指していることを確認してから実行してください。
-ローカルのSQLite DBやCIから本番DBへ接続してはいけません。
+1. Turso CLIとWranglerへログインしていること。
+2. `tipitaka-md*`ディレクトリと`books.json`が存在すること。
+3. export元の本番DB名と、重複しない新DB名を確定していること。
+4. DBファイルと作業領域を保存できる空き容量があること。
+5. 切替前にユーザー、翻訳、投票、セッションなどの更新を比較できること。
 
 ## 実行手順
 
-プロジェクトのNix開発環境内で、接続情報を読み込んだ状態で実行します。
+作業ディレクトリを作り、本番DBをSQLiteへexportします。
 
 ```bash
-bun scripts/tipitaka-import.ts --remote-read-model
+stage_dir=$(mktemp -d /tmp/digital-buddhism-import.XXXXXX)
+source_db=current-production-db
+target_db=next-production-db
+turso db export "$source_db" --output-file "$stage_dir/$target_db.db"
 ```
 
-`bun run tipitaka` はローカルの `.env` とローカルKVを使う開発用ショートカットです。
-本番投入では、誤った接続先へ書き込むことを避けるため、上記のコマンドでTurso接続先と`--remote-read-model`を明示してください。
+exportされたWALを反映し、ローカルSQLiteへmigrationとTipitakaインポートを適用します。
+
+```bash
+nix develop --command sqlite3 "$stage_dir/$target_db.db" "PRAGMA wal_checkpoint(TRUNCATE)"
+export TURSO_DATABASE_URL="file:$stage_dir/$target_db.db"
+unset TURSO_AUTH_TOKEN
+nix develop --command bun scripts/turso-migrations.ts
+nix develop --command bun scripts/tipitaka-import.ts --skip-read-model
+```
+
+`tipitaka-import.ts`は`file:`またはloopback HTTP以外のDBを拒否します。
+`--skip-read-model`はDB更新後のローカルKV生成を省略します。
+
+SQLiteの整合性、ページ・翻訳・注釈リンク件数、未解決段落グループを検査します。
+export後に本番DBのユーザーデータが更新されていないことも、切替直前に比較します。
+差分があれば切り替えず、最新exportからやり直します。
+
+検証済みSQLiteを新しいTurso DBとして一括importします。
+
+```bash
+turso db import "$stage_dir/$target_db.db" --group default
+```
+
+新DBを検査した後、ローカルSQLiteから本番KVを一括生成します。
+
+```bash
+nix develop --command bun scripts/tipitaka-read-model.ts --remote
+```
+
+export後の本番DBとの差分がないことを再確認してから、`TURSO_DATABASE_URL`と`TURSO_AUTH_TOKEN`をCloudflareでは同一のsecret bulk操作で、GitHub Actionsでも同じ新DBへ切り替えます。値を標準出力、ログ、Gitへ残してはいけません。旧DBはロールバック確認が終わるまで削除しません。
 
 Cloudflare Workersのビルド・デプロイやリクエスト処理に全量インポートを含めないでください。
 大量データの投入とRead Modelの全量生成は長時間処理になるため、オペレーターの環境から独立した作業として実行します。
@@ -54,7 +66,7 @@ Cloudflare Workersのビルド・デプロイやリクエスト処理に全量�
 
 - **処理時間**: ファイル数により異なります。数百〜数千ファイルでは長時間かかる
   可能性があります
-- **並列処理**: インポート処理は最大10ファイルずつ並列処理します
+- **並列処理**: ローカルSQLiteへのインポートは最大10ファイルずつ並列処理します
 - **ログ**: 進捗が標準出力へ記録されます
 
 ## 実行記録
@@ -87,15 +99,14 @@ Cloudflare Workersのビルド・デプロイやリクエスト処理に全量�
 `TURSO_DATABASE_URL` が実行環境へ渡っていません。接続URLをシェルへ直接書く
 のではなく、利用しているシークレット管理機能から読み込んでください。
 
-### Tursoの認証に失敗する
+### リモートDBが拒否される
 
-`TURSO_AUTH_TOKEN` の対象DB・権限・有効期限を確認してください。トークンを
-ログやエラーメッセージへ出力しないでください。
+Tipitakaインポータは本番Tursoへの逐次書き込みを許可しません。
+`TURSO_DATABASE_URL`を検証対象のローカルSQLiteファイルへ向けてください。
 
 ### 処理が途中で止まった
 
-冪等性があるため、原因を確認してから同じコマンドを再実行できます。すでに
-反映されたページは更新され、未処理のページは追加されます。
+冪等性があるため、原因を確認してからローカルSQLiteに対して同じコマンドを再実行できます。すでに反映されたページは更新され、未処理のページは追加されます。
 DBの`import_runs`と`import_files`を確認すると、失敗した実行と入力ファイルを
 特定できます。
 
@@ -113,20 +124,17 @@ overlay本体を書き込んだ後にversion pointerを切り替えるため、�
 Tipitakaデータが更新された場合は、次の順で対応します。
 
 1. 更新されたMarkdownファイルを配置する
-2. 本番Turso DBのマイグレーションが最新であることを確認する
-3. `--remote-read-model`を指定して同じインポートスクリプトを再実行する
-4. 主要ページ、件数、KV経由の本文・翻訳・注釈表示を確認する
+2. 本番DBを新しいローカルSQLiteへexportする
+3. ローカルSQLiteへmigrationとTipitakaインポートを適用する
+4. SQLiteを新しいTurso DBへ一括importする
+5. Read Modelを本番KVへ一括投入する
+6. 本番DBとの差分がないことを再確認して接続先を切り替える
+7. 主要ページ、件数、翻訳、注釈表示を確認する
 
 ## 注意事項
 
 - 初回投入前に、Turso側の容量・利用制限・バックアップ方針を確認してください
 - 実行中はプロセスを終了させないでください。長時間処理ではログを保存します
-- 本番URLの代わりにローカルの `file:` SQLite URLを使うと、本番には反映されません
+- Tipitakaインポータの接続先にはローカルの`file:` SQLite URLを使います
 - CI、ビルド、Workerのリクエスト処理へ大量データ投入を組み込まないでください
-
-```bash
-bun scripts/tipitaka-import.ts --remote-read-model 2>&1 | tee tipitaka-import-$(date +%Y%m%d-%H%M%S).log
-```
-
-ログファイルに接続情報やトークンが含まれていないことを確認し、共有リポジトリ
-へ追加しないでください。
+- 作業用SQLiteとログに認証トークンを保存しないでください

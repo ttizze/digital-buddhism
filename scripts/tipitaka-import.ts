@@ -12,6 +12,7 @@ async function main(): Promise<void> {
 			import("./tipitaka-import/run"),
 		]);
 	await runTipitakaImport();
+	if (process.argv.includes("--skip-read-model")) return;
 	await publishTipitakaReadModelsWithWrangler(
 		process.argv.includes("--remote-read-model"),
 	);
