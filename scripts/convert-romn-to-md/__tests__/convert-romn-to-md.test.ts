@@ -9,10 +9,17 @@ import { getFileData } from "../books";
 import { convertXmlFileToMarkdown } from "../cli";
 import { renderBookMarkdown, splitBookMarkdownBySiteToc } from "../render";
 import { ELEMENT_NODE, getChildElements, TEXT_NODE } from "../tei";
-import type { BookDoc } from "../types";
+import type { BookDoc, SiteTocEntry } from "../types";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const tempDirs: string[] = [];
+const sampleTocEntries: SiteTocEntry[] = [
+	{ title: "Mātikā", outputFileName: "abh01m.mul0.md" },
+	{ title: "1. Cittuppādakaṇḍaṃ", outputFileName: "abh01m.mul1.md" },
+	{ title: "2. Rūpakaṇḍaṃ", outputFileName: "abh01m.mul2.md" },
+	{ title: "3. Nikkhepakaṇḍaṃ", outputFileName: "abh01m.mul3.md" },
+	{ title: "4. Aṭṭhakathākaṇḍaṃ", outputFileName: "abh01m.mul4.md" },
+];
 
 function createTempDir(prefix: string): string {
 	const directory = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
@@ -142,7 +149,7 @@ describe("Tipitaka.org の記事境界による ROMN 変換", () => {
 		const sampleFile = path.resolve(__dirname, "fixtures", "abh01m.mul.xml");
 		const outputDir = createTempDir("site-split-convert-");
 
-		await convertXmlFileToMarkdown(sampleFile, outputDir);
+		await convertXmlFileToMarkdown(sampleFile, outputDir, sampleTocEntries);
 
 		const classification = getFileData(path.basename(sampleFile).toLowerCase());
 		const expectedDir = path.join(outputDir, ...classification.dirSegments);
@@ -163,7 +170,7 @@ describe("Tipitaka.org の記事境界による ROMN 変換", () => {
 		const sampleFile = path.resolve(__dirname, "fixtures", "abh01m.mul.xml");
 		const outputDir = createTempDir("site-split-text-");
 
-		await convertXmlFileToMarkdown(sampleFile, outputDir);
+		await convertXmlFileToMarkdown(sampleFile, outputDir, sampleTocEntries);
 
 		const classification = getFileData(path.basename(sampleFile).toLowerCase());
 		const expectedDir = path.join(outputDir, ...classification.dirSegments);
@@ -212,6 +219,7 @@ describe("Tipitaka.org の記事境界による ROMN 変換", () => {
 			convertXmlFileToMarkdown(
 				filePath,
 				createTempDir("site-split-multibody-output-"),
+				sampleTocEntries,
 			),
 		).rejects.toThrow(/Multiple <body>/);
 	});

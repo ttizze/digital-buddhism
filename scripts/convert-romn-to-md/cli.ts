@@ -45,6 +45,7 @@ function readSiteTocEntries(fileName: string): SiteTocEntry[] {
 export async function convertXmlFileToMarkdown(
 	filePath: string,
 	outputDir: string,
+	tocEntries: SiteTocEntry[],
 ): Promise<void> {
 	const xmlContent = await fsPromises.readFile(filePath, "utf16le");
 	const document = parseXml(xmlContent);
@@ -62,11 +63,7 @@ export async function convertXmlFileToMarkdown(
 		dirSegments: [...own.dirSegments],
 	};
 
-	writeBookMarkdown(
-		doc,
-		outputDir,
-		readSiteTocEntries(path.basename(filePath)),
-	);
+	writeBookMarkdown(doc, outputDir, tocEntries);
 }
 
 export async function runConversionCli(): Promise<void> {
@@ -84,6 +81,10 @@ export async function runConversionCli(): Promise<void> {
 
 	for (const name of xmlFiles) {
 		const filePath = path.join(inputDir, name);
-		await convertXmlFileToMarkdown(filePath, outputDir);
+		await convertXmlFileToMarkdown(
+			filePath,
+			outputDir,
+			readSiteTocEntries(name),
+		);
 	}
 }
