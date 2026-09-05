@@ -12,8 +12,6 @@ const segmentGlossUnitSchema = v.object({
 	currentUserVoteIsUpvote: v.nullable(v.boolean()),
 });
 
-const segmentGlossUnitsSchema = v.array(segmentGlossUnitSchema);
-
 const segmentGlossVoteResponseSchema = v.object({
 	success: v.literal(true),
 	data: v.object({
@@ -30,8 +28,12 @@ export type SegmentGlossVoteResponse = v.InferOutput<
 	typeof segmentGlossVoteResponseSchema
 >;
 
-export const parseSegmentGlossUnits = v.parser(segmentGlossUnitsSchema);
-
 export const parseSegmentGlossVoteResponse = v.parser(
 	segmentGlossVoteResponseSchema,
+);
+
+export const parseSegmentGlossVotes = v.parser(
+	v.array(
+		v.pick(segmentGlossUnitSchema, ["id", "point", "currentUserVoteIsUpvote"]),
+	),
 );

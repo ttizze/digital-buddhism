@@ -1,5 +1,5 @@
 import { buildAlternates } from "@/app/_lib/seo-helpers";
-import { getMessages } from "@/app/_constants/messages";
+import { getMessages } from "@/app/_constants/messages.server";
 
 export function getProfileMetadata(
 	locale: string,

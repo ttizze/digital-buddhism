@@ -1,5 +1,5 @@
 import { ChevronRight } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
 export type TreeNode = {
 	id: string | number;
@@ -22,6 +22,7 @@ export function TreeNodeItem({
 	isActive = false,
 	renderChildren,
 }: TreeNodeItemProps) {
+	const [open, setOpen] = useState(isOpen);
 	if (node.children.length === 0) {
 		return (
 			<li
@@ -37,7 +38,8 @@ export function TreeNodeItem({
 		<li>
 			<details
 				className="open:[&>summary>svg]:rotate-90 [&>summary>svg]:transition-transform [&>summary>svg]:duration-200 [&>summary>svg]:ease-in-out"
-				open={isOpen}
+				open={open}
+				onToggle={(event) => setOpen(event.currentTarget.open)}
 			>
 				<summary
 					aria-current={isActive ? "page" : undefined}
@@ -46,9 +48,11 @@ export function TreeNodeItem({
 					<ChevronRight aria-hidden="true" className="size-4" />
 					<div className="flex-1">{node.label}</div>
 				</summary>
-				<ul className="mt-2 ml-2 space-y-2 border-l border-dashed border-border/70 pl-3 list-none">
-					{renderChildren(node.children)}
-				</ul>
+				{open && (
+					<ul className="mt-2 ml-2 space-y-2 border-l border-dashed border-border/70 pl-3 list-none">
+						{renderChildren(node.children)}
+					</ul>
+				)}
 			</details>
 		</li>
 	);

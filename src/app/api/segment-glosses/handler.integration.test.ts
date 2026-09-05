@@ -98,7 +98,7 @@ describe("/api/segment-glosses", () => {
 		getCurrentUser.mockReset();
 	});
 
-	it("GETはページ・言語で選択中の語義だけを返し、自分の票を含める", async () => {
+	it("GETは選択中の語義の得票と本人の投票状態だけを返す", async () => {
 		const { page, selectedUnit, voter } = await setupGlossData();
 		await db
 			.insertInto("segmentGlossUnitVotes")
@@ -119,12 +119,20 @@ describe("/api/segment-glosses", () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get("Cache-Control")).toBe("private, no-store");
 		expect(await response.json()).toStrictEqual([
-			expect.objectContaining({
+			{
 				id: selectedUnit.id,
-				gloss: "なすべきこと",
+				point: 0,
 				currentUserVoteIsUpvote: true,
-			}),
+			},
 		]);
+	});
+
+	it("GETは匿名ユーザーを拒否する", async () => {
+		getCurrentUser.mockResolvedValue(null);
+		const response = await getSegmentGlosses(
+			new Request("http://localhost/api/segment-glosses?pageId=1&locale=ja"),
+		);
+		expect(response.status).toBe(401);
 	});
 
 	it("PATCHは既存投票と同じ規則で作成・取消・反対票からの切替を行う", async () => {

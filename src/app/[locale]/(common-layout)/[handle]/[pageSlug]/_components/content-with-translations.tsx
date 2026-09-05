@@ -46,6 +46,7 @@ export function ContentWithTranslations({
 	const { data: glossUnits, mutate: mutateGlossUnits } = usePageSegmentGlosses(
 		pageDetail.id,
 		locale,
+		body,
 	);
 	const glossUnitsBySegment = new Map<number, NonNullable<typeof glossUnits>>();
 	for (const unit of glossUnits ?? []) {

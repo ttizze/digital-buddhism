@@ -1,83 +1,56 @@
-name: CI
-
+name: Deploy read model v2
 on:
-  push:
-    branches:
-      - main
-  pull_request:
   workflow_dispatch:
-
 permissions:
   contents: read
-
+concurrency:
+  group: production-migration
+  cancel-in-progress: false
 jobs:
-  ci-check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1.18.0
-        with:
-          node-version: '22'
-          cache: true
-
-      - name: Install dependencies
-        run: vp install
-
-      - name: Restore Vite Task cache
-        id: vite-task-cache
-        uses: actions/cache/restore@v6
-        with:
-          path: node_modules/.vite/task-cache
-          key: vite-task-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: |
-            vite-task-${{ runner.os }}-${{ runner.arch }}-
-
-      - name: Check with Vite+
-        run: vp run check:ci
-
-      - name: Run tests with Vite+
-        env:
-          TZ: 'Asia/Tokyo'
-        run: vp run test:ci
-
-      - name: Build with Vite+
-        env:
-          WORKERS_CI_BRANCH: ci
-        run: vp run build:ci
-
-      - name: Save Vite Task cache
-        if: success()
-        uses: actions/cache/save@v6
-        with:
-          path: node_modules/.vite/task-cache
-          key: ${{ steps.vite-task-cache.outputs.cache-primary-key }}
-
-  migrate-production:
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    needs: ci-check
+  deploy:
     runs-on: ubuntu-latest
     environment: production
-    concurrency:
-      group: production-migration
-      cancel-in-progress: false
+    timeout-minutes: 90
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1.18.0
+      - uses: actions/checkout@v4
+      - uses: voidzero-dev/setup-vp@v1.18.0
         with:
           node-version: '22'
           cache: true
-
-      - name: Install dependencies
-        run: vp install
-
-      - name: Migrate production database
+      - run: vp install
+      - name: Verify production target and preserve previous deployment ID
+        run: bun .github/deployment/read-model-v2.ts preflight
+      - name: Validate application
+        run: |
+          bun run typecheck
+          bun run format:check
+          bun run lint
+          bun run test --run
+          bun run build
+      - name: Apply production migrations
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
-        run: vp run db:prod:migrate
+        run: bun scripts/turso-migrations.ts
+      - name: Generate v2 KV from current production snapshot
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: bun .github/deployment/read-model-v2.ts publish
+      - name: Deploy Worker after all v2 snapshots exist
+        run: bunx wrangler deploy
+      - name: Verify live home and article
+        run: |
+          curl --fail --silent --show-error "$VITE_PUBLIC_DOMAIN/en/tipitaka" -o /tmp/live-home.html
+          curl --fail --silent --show-error "$VITE_PUBLIC_DOMAIN/ja/tipitaka/tipitaka-01-tipitaka-mula-01-sutta-pitaka" -o /tmp/live-article.html
+          python3 - <<'PY'
+          from pathlib import Path
+          home=Path('/tmp/live-home.html').read_text()
+          article=Path('/tmp/live-article.html').read_text()
+          assert 'Tipiṭaka' in home
+          assert '<article' in article and 'Sutta Pitaka' in article
+          print('Live home and Sutta Pitaka article returned complete HTML.')
+          PY

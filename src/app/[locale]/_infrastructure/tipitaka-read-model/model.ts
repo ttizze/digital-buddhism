@@ -1,10 +1,11 @@
+import type { SegmentGlossUnit } from "@/app/api/segment-glosses/_domain/segment-glosses";
 import type { TipitakaPageTreeNode } from "@/app/[locale]/(common-layout)/_components/tipitaka-page-list/domain/extract-tipitaka-page-tree";
 import type { PageContentData } from "@/app/[locale]/(common-layout)/[handle]/[pageSlug]/_service/load-page-content-data";
 import type { PageDetail } from "@/app/[locale]/types";
 
 export type { PageContentData };
 
-export const TIPITAKA_READ_MODEL_SCHEMA_VERSION = 1;
+export const TIPITAKA_READ_MODEL_SCHEMA_VERSION = 2;
 
 type SerializedPageDetail = Omit<PageDetail, "createdAt" | "updatedAt"> & {
 	createdAt: number;
@@ -14,9 +15,7 @@ type SerializedPageDetail = Omit<PageDetail, "createdAt" | "updatedAt"> & {
 export type PageBaseSnapshot = {
 	schemaVersion: typeof TIPITAKA_READ_MODEL_SCHEMA_VERSION;
 	generatedAt: string;
-	/** Legacy snapshots created before generation isolation omit this field. */
 	generation?: string;
-	translationPageIds: number[];
 	data: Omit<PageContentData, "pageDetail"> & {
 		pageDetail: SerializedPageDetail;
 	};
@@ -31,7 +30,6 @@ export type PageStateSnapshot = {
 export type PageAnnotationsSnapshot = {
 	schemaVersion: typeof TIPITAKA_READ_MODEL_SCHEMA_VERSION;
 	generatedAt: string;
-	/** Legacy snapshots created before generation isolation omit this field. */
 	generation?: string;
 	translationPageIds: number[];
 	annotationTypes: PageContentData["annotationTypes"];
@@ -44,7 +42,6 @@ export type PageAnnotationsSnapshot = {
 export type HomeBaseSnapshot = {
 	schemaVersion: typeof TIPITAKA_READ_MODEL_SCHEMA_VERSION;
 	generatedAt: string;
-	/** Legacy snapshots created before generation isolation omit this field. */
 	generation?: string;
 	rootPageId: number;
 	tipitakaPages: TipitakaPageTreeNode[];
@@ -53,15 +50,14 @@ export type HomeBaseSnapshot = {
 export type TranslationOverlay = {
 	schemaVersion: typeof TIPITAKA_READ_MODEL_SCHEMA_VERSION;
 	generatedAt: string;
-	/** Legacy snapshots created before generation isolation omit this field. */
 	generation?: string;
 	locale: string;
 	translations: Record<string, string>;
+	glossUnits: Omit<SegmentGlossUnit, "currentUserVoteIsUpvote">[];
 };
 
 export type TranslationPointer = {
 	schemaVersion: typeof TIPITAKA_READ_MODEL_SCHEMA_VERSION;
-	/** Legacy snapshots created before generation isolation omit this field. */
 	generation?: string;
 	revision: string;
 	previousRevision?: string;
@@ -90,19 +86,19 @@ function readModelKey<Snapshot extends TipitakaReadModelSnapshot>(
 
 export function pageBaseKey(slug: string) {
 	return readModelKey<PageBaseSnapshot>(
-		`tipitaka/v1/pages/${encodeURIComponent(slug)}/base`,
+		`tipitaka/v2/pages/${encodeURIComponent(slug)}/base`,
 	);
 }
 
 export function pageAnnotationsKey(slug: string) {
 	return readModelKey<PageAnnotationsSnapshot>(
-		`tipitaka/v1/pages/${encodeURIComponent(slug)}/annotations`,
+		`tipitaka/v2/pages/${encodeURIComponent(slug)}/annotations`,
 	);
 }
 
 export function pageTranslationPointerKey(pageId: number, locale: string) {
 	return readModelKey<TranslationPointer>(
-		`tipitaka/v1/translations/${encodeURIComponent(locale)}/${pageId}/current`,
+		`tipitaka/v2/translations/${encodeURIComponent(locale)}/${pageId}/current`,
 	);
 }
 
@@ -112,25 +108,25 @@ export function pageTranslationKey(
 	revision: string,
 ) {
 	return readModelKey<TranslationOverlay>(
-		`tipitaka/v1/translations/${encodeURIComponent(locale)}/${pageId}/${revision}`,
+		`tipitaka/v2/translations/${encodeURIComponent(locale)}/${pageId}/${revision}`,
 	);
 }
 
 export function homeBaseKey() {
-	return readModelKey<HomeBaseSnapshot>("tipitaka/v1/home/base");
+	return readModelKey<HomeBaseSnapshot>("tipitaka/v2/home/base");
 }
 export function pageStateKey(pageId: number) {
-	return readModelKey<PageStateSnapshot>(`tipitaka/v1/pages/${pageId}/state`);
+	return readModelKey<PageStateSnapshot>(`tipitaka/v2/pages/${pageId}/state`);
 }
 
 export function homeTranslationPointerKey(locale: string) {
 	return readModelKey<TranslationPointer>(
-		`tipitaka/v1/home/translations/${encodeURIComponent(locale)}/current`,
+		`tipitaka/v2/home/translations/${encodeURIComponent(locale)}/current`,
 	);
 }
 
 export function homeTranslationKey(locale: string, revision: string) {
 	return readModelKey<TranslationOverlay>(
-		`tipitaka/v1/home/translations/${encodeURIComponent(locale)}/${revision}`,
+		`tipitaka/v2/home/translations/${encodeURIComponent(locale)}/${revision}`,
 	);
 }

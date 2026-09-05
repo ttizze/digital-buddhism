@@ -68,12 +68,19 @@ const pageData = {
 
 describe("getPageDetailData", () => {
 	beforeEach(() => {
-		readPageContentDataMock.mockReset().mockResolvedValue(pageData);
+		readPageContentDataMock.mockReset().mockResolvedValue({
+			metadata: {
+				pageDetail: pageData.pageDetail,
+				description: pageData.description,
+				completedTranslationLocales: [],
+			},
+			content: Promise.resolve(pageData),
+		});
 		setResponseHeadersMock.mockReset();
 	});
 
 	it("変換済みの描画データだけを返す", async () => {
-		const result = await getPageDetailData({ data: input });
+		const result = await (await getPageDetailData({ data: input }))?.content;
 
 		expect(result?.pageDetail).not.toHaveProperty("mdastJson");
 		expect(result?.pageDetail).not.toHaveProperty("segments");
