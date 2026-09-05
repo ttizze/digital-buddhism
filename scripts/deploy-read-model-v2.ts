@@ -21,6 +21,17 @@ async function cloudflare(path: string) {
 	return body.result;
 }
 if (process.argv[2] === "preflight") {
+	const namespaces = await cloudflare("storage/kv/namespaces");
+	if (
+		!namespaces.some(
+			(namespace: { id: string }) =>
+				namespace.id === "b4d21330448b4df894181807f4481543",
+		)
+	) {
+		throw new Error(
+			"The deployment token cannot access the configured production KV namespace",
+		);
+	}
 	const domains = (await cloudflare("workers/domains")).filter(
 		(domain: { service: string }) => domain.service === "digital-buddhism",
 	);
