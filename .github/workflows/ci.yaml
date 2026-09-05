@@ -11,11 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 90
+    defaults:
+      run:
+        shell: nix develop --command bash -e {0}
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
       - uses: voidzero-dev/setup-vp@v1.18.0
         with:
           node-version: '22'
