@@ -1,4 +1,10 @@
-import { ClientOnly, createFileRoute, notFound } from "@tanstack/react-router";
+import {
+	Await,
+	ClientOnly,
+	createFileRoute,
+	notFound,
+} from "@tanstack/react-router";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PUBLIC_PAGE_CACHE_HEADERS } from "@/app/_constants/public-page-cache";
 import { TIPITAKA_SOURCE_LOCALE } from "@/app/[locale]/_domain/tipitaka-page-visibility";
 import { FloatingControls } from "@/app/[locale]/(common-layout)/_components/floating-controls/floating-controls";
@@ -20,9 +26,10 @@ export const Route = createFileRoute("/$locale/_common/tipitaka_/$pageSlug")({
 		if (!loaderData) return {};
 
 		const metadata = buildPageMetadata({
-			completedTranslationLocales: loaderData.completedTranslationLocales,
-			description: loaderData.description,
-			pageDetail: loaderData.pageDetail,
+			completedTranslationLocales:
+				loaderData.metadata.completedTranslationLocales,
+			description: loaderData.metadata.description,
+			pageDetail: loaderData.metadata.pageDetail,
 			locale: params.locale,
 		});
 
@@ -58,36 +65,62 @@ export const Route = createFileRoute("/$locale/_common/tipitaka_/$pageSlug")({
 		};
 	},
 	headers: () => PUBLIC_PAGE_CACHE_HEADERS,
+	pendingComponent: PageDetailSkeleton,
 	component: PageDetailRoute,
 });
 
 function PageDetailRoute() {
 	const { locale } = Route.useParams();
-	const data = Route.useLoaderData();
-	const body = parsePageContentBody(data.body);
+	const { content } = Route.useLoaderData();
 
 	return (
-		<>
-			<PageContent
-				body={body}
-				childPages={data.childPages}
-				description={data.description}
-				floatingControls={
+		<Await promise={content} fallback={<PageDetailSkeleton />}>
+			{(data) => (
+				<>
+					<PageContent
+						body={parsePageContentBody(data.body)}
+						childPages={data.childPages}
+						description={data.description}
+						floatingControls={
+							<ClientOnly fallback={null}>
+								<FloatingControls
+									annotationTypes={data.annotationTypes}
+									sourceLocale={TIPITAKA_SOURCE_LOCALE}
+									userLocale={locale}
+								/>
+							</ClientOnly>
+						}
+						locale={locale}
+						navigationData={data.navigationData}
+						pageDetail={data.pageDetail}
+					/>
 					<ClientOnly fallback={null}>
-						<FloatingControls
-							annotationTypes={data.annotationTypes}
-							sourceLocale={TIPITAKA_SOURCE_LOCALE}
-							userLocale={locale}
-						/>
+						<TranslationFormOnClick />
 					</ClientOnly>
-				}
-				locale={locale}
-				navigationData={data.navigationData}
-				pageDetail={data.pageDetail}
-			/>
-			<ClientOnly fallback={null}>
-				<TranslationFormOnClick />
-			</ClientOnly>
-		</>
+				</>
+			)}
+		</Await>
+	);
+}
+
+function PageDetailSkeleton() {
+	return (
+		<div
+			aria-busy="true"
+			className="mx-auto mb-20 w-full max-w-prose space-y-8"
+		>
+			<div aria-hidden="true" className="space-y-8">
+				<Skeleton className="h-5 w-48 max-w-full" />
+				<Skeleton className="h-10 w-3/4" />
+				{[0, 1, 2].map((paragraph) => (
+					<div key={paragraph} className="space-y-3">
+						<Skeleton className="h-5 w-full" />
+						<Skeleton className="h-5 w-full" />
+						<Skeleton className="h-5 w-5/6" />
+						<Skeleton className="h-5 w-2/3" />
+					</div>
+				))}
+			</div>
+		</div>
 	);
 }

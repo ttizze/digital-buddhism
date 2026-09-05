@@ -97,7 +97,10 @@ describe("Tipitaka read model", () => {
 		]);
 
 		const [home, content] = await runWithTipitakaReadModelStore(store, () =>
-			Promise.all([readHomeData("ja"), readPageContentData(page.slug, "ja")]),
+			Promise.all([
+				readHomeData("ja"),
+				readPageContentData(page.slug, "ja").then((page) => page?.content),
+			]),
 		);
 		expect(home?.tipitakaPages[0]?.titleTranslationText).toBe("翻訳題");
 		expect(content?.pageDetail.title).toBe("Source title - 翻訳題");
@@ -120,7 +123,7 @@ describe("Tipitaka read model", () => {
 
 		const contentDuringPropagation = await runWithTipitakaReadModelStore(
 			store,
-			() => readPageContentData(page.slug, "ja"),
+			() => readPageContentData(page.slug, "ja").then((page) => page?.content),
 		);
 		expect(
 			contentDuringPropagation?.pageDetail.segments[1]?.translationText,
@@ -149,7 +152,9 @@ describe("Tipitaka read model", () => {
 			store,
 			() =>
 				Promise.all([
-					readPageContentData(targetPage.slug, "ja"),
+					readPageContentData(targetPage.slug, "ja").then(
+						(page) => page?.content,
+					),
 					readPageAnnotations(targetPage.slug, "ja"),
 				]),
 		);
@@ -273,7 +278,7 @@ describe("Tipitaka read model", () => {
 		await publishAllTipitakaReadModels(store);
 
 		const content = await runWithTipitakaReadModelStore(store, () =>
-			readPageContentData(root.slug, "ja"),
+			readPageContentData(root.slug, "ja").then((page) => page?.content),
 		);
 		expect(content?.pageDetail.segments[0]?.translationText).toBeNull();
 	});

@@ -17,7 +17,12 @@ export const getPageDetailData = createServerFn({ method: "GET" })
 	.handler(async ({ data }) => {
 		setPublicPageHeaders();
 		const page = await readPageContentData(data.pageSlug, data.locale);
-		return page ? buildPageContentView(page) : null;
+		return page
+			? {
+					metadata: page.metadata,
+					content: page.content.then(buildPageContentView),
+				}
+			: null;
 	});
 
 export const getPageMarkdownData = createServerFn({ method: "GET" })
@@ -25,7 +30,9 @@ export const getPageMarkdownData = createServerFn({ method: "GET" })
 	.handler(async ({ data }) => {
 		setPublicPageHeaders();
 		const page = await readPageContentData(data.pageSlug, data.locale);
-		return page ? mdastToMarkdown(page.pageDetail.mdastJson) : null;
+		return page
+			? mdastToMarkdown((await page.content).pageDetail.mdastJson)
+			: null;
 	});
 
 function setPublicPageHeaders(): void {
