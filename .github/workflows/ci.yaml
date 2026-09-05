@@ -45,7 +45,7 @@ jobs:
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
         run: bun scripts/deploy-read-model-v2.ts publish
       - name: Deploy Worker after all v2 snapshots exist
-        run: bunx wrangler deploy
+        run: bunx wrangler deploy --keep-vars
       - name: Verify live home and article
         run: |
           curl --fail --silent --show-error "$VITE_PUBLIC_DOMAIN/en/tipitaka" -o /tmp/live-home.html
