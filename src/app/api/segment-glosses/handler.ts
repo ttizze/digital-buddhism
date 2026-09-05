@@ -8,7 +8,7 @@ import { withAuthedFormData } from "@/app/api/_utils/with-authed-form-data";
 import { privateJsonResponse } from "@/app/api/_utils/with-authed-request";
 import { db } from "@/db";
 import { handleGlossUnitVote } from "./_db/mutation.server";
-import { parseSegmentGlossUnits } from "./_domain/segment-glosses";
+import { parseSegmentGlossVotes } from "./_domain/segment-glosses";
 
 const getSchema = v.object({
 	pageId: positiveIntegerFromString,
@@ -33,32 +33,26 @@ export async function getSegmentGlosses(request: Request): Promise<Response> {
 	}
 
 	const currentUser = await getCurrentUserFromHeaders(request.headers);
+	if (!currentUser)
+		return privateJsonResponse({ message: "Unauthorized" }, { status: 401 });
 	const { pageId, locale } = validation.output;
 
 	try {
 		const glossUnits = await db
 			.selectFrom("selectedSegmentGlossSets as selected")
-			.innerJoin("segmentGlossSets as glossSet", (join) =>
-				join
-					.onRef("glossSet.id", "=", "selected.glossSetId")
-					.onRef("glossSet.segmentId", "=", "selected.segmentId")
-					.onRef("glossSet.locale", "=", "selected.locale"),
+			.innerJoin(
+				"segmentGlossUnits as unit",
+				"unit.glossSetId",
+				"selected.glossSetId",
 			)
-			.innerJoin("segmentGlossUnits as unit", "unit.glossSetId", "glossSet.id")
 			.innerJoin("segments as segment", "segment.id", "selected.segmentId")
 			.leftJoin("segmentGlossUnitVotes as vote", (join) =>
 				join
 					.onRef("vote.glossUnitId", "=", "unit.id")
-					.on("vote.userId", "=", currentUser?.id ?? ""),
+					.on("vote.userId", "=", currentUser.id),
 			)
 			.select([
 				"unit.id",
-				"selected.segmentId",
-				"unit.position",
-				"unit.startOffset",
-				"unit.endOffset",
-				"unit.surface",
-				"unit.gloss",
 				"unit.point",
 				"vote.isUpvote as currentUserVoteIsUpvote",
 			])
@@ -68,7 +62,7 @@ export async function getSegmentGlosses(request: Request): Promise<Response> {
 			.orderBy("unit.position")
 			.execute();
 
-		return privateJsonResponse(parseSegmentGlossUnits(glossUnits), {});
+		return privateJsonResponse(parseSegmentGlossVotes(glossUnits), {});
 	} catch (error) {
 		console.error("Error fetching segment glosses:", error);
 		return privateJsonResponse(

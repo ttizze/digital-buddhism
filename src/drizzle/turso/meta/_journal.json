@@ -113,6 +113,13 @@
       "when": 1788343359469,
       "tag": "0015_abnormal_morph",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1788607031908,
+      "tag": "0016_gloss_read_model",
+      "breakpoints": true
     }
   ]
 }

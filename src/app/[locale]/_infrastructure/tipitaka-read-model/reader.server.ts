@@ -150,20 +150,25 @@ export async function readPageContentData(
 	if (!baseValue) return null;
 	const base: PageBaseSnapshot = baseValue;
 	const pageId = base.data.pageDetail.id;
-	const overlays = base.translationPageIds.map((id) =>
-		readPageTranslationOverlay(id, locale, base.generation),
-	);
-	// Track failures while metadata loads; the deferred content rethrows them.
-	const settledOverlays = Promise.allSettled(overlays);
-	const [stateValue, pageOverlay] = await Promise.all([
+	const rootPageId = base.data.navigationData?.rootNode.id;
+	// Attach rejection handling immediately while critical metadata is loading.
+	// A failed deferred lookup is rethrown by content and reaches the route boundary.
+	const rootOverlayResult = Promise.allSettled([
+		rootPageId !== undefined && rootPageId !== pageId
+			? readPageTranslationOverlay(rootPageId, locale, base.generation)
+			: null,
+	]);
+	const [stateValue, pageOverlay, homeOverlay] = await Promise.all([
 		store.get(pageStateKey(pageId)),
-		overlays[base.translationPageIds.indexOf(pageId)],
+		readPageTranslationOverlay(pageId, locale, base.generation),
+		readHomeTranslationOverlay(locale, base.generation),
 	]);
 	const titleSegment = base.data.pageDetail.segments.find(
 		(segment) => segment.number === 0,
 	);
 	const titleTranslation = titleSegment
-		? pageOverlay?.translations[String(titleSegment.id)]
+		? (pageOverlay?.translations[String(titleSegment.id)] ??
+			homeOverlay?.translations[String(titleSegment.id)])
 		: undefined;
 	const title = titleSegment
 		? titleTranslation
@@ -179,18 +184,19 @@ export async function readPageContentData(
 	};
 	return {
 		metadata,
-		content: settledOverlays.then((results) => {
-			const translations: Record<string, string> = {};
-			for (const result of results) {
-				if (result.status === "rejected") throw result.reason;
-				if (result.value)
-					Object.assign(translations, result.value.translations);
-			}
+		content: rootOverlayResult.then(([result]) => {
+			if (result.status === "rejected") throw result.reason;
+			const translations = {
+				...homeOverlay?.translations,
+				...result.value?.translations,
+				...pageOverlay?.translations,
+			};
 			return applyPageContentTranslations(
 				base,
 				translations,
 				title,
 				stateValue,
+				pageOverlay,
 			);
 		}),
 	};
@@ -201,9 +207,20 @@ function applyPageContentTranslations(
 	translations: Readonly<Record<string, string>>,
 	title: string,
 	stateValue: PageStateSnapshot | null,
+	pageOverlay: TranslationOverlay | null,
 ): PageContentData {
+	const glossUnitsBySegment = new Map<
+		number,
+		NonNullable<PageContentData["pageDetail"]["segments"][number]["glossUnits"]>
+	>();
+	for (const unit of pageOverlay?.glossUnits ?? []) {
+		const units = glossUnitsBySegment.get(unit.segmentId) ?? [];
+		units.push({ ...unit, currentUserVoteIsUpvote: null });
+		glossUnitsBySegment.set(unit.segmentId, units);
+	}
 	for (const segment of base.data.pageDetail.segments) {
 		segment.translationText = translations[String(segment.id)] ?? null;
+		segment.glossUnits = glossUnitsBySegment.get(segment.id);
 		applyAnnotationSegmentTranslations(segment.annotations, translations);
 	}
 	base.data.pageDetail.title = title;

@@ -46,8 +46,14 @@ export async function queryTranslationPageLocales(): Promise<
 		.selectFrom("segmentTranslations")
 		.innerJoin("segments", "segments.id", "segmentTranslations.segmentId")
 		.select(["segments.tipitakaPageId as pageId", "segmentTranslations.locale"])
+		.union(
+			db
+				.selectFrom("selectedSegmentGlossSets as selected")
+				.innerJoin("segments", "segments.id", "selected.segmentId")
+				.select(["segments.tipitakaPageId as pageId", "selected.locale"]),
+		)
 		.distinct()
-		.orderBy("segments.tipitakaPageId")
+		.orderBy("pageId")
 		.orderBy("segmentTranslations.locale")
 		.execute();
 }
@@ -99,4 +105,33 @@ export async function queryBestTranslationTextsForPage(
 		translations[key] ??= row.text;
 	}
 	return translations;
+}
+
+export async function querySelectedGlossUnitsForPage(
+	pageId: number,
+	locale: string,
+) {
+	return db
+		.selectFrom("selectedSegmentGlossSets as selected")
+		.innerJoin(
+			"segmentGlossUnits as unit",
+			"unit.glossSetId",
+			"selected.glossSetId",
+		)
+		.innerJoin("segments as segment", "segment.id", "selected.segmentId")
+		.select([
+			"unit.id",
+			"selected.segmentId",
+			"unit.position",
+			"unit.startOffset",
+			"unit.endOffset",
+			"unit.surface",
+			"unit.gloss",
+			"unit.point",
+		])
+		.where("segment.tipitakaPageId", "=", pageId)
+		.where("selected.locale", "=", locale)
+		.orderBy("selected.segmentId")
+		.orderBy("unit.position")
+		.execute();
 }

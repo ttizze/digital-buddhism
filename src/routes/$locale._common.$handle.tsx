@@ -1,7 +1,6 @@
 import { ClientOnly, createFileRoute, notFound } from "@tanstack/react-router";
 import * as v from "valibot";
 import { FloatingControls } from "@/app/[locale]/(common-layout)/_components/floating-controls/floating-controls";
-import { getProfileMetadata } from "@/app/[locale]/(common-layout)/[handle]/metadata";
 import { ProfilePagePresentation } from "@/app/[locale]/(common-layout)/[handle]/presentation";
 import { getHandleData } from "./$locale/-handle-data";
 
@@ -36,15 +35,12 @@ export const Route = createFileRoute("/$locale/_common/$handle")({
 		}
 		return data;
 	},
-	head: ({ loaderData, params }) => {
+	head: ({ loaderData }) => {
 		if (!loaderData) {
 			return {};
 		}
 
-		const { title, description, image, alternates } = getProfileMetadata(
-			params.locale,
-			loaderData.pageOwner,
-		);
+		const { title, description, image, alternates } = loaderData.metadata;
 		return {
 			meta: [
 				{ title },

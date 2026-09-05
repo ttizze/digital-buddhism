@@ -3,6 +3,7 @@ import { setResponseHeader } from "@tanstack/react-start/server";
 import * as v from "valibot";
 import { getCurrentUser } from "@/app/_service/auth-server";
 import { fetchProfilePage } from "@/app/[locale]/(common-layout)/[handle]/_service/profile";
+import { getProfileMetadata } from "@/app/[locale]/(common-layout)/[handle]/metadata";
 import { supportedLocaleSchema } from "./-supported-locale-schema";
 
 const handleDataInput = v.object({
@@ -19,9 +20,15 @@ export const getHandleData = createServerFn({ method: "GET" })
 
 		const currentUser = await getCurrentUser();
 
-		return fetchProfilePage({
+		const profile = await fetchProfilePage({
 			currentUser: currentUser ? { handle: currentUser.handle } : null,
 			handle: data.handle,
 			page: data.page,
 		});
+		return profile
+			? {
+					...profile,
+					metadata: getProfileMetadata(data.locale, profile.pageOwner),
+				}
+			: null;
 	});

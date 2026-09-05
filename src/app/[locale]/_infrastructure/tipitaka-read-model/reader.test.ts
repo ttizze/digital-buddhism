@@ -23,7 +23,6 @@ function createDeferredPageStore() {
 		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
 		generatedAt: "2026-01-01",
 		generation: "test",
-		translationPageIds: [1, 2],
 		data: {
 			pageDetail: {
 				id: 2,

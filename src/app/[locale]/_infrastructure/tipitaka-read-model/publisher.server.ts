@@ -23,6 +23,7 @@ import {
 } from "./model";
 import {
 	queryBestTranslationTextsForPage,
+	querySelectedGlossUnitsForPage,
 	queryReadModelPages,
 	queryTipitakaRootPageId,
 	queryTranslationLocales,
@@ -74,16 +75,6 @@ function clearTreeTranslations(nodes: TranslatableTreeNode[]): void {
 	}
 }
 
-function collectTreePageIds(
-	nodes: readonly TranslatableTreeNode[],
-	pageIds: Set<number>,
-): void {
-	for (const node of nodes) {
-		pageIds.add(node.id);
-		collectTreePageIds(node.children, pageIds);
-	}
-}
-
 function collectTreeTranslations(
 	nodes: readonly TranslatableTreeNode[],
 	translations: Record<string, string>,
@@ -118,26 +109,28 @@ async function writeTranslationOverlay({
 	keyForRevision,
 	locale,
 	generation,
-	loadTranslations,
+	loadOverlay,
 }: {
 	store: TipitakaReadModelStore;
 	pointerKey: ReadModelKey<TranslationPointer>;
 	keyForRevision: (revision: string) => ReadModelKey<TranslationOverlay>;
 	locale: string;
 	generation: string | undefined;
-	loadTranslations: () => Promise<Record<string, string>>;
+	loadOverlay: () => Promise<
+		Pick<TranslationOverlay, "translations" | "glossUnits">
+	>;
 }): Promise<void> {
 	const revision = crypto.randomUUID();
-	const [previousRevision, translations] = await Promise.all([
+	const [previousRevision, overlay] = await Promise.all([
 		readCurrentTranslationRevision(store, pointerKey, generation),
-		loadTranslations(),
+		loadOverlay(),
 	]);
 	const snapshot: TranslationOverlay = {
 		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
 		generatedAt: new Date().toISOString(),
 		generation,
 		locale,
-		translations,
+		...overlay,
 	};
 	const pointer: TranslationPointer = {
 		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
@@ -158,7 +151,6 @@ export async function publishPageBase(
 	if (!pageDetail) throw new Error(`Tipitaka page not found: ${slug}`);
 
 	const data = await loadPageContentData(pageDetail, READ_MODEL_SOURCE_LOCALE);
-	const translationPageIds = new Set<number>([pageDetail.id]);
 	const annotationTranslationPageIds = new Set<number>();
 	const annotationsByTargetSegmentId: PageAnnotationsSnapshot["annotationsByTargetSegmentId"] =
 		{};
@@ -175,23 +167,17 @@ export async function publishPageBase(
 	}
 	if (data.navigationData) {
 		data.navigationData.rootNode.titleTranslationText = null;
-		translationPageIds.add(data.navigationData.rootNode.id);
 		for (const node of data.navigationData.breadcrumb) {
 			node.titleTranslationText = null;
-			translationPageIds.add(node.id);
 		}
 	}
 	clearTreeTranslations(data.childPages);
-	collectTreePageIds(data.childPages, translationPageIds);
 
 	const generatedAt = new Date().toISOString();
 	const snapshot: PageBaseSnapshot = {
 		schemaVersion: TIPITAKA_READ_MODEL_SCHEMA_VERSION,
 		generatedAt,
 		generation,
-		translationPageIds: [...translationPageIds].sort(
-			(left, right) => left - right,
-		),
 		data: {
 			...data,
 			completedTranslationLocales: [],
@@ -240,7 +226,13 @@ export async function publishPageTranslationOverlay(
 		keyForRevision: (revision) => pageTranslationKey(pageId, locale, revision),
 		locale,
 		generation,
-		loadTranslations: () => queryBestTranslationTextsForPage(pageId, locale),
+		loadOverlay: async () => {
+			const [translations, glossUnits] = await Promise.all([
+				queryBestTranslationTextsForPage(pageId, locale),
+				querySelectedGlossUnitsForPage(pageId, locale),
+			]);
+			return { translations, glossUnits };
+		},
 	});
 }
 
@@ -275,11 +267,11 @@ export async function publishHomeTranslationOverlay(
 		keyForRevision: (revision) => homeTranslationKey(locale, revision),
 		locale,
 		generation,
-		loadTranslations: async () => {
+		loadOverlay: async () => {
 			const tree = await fetchTipitakaPageTree(locale);
 			const translations: Record<string, string> = {};
 			collectTreeTranslations(tree, translations);
-			return translations;
+			return { translations, glossUnits: [] };
 		},
 	});
 }
