@@ -59,6 +59,8 @@ if (process.argv[2] === "preflight") {
 	});
 	try {
 		const before = await replica.sync();
+		if (!before)
+			throw new Error("Snapshot replication did not return a revision");
 		const counts = await replica.execute(
 			"SELECT (SELECT count(*) FROM tipitaka_pages) AS pages, (SELECT count(*) FROM segments) AS segments, (SELECT count(*) FROM segment_translations) AS translations, (SELECT count(*) FROM selected_segment_gloss_sets) AS selected_gloss_sets",
 		);
@@ -68,15 +70,15 @@ if (process.argv[2] === "preflight") {
 		process.env.TURSO_DATABASE_URL = snapshotUrl;
 		delete process.env.TURSO_AUTH_TOKEN;
 		const { publishTipitakaReadModelsWithWrangler } =
-			await import("../../scripts/tipitaka-import/application/publish-read-model");
-		const { disposeDb } = await import("../../src/db");
+			await import("./tipitaka-import/application/publish-read-model");
+		const { disposeDb } = await import("../src/db");
 		try {
 			await publishTipitakaReadModelsWithWrangler(true);
 		} finally {
 			await disposeDb();
 		}
 		const after = await replica.sync();
-		if (before.frame_no !== after.frame_no)
+		if (!after || before.frame_no !== after.frame_no)
 			throw new Error(
 				"Production changed during snapshot publication; Worker was not deployed. Regenerate from the latest snapshot.",
 			);

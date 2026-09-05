@@ -22,7 +22,7 @@ jobs:
           cache: true
       - run: vp install
       - name: Verify production target and preserve previous deployment ID
-        run: bun .github/deployment/read-model-v2.ts preflight
+        run: bun scripts/deploy-read-model-v2.ts preflight
       - name: Validate application
         run: |
           bun run typecheck
@@ -39,7 +39,7 @@ jobs:
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
-        run: bun .github/deployment/read-model-v2.ts publish
+        run: bun scripts/deploy-read-model-v2.ts publish
       - name: Deploy Worker after all v2 snapshots exist
         run: bunx wrangler deploy
       - name: Verify live home and article
